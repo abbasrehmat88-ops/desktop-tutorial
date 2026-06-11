@@ -196,8 +196,8 @@ function DaysBadge({ days }) {
 }
 
 const TYPE_COLORS = {
-  Bill: 'bg-blue-100 text-blue-700',
-  Loan: 'bg-purple-100 text-purple-700',
+  Bill: 'bg-gray-100 text-gray-900',
+  Loan: 'bg-primary-50 text-primary-700',
   Renewal: 'bg-orange-100 text-orange-700',
   Other: 'bg-gray-100 text-gray-700',
 }
@@ -274,7 +274,7 @@ export default function Reminders() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Reminders</h1>
@@ -310,9 +310,9 @@ export default function Reminders() {
       )}
 
       {isDemoMode && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex gap-3">
-          <AlertCircle size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-blue-800">Demo Mode — reminders are saved on this device only.</p>
+        <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg flex gap-3">
+          <AlertCircle size={18} className="text-primary-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-gray-700">Demo Mode — reminders are saved on this device only.</p>
         </div>
       )}
 
@@ -412,7 +412,7 @@ export default function Reminders() {
                   </a>
                   <a
                     href={buildEmailUrl(r)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
                   >
                     <Mail size={12} />
                     Email Us

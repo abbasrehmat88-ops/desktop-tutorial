@@ -23,14 +23,14 @@ import {
 } from 'recharts'
 import { format, subMonths, startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns'
 
-const PIE_COLORS = ['#22c55e', '#ef4444']
+const PIE_COLORS = ['#222222', '#ff385c']
 
 function StatCard({ icon: Icon, label, value, subtext, color }) {
   return (
     <div className="stat-card">
       <div className="flex items-start gap-4">
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
-          <Icon size={22} className="text-white" />
+        <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${color}`}>
+          <Icon size={22} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm text-gray-500 font-medium">{label}</p>
@@ -134,7 +134,7 @@ export default function Financial() {
   const formatAED = (v) => `AED ${Number(v).toLocaleString()}`
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Financial Overview</h1>
         <p className="text-gray-500 text-sm mt-0.5">Track your rental income and outstanding payments</p>
@@ -148,9 +148,9 @@ export default function Financial() {
       )}
 
       {isDemoMode && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex gap-3">
-          <AlertCircle size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-blue-800">Demo Mode — figures are based on sample data on this device.</p>
+        <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg flex gap-3">
+          <AlertCircle size={18} className="text-primary-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-gray-700">Demo Mode — figures are based on sample data on this device.</p>
         </div>
       )}
 
@@ -160,10 +160,10 @@ export default function Financial() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-5 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${
+            className={`px-5 py-2 rounded-full text-sm font-medium capitalize transition-all duration-200 ${
               tab === t
-                ? 'bg-primary-600 text-white'
-                : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
+                ? 'bg-gray-900 text-white'
+                : 'bg-white text-gray-600 border border-gray-300 hover:border-gray-900 hover:text-gray-900'
             }`}
           >
             {t}
@@ -192,28 +192,28 @@ export default function Financial() {
             icon={DollarSign}
             label="Total Collected"
             value={formatAED(tab === 'monthly' ? totalCollected : yearlyCollected)}
-            color="bg-green-500"
+            color="bg-gray-900 text-white"
             subtext={tab === 'monthly' ? 'All time' : `Year ${now.getFullYear()}`}
           />
           <StatCard
             icon={TrendingDown}
             label="Total Pending"
             value={formatAED(tab === 'monthly' ? totalPending : yearlyPending)}
-            color="bg-red-500"
+            color="bg-primary-100 text-primary-700"
             subtext="Outstanding balance"
           />
           <StatCard
             icon={CheckCircle}
             label="Number Paid"
             value={paidCount}
-            color="bg-blue-500"
+            color="bg-green-100 text-green-700"
             subtext="Tenants with paid status"
           />
           <StatCard
             icon={Users}
             label="Number Unpaid"
             value={unpaidCount}
-            color="bg-orange-500"
+            color="bg-gray-100 text-gray-900"
             subtext="Tenants with pending status"
           />
         </div>
@@ -230,13 +230,13 @@ export default function Financial() {
           ) : (
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={monthlyData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#6b7280' }} />
-                <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                <Tooltip formatter={(v) => [`AED ${Number(v).toLocaleString()}`, undefined]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#ebebeb" />
+                <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#6a6a6a' }} axisLine={{ stroke: '#dddddd' }} tickLine={false} />
+                <YAxis tick={{ fontSize: 12, fill: '#6a6a6a' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                <Tooltip formatter={(v) => [`AED ${Number(v).toLocaleString()}`, undefined]} contentStyle={{ borderRadius: 12, border: '1px solid #dddddd', boxShadow: 'rgba(0,0,0,0.1) 0 4px 8px 0', fontSize: 13 }} />
                 <Legend wrapperStyle={{ fontSize: '12px' }} />
-                <Bar dataKey="Collected" fill="#22c55e" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Pending" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Collected" fill="#222222" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="Pending" fill="#ff385c" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}

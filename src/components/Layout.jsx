@@ -7,7 +7,7 @@ export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-white">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main content */}
@@ -21,7 +21,7 @@ export default function Layout() {
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-primary-600 rounded-md flex items-center justify-center">
+            <div className="w-7 h-7 bg-primary-500 rounded-full flex items-center justify-center">
               <span className="text-white text-xs font-bold">AR</span>
             </div>
             <span className="font-semibold text-gray-900 text-sm">Ajman Rentals</span>

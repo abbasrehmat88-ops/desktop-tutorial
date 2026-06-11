@@ -258,7 +258,7 @@ export default function Tenants() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
@@ -280,9 +280,9 @@ export default function Tenants() {
       )}
 
       {isDemoMode && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex gap-3">
-          <AlertCircle size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-blue-800">Demo Mode — changes are saved on this device only. Add Firebase to sync across phones.</p>
+        <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg flex gap-3">
+          <AlertCircle size={18} className="text-primary-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-gray-700">Demo Mode — changes are saved on this device only. Add Firebase to sync across phones.</p>
         </div>
       )}
 

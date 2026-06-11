@@ -42,35 +42,35 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <div className="w-full max-w-md animate-scale-in">
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-white rounded-card border border-gray-300 shadow-float overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-primary-700 to-primary-600 px-8 py-8 text-center">
-            <div className="w-16 h-16 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Home size={32} className="text-white" />
+          <div className="px-8 pt-10 pb-6 text-center border-b border-gray-200">
+            <div className="w-14 h-14 bg-primary-500 rounded-full flex items-center justify-center mx-auto mb-5">
+              <Home size={26} className="text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-white">Ajman Rental Management</h1>
-            <p className="text-primary-200 text-sm mt-1">Family Property Management System</p>
+            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Ajman Rental Management</h1>
+            <p className="text-gray-600 text-sm mt-1.5">Family Property Management System</p>
           </div>
 
           {/* Form */}
           <div className="px-8 py-8">
             {!firebaseConfigured && (
-              <div className="mb-5 p-4 bg-blue-50 border border-blue-200 rounded-lg flex gap-3">
-                <AlertCircle size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-blue-800">
-                  <p className="font-semibold">Demo Mode</p>
+              <div className="mb-5 p-4 bg-gray-50 border border-gray-200 rounded-lg flex gap-3">
+                <AlertCircle size={18} className="text-primary-500 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-gray-700">
+                  <p className="font-semibold text-gray-900">Demo Mode</p>
                   <p className="mt-1">Sign in with any email and password to preview the app with sample data. Connect Firebase later for real-time sync across phones.</p>
                 </div>
               </div>
             )}
 
             {error && (
-              <div className="mb-5 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
-                <AlertCircle size={18} className="text-red-500 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-700">{error}</p>
+              <div className="mb-5 p-4 bg-primary-50 border border-primary-200 rounded-lg flex gap-3 animate-fade-in">
+                <AlertCircle size={18} className="text-primary-700 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-primary-700">{error}</p>
               </div>
             )}
 
@@ -108,7 +108,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-primary w-full flex items-center justify-center gap-2 py-3 text-base"
+                className="btn-primary w-full flex items-center justify-center gap-2 py-3.5 text-base"
               >
                 {loading ? (
                   <>
@@ -121,13 +121,13 @@ export default function Login() {
               </button>
             </form>
 
-            <p className="mt-6 text-center text-xs text-gray-400">
+            <p className="mt-6 text-center text-xs text-gray-500">
               Authorized family members only &bull; Ajman, UAE
             </p>
           </div>
         </div>
 
-        <p className="text-center text-primary-300 text-xs mt-4">
+        <p className="text-center text-gray-500 text-xs mt-5">
           &copy; {new Date().getFullYear()} Ajman Rental Management. All rights reserved.
         </p>
       </div>

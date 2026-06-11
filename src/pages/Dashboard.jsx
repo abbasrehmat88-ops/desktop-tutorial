@@ -8,8 +8,8 @@ import { format, isWithinInterval, addDays, parseISO } from 'date-fns'
 function StatCard({ icon: Icon, label, value, color, subtext }) {
   return (
     <div className="stat-card flex items-start gap-4">
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
-        <Icon size={22} className="text-white" />
+      <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${color}`}>
+        <Icon size={22} />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm text-gray-500 font-medium">{label}</p>
@@ -86,7 +86,7 @@ export default function Dashboard() {
   const loading = loadingTenants || loadingReminders
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
@@ -103,10 +103,10 @@ export default function Dashboard() {
       )}
 
       {isDemoMode && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex gap-3">
-          <AlertCircle size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-blue-800">
-            <p className="font-semibold">Demo Mode — sample data loaded</p>
+        <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg flex gap-3">
+          <AlertCircle size={18} className="text-primary-500 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-gray-700">
+            <p className="font-semibold text-gray-900">Demo Mode — sample data loaded</p>
             <p className="mt-1">You're previewing the app with example data saved on this device. Add Firebase credentials to enable real-time sync across phones.</p>
           </div>
         </div>
@@ -133,28 +133,28 @@ export default function Dashboard() {
             icon={Users}
             label="Total Tenants"
             value={totalTenants}
-            color="bg-blue-500"
+            color="bg-gray-100 text-gray-900"
             subtext={`${paidCount} paid · ${unpaidCount} pending`}
           />
           <StatCard
             icon={DollarSign}
             label="Paid This Month"
             value={paidCount}
-            color="bg-green-500"
+            color="bg-green-100 text-green-700"
             subtext="Tenants with paid status"
           />
           <StatCard
             icon={AlertCircle}
             label="Pending Payments"
             value={unpaidCount}
-            color="bg-red-500"
+            color="bg-primary-100 text-primary-700"
             subtext="Tenants with unpaid status"
           />
           <StatCard
             icon={TrendingUp}
             label="Monthly Revenue"
             value={`AED ${totalRevenue.toLocaleString()}`}
-            color="bg-purple-500"
+            color="bg-gray-900 text-white"
             subtext="From paid tenants"
           />
         </div>

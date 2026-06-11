@@ -225,7 +225,7 @@ export default function Properties() {
   })
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Property Research</h1>
@@ -323,9 +323,9 @@ export default function Properties() {
       </div>
 
       {isDemoMode && (
-        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex gap-3">
-          <AlertCircle size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-blue-800">Demo Mode — listings are saved on this device only.</p>
+        <div className="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-lg flex gap-3">
+          <AlertCircle size={18} className="text-primary-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-gray-700">Demo Mode — listings are saved on this device only.</p>
         </div>
       )}
 
