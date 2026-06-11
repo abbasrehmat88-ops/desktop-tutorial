@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
+import { Outlet } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import Sidebar from './Sidebar'
 
-export default function Layout({ children }) {
+export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
@@ -28,7 +29,7 @@ export default function Layout({ children }) {
         </header>
 
         <main className="flex-1 overflow-y-auto">
-          {children}
+          <Outlet />
         </main>
       </div>
     </div>
