@@ -1,0 +1,370 @@
+import React, { useState, useEffect } from 'react'
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore'
+import { db } from '../firebase/config'
+import {
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Users,
+  AlertCircle,
+  CheckCircle,
+} from 'lucide-react'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+} from 'recharts'
+import { format, subMonths, startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns'
+
+const PIE_COLORS = ['#22c55e', '#ef4444']
+
+function StatCard({ icon: Icon, label, value, subtext, color }) {
+  return (
+    <div className="stat-card">
+      <div className="flex items-start gap-4">
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
+          <Icon size={22} className="text-white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-gray-500 font-medium">{label}</p>
+          <p className="text-2xl font-bold text-gray-900 mt-0.5">{value}</p>
+          {subtext && <p className="text-xs text-gray-400 mt-0.5">{subtext}</p>}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function buildMonthlyData(tenants) {
+  const now = new Date()
+  return Array.from({ length: 6 }, (_, i) => {
+    const monthDate = subMonths(now, 5 - i)
+    const start = startOfMonth(monthDate)
+    const end = endOfMonth(monthDate)
+    const monthLabel = format(monthDate, 'MMM yy')
+
+    let collected = 0
+    let pending = 0
+
+    tenants.forEach((t) => {
+      const amount = Number(t.rentAmount || 0)
+      let inMonth = false
+      try {
+        if (t.dueDate) {
+          const due = parseISO(t.dueDate)
+          inMonth = isWithinInterval(due, { start, end })
+        }
+      } catch {}
+
+      if (inMonth) {
+        if (t.paid) collected += amount
+        else pending += amount
+      }
+    })
+
+    return { month: monthLabel, Collected: collected, Pending: pending }
+  })
+}
+
+export default function Financial() {
+  const [tenants, setTenants] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [tab, setTab] = useState('monthly')
+
+  useEffect(() => {
+    if (!db) {
+      setLoading(false)
+      return
+    }
+    const q = query(collection(db, 'tenants'), orderBy('createdAt', 'desc'))
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        setTenants(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+        setLoading(false)
+      },
+      (err) => {
+        console.error(err)
+        setError('Failed to load financial data.')
+        setLoading(false)
+      }
+    )
+    return unsub
+  }, [])
+
+  const totalCollected = tenants.filter((t) => t.paid).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
+  const totalPending = tenants.filter((t) => !t.paid).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
+  const paidCount = tenants.filter((t) => t.paid).length
+  const unpaidCount = tenants.filter((t) => !t.paid).length
+
+  const pieData = [
+    { name: 'Paid', value: totalCollected },
+    { name: 'Pending', value: totalPending },
+  ]
+
+  const monthlyData = buildMonthlyData(tenants)
+
+  const now = new Date()
+  const yearlyCollected = tenants
+    .filter((t) => {
+      if (!t.paid || !t.dueDate) return false
+      try {
+        return parseISO(t.dueDate).getFullYear() === now.getFullYear()
+      } catch {
+        return false
+      }
+    })
+    .reduce((s, t) => s + Number(t.rentAmount || 0), 0)
+
+  const yearlyPending = tenants
+    .filter((t) => {
+      if (t.paid || !t.dueDate) return false
+      try {
+        return parseISO(t.dueDate).getFullYear() === now.getFullYear()
+      } catch {
+        return false
+      }
+    })
+    .reduce((s, t) => s + Number(t.rentAmount || 0), 0)
+
+  const formatAED = (v) => `AED ${Number(v).toLocaleString()}`
+
+  return (
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Financial Overview</h1>
+        <p className="text-gray-500 text-sm mt-0.5">Track your rental income and outstanding payments</p>
+      </div>
+
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-2 items-center text-red-700 text-sm">
+          <AlertCircle size={16} />
+          {error}
+        </div>
+      )}
+
+      {!db && (
+        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3">
+          <AlertCircle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-amber-800">Firebase not configured. Add your credentials to enable real-time financial tracking.</p>
+        </div>
+      )}
+
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6">
+        {['monthly', 'yearly'].map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`px-5 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${
+              tab === t
+                ? 'bg-primary-600 text-white'
+                : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
+      {/* Stat Cards */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="stat-card animate-pulse">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-gray-200 rounded-xl" />
+                <div className="flex-1">
+                  <div className="h-4 bg-gray-200 rounded w-24 mb-2" />
+                  <div className="h-7 bg-gray-200 rounded w-20" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+          <StatCard
+            icon={DollarSign}
+            label="Total Collected"
+            value={formatAED(tab === 'monthly' ? totalCollected : yearlyCollected)}
+            color="bg-green-500"
+            subtext={tab === 'monthly' ? 'All time' : `Year ${now.getFullYear()}`}
+          />
+          <StatCard
+            icon={TrendingDown}
+            label="Total Pending"
+            value={formatAED(tab === 'monthly' ? totalPending : yearlyPending)}
+            color="bg-red-500"
+            subtext="Outstanding balance"
+          />
+          <StatCard
+            icon={CheckCircle}
+            label="Number Paid"
+            value={paidCount}
+            color="bg-blue-500"
+            subtext="Tenants with paid status"
+          />
+          <StatCard
+            icon={Users}
+            label="Number Unpaid"
+            value={unpaidCount}
+            color="bg-orange-500"
+            subtext="Tenants with pending status"
+          />
+        </div>
+      )}
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        {/* Bar Chart */}
+        <div className="card p-6 lg:col-span-2">
+          <h2 className="font-semibold text-gray-900 mb-1">Monthly Rent Overview</h2>
+          <p className="text-sm text-gray-500 mb-4">Last 6 months — collected vs pending (AED)</p>
+          {loading ? (
+            <div className="h-64 bg-gray-100 rounded-lg animate-pulse" />
+          ) : (
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={monthlyData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#6b7280' }} />
+                <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                <Tooltip formatter={(v) => [`AED ${Number(v).toLocaleString()}`, undefined]} />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
+                <Bar dataKey="Collected" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Pending" fill="#ef4444" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* Pie Chart */}
+        <div className="card p-6">
+          <h2 className="font-semibold text-gray-900 mb-1">Payment Breakdown</h2>
+          <p className="text-sm text-gray-500 mb-4">Paid vs pending by amount</p>
+          {loading ? (
+            <div className="h-64 bg-gray-100 rounded-lg animate-pulse" />
+          ) : totalCollected === 0 && totalPending === 0 ? (
+            <div className="h-64 flex items-center justify-center text-gray-400 text-sm text-center">
+              No payment data yet.<br />Add tenants to see breakdown.
+            </div>
+          ) : (
+            <>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={55}
+                    outerRadius={85}
+                    paddingAngle={3}
+                    dataKey="value"
+                  >
+                    {pieData.map((_, i) => (
+                      <Cell key={i} fill={PIE_COLORS[i]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(v) => [`AED ${Number(v).toLocaleString()}`, undefined]} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="flex justify-center gap-6 mt-2">
+                {pieData.map((entry, i) => (
+                  <div key={i} className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-full" style={{ backgroundColor: PIE_COLORS[i] }} />
+                    <span className="text-xs text-gray-600">{entry.name}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Transaction Table */}
+      <div className="card">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h2 className="font-semibold text-gray-900">All Tenants — Payment Status</h2>
+        </div>
+        {loading ? (
+          <div className="p-6 space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+            ))}
+          </div>
+        ) : tenants.length === 0 ? (
+          <div className="p-10 text-center text-gray-400 text-sm">
+            No tenant data. Add tenants to see the financial summary.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 text-left">
+                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tenant</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Unit</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Rent (AED)</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Due Date</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {tenants.map((t) => {
+                  let dueDateDisplay = '—'
+                  try {
+                    if (t.dueDate) dueDateDisplay = format(parseISO(t.dueDate), 'MMM d, yyyy')
+                  } catch {}
+                  return (
+                    <tr key={t.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 font-semibold text-xs flex-shrink-0">
+                            {t.name?.charAt(0).toUpperCase() || '?'}
+                          </div>
+                          <span className="font-medium text-gray-900">{t.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">{t.unit || '—'}</td>
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        {Number(t.rentAmount || 0).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">{dueDateDisplay}</td>
+                      <td className="px-6 py-4">
+                        <span className={t.paid ? 'badge-paid' : 'badge-unpaid'}>
+                          {t.paid ? 'Paid' : 'Pending'}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+              <tfoot>
+                <tr className="bg-gray-50 border-t border-gray-200">
+                  <td colSpan={2} className="px-6 py-3 text-sm font-semibold text-gray-700">Total</td>
+                  <td className="px-6 py-3 text-sm font-bold text-gray-900">
+                    {(totalCollected + totalPending).toLocaleString()}
+                  </td>
+                  <td />
+                  <td className="px-6 py-3">
+                    <span className="text-xs text-gray-500">
+                      {paidCount} paid · {unpaidCount} pending
+                    </span>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
