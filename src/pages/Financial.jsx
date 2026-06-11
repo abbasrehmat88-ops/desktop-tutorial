@@ -23,18 +23,18 @@ import {
 } from 'recharts'
 import { format, subMonths, startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns'
 
-const PIE_COLORS = ['#222222', '#ff385c']
+const PIE_COLORS = ['#c9a154', '#b3573f']
 
 function StatCard({ icon: Icon, label, value, subtext, color }) {
   return (
     <div className="stat-card">
       <div className="flex items-start gap-4">
-        <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${color}`}>
+        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${color}`}>
           <Icon size={22} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-gray-500 font-medium">{label}</p>
-          <p className="text-2xl font-bold text-gray-900 mt-0.5">{value}</p>
+          <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">{label}</p>
+          <p className="text-2xl font-bold text-charcoal-900 mt-1">{value}</p>
           {subtext && <p className="text-xs text-gray-400 mt-0.5">{subtext}</p>}
         </div>
       </div>
@@ -136,8 +136,9 @@ export default function Financial() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Financial Overview</h1>
-        <p className="text-gray-500 text-sm mt-0.5">Track your rental income and outstanding payments</p>
+        <h1 className="page-title">Financial Overview</h1>
+        <span className="gold-rule" />
+        <p className="text-gray-500 text-sm mt-3">Track your rental income and outstanding payments</p>
       </div>
 
       {error && (
@@ -160,10 +161,10 @@ export default function Financial() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-5 py-2 rounded-full text-sm font-medium capitalize transition-all duration-200 ${
+            className={`px-6 py-2.5 rounded-full text-sm font-semibold capitalize transition-all duration-300 ${
               tab === t
-                ? 'bg-gray-900 text-white'
-                : 'bg-white text-gray-600 border border-gray-300 hover:border-gray-900 hover:text-gray-900'
+                ? 'bg-charcoal-900 text-primary-400 shadow-card'
+                : 'bg-white text-gray-600 border border-gray-300 hover:border-primary-500 hover:text-primary-700'
             }`}
           >
             {t}
@@ -192,28 +193,28 @@ export default function Financial() {
             icon={DollarSign}
             label="Total Collected"
             value={formatAED(tab === 'monthly' ? totalCollected : yearlyCollected)}
-            color="bg-gray-900 text-white"
+            color="bg-charcoal-900 text-primary-400"
             subtext={tab === 'monthly' ? 'All time' : `Year ${now.getFullYear()}`}
           />
           <StatCard
             icon={TrendingDown}
             label="Total Pending"
             value={formatAED(tab === 'monthly' ? totalPending : yearlyPending)}
-            color="bg-primary-100 text-primary-700"
+            color="bg-rust-50 text-rust-600"
             subtext="Outstanding balance"
           />
           <StatCard
             icon={CheckCircle}
             label="Number Paid"
             value={paidCount}
-            color="bg-green-100 text-green-700"
+            color="bg-emerald2-50 text-emerald2-600"
             subtext="Tenants with paid status"
           />
           <StatCard
             icon={Users}
             label="Number Unpaid"
             value={unpaidCount}
-            color="bg-gray-100 text-gray-900"
+            color="bg-primary-100 text-primary-700"
             subtext="Tenants with pending status"
           />
         </div>
@@ -223,20 +224,20 @@ export default function Financial() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Bar Chart */}
         <div className="card p-6 lg:col-span-2">
-          <h2 className="font-semibold text-gray-900 mb-1">Monthly Rent Overview</h2>
+          <h2 className="font-display text-xl text-charcoal-900 mb-1">Monthly Rent Overview</h2>
           <p className="text-sm text-gray-500 mb-4">Last 6 months — collected vs pending (AED)</p>
           {loading ? (
             <div className="h-64 bg-gray-100 rounded-lg animate-pulse" />
           ) : (
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={monthlyData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ebebeb" />
-                <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#6a6a6a' }} axisLine={{ stroke: '#dddddd' }} tickLine={false} />
-                <YAxis tick={{ fontSize: 12, fill: '#6a6a6a' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                <Tooltip formatter={(v) => [`AED ${Number(v).toLocaleString()}`, undefined]} contentStyle={{ borderRadius: 12, border: '1px solid #dddddd', boxShadow: 'rgba(0,0,0,0.1) 0 4px 8px 0', fontSize: 13 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e7e5dd" />
+                <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#8d8a7f' }} axisLine={{ stroke: '#d8d5ca' }} tickLine={false} />
+                <YAxis tick={{ fontSize: 12, fill: '#8d8a7f' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                <Tooltip formatter={(v) => [`AED ${Number(v).toLocaleString()}`, undefined]} contentStyle={{ borderRadius: 14, border: '1px solid #e7e5dd', boxShadow: 'rgba(19,21,28,0.12) 0 8px 20px 0', fontSize: 13 }} />
                 <Legend wrapperStyle={{ fontSize: '12px' }} />
-                <Bar dataKey="Collected" fill="#222222" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="Pending" fill="#ff385c" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="Collected" fill="#c9a154" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="Pending" fill="#b3573f" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -244,7 +245,7 @@ export default function Financial() {
 
         {/* Pie Chart */}
         <div className="card p-6">
-          <h2 className="font-semibold text-gray-900 mb-1">Payment Breakdown</h2>
+          <h2 className="font-display text-xl text-charcoal-900 mb-1">Payment Breakdown</h2>
           <p className="text-sm text-gray-500 mb-4">Paid vs pending by amount</p>
           {loading ? (
             <div className="h-64 bg-gray-100 rounded-lg animate-pulse" />
@@ -288,7 +289,7 @@ export default function Financial() {
       {/* Transaction Table */}
       <div className="card">
         <div className="px-6 py-4 border-b border-gray-100">
-          <h2 className="font-semibold text-gray-900">All Tenants — Payment Status</h2>
+          <h2 className="font-display text-xl text-charcoal-900">All Tenants — Payment Status</h2>
         </div>
         {loading ? (
           <div className="p-6 space-y-3">

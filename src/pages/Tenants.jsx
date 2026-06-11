@@ -262,7 +262,7 @@ export default function Tenants() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Tenants</h1>
+          <h1 className="page-title">Tenants</h1><span className="gold-rule" />
           <p className="text-gray-500 text-sm mt-0.5">Manage all your rental tenants</p>
         </div>
         <button onClick={openAdd} className="btn-primary flex items-center gap-2 self-start sm:self-auto">
@@ -322,7 +322,7 @@ export default function Tenants() {
 
       {/* Tenants Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="card p-5 animate-pulse">
               <div className="flex items-start gap-3 mb-4">
@@ -354,7 +354,7 @@ export default function Tenants() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger">
           {filtered.map((tenant) => {
             let dueDateDisplay = 'Not set'
             try {

@@ -277,7 +277,7 @@ export default function Reminders() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Reminders</h1>
+          <h1 className="page-title">Reminders</h1><span className="gold-rule" />
           <p className="text-gray-500 text-sm mt-0.5">Track bills, loans, and renewal deadlines</p>
         </div>
         <button onClick={() => { setEditReminder(null); setModalOpen(true) }} className="btn-primary flex items-center gap-2 self-start sm:self-auto">
@@ -317,7 +317,7 @@ export default function Reminders() {
       )}
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="card p-5 animate-pulse">
               <div className="h-5 bg-gray-200 rounded w-3/4 mb-3" />
@@ -340,7 +340,7 @@ export default function Reminders() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger">
           {reminders.map((r) => {
             const days = getDaysRemaining(r.dueDate)
             let dueDateDisplay = '—'

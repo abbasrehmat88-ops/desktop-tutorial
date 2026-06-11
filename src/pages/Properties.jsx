@@ -228,7 +228,7 @@ export default function Properties() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Property Research</h1>
+          <h1 className="page-title">Property Research</h1><span className="gold-rule" />
           <p className="text-gray-500 text-sm mt-0.5">Search for new rental properties in Ajman</p>
         </div>
         <button
@@ -314,7 +314,7 @@ export default function Properties() {
 
       {/* Manual Listings */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-semibold text-gray-900">
+        <h2 className="font-display text-xl text-charcoal-900">
           Manual Listings
           <span className="ml-2 text-sm font-normal text-gray-400">
             {filtered.length} of {listings.length}
@@ -330,7 +330,7 @@ export default function Properties() {
       )}
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="card p-5 animate-pulse">
               <div className="h-5 bg-gray-200 rounded w-32 mb-3" />
@@ -356,7 +356,7 @@ export default function Properties() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger">
           {filtered.map((listing) => (
             <div key={listing.id} className="card p-5 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-3">
