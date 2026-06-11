@@ -4,10 +4,10 @@ import {
   signOut,
   onAuthStateChanged,
 } from 'firebase/auth'
-import { auth, firebaseConfigured } from '../firebase/config'
+import { auth, firebaseConfigured, allowedEmails } from '../firebase/config'
 import { isDemoMode, seedDemoDataIfEmpty } from '../data/db'
 
-const ALLOWED_EMAILS = ['abbasrehmat88@gmail.com', 'father@example.com']
+const ALLOWED_EMAILS = allowedEmails
 const DEMO_SESSION_KEY = 'ajman_demo_user'
 
 const AuthContext = createContext(null)
