@@ -1,15 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import {
-  collection,
-  onSnapshot,
-  addDoc,
-  deleteDoc,
-  doc,
-  serverTimestamp,
-  query,
-  orderBy,
-} from 'firebase/firestore'
-import { db } from '../firebase/config'
+import { watchCollection, addItem, removeItem, isDemoMode } from '../data/db'
 import {
   Search,
   Plus,
@@ -178,12 +168,12 @@ export default function Properties() {
   const [modalOpen, setModalOpen] = useState(false)
 
   useEffect(() => {
-    if (!db) { setLoading(false); return }
-    const q = query(collection(db, 'properties'), orderBy('createdAt', 'desc'))
-    const unsub = onSnapshot(
-      q,
-      (snap) => {
-        setListings(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+    return watchCollection(
+      'properties',
+      'createdAt',
+      'desc',
+      (data) => {
+        setListings(data)
         setLoading(false)
       },
       (err) => {
@@ -192,13 +182,12 @@ export default function Properties() {
         setLoading(false)
       }
     )
-    return unsub
   }, [])
 
   async function handleSave(form) {
     setSaving(true)
     try {
-      await addDoc(collection(db, 'properties'), {
+      await addItem('properties', {
         area: form.area.trim(),
         price: Number(form.price),
         bedrooms: form.bedrooms,
@@ -206,7 +195,6 @@ export default function Properties() {
         contact: form.contact.trim(),
         link: form.link.trim(),
         notes: form.notes.trim(),
-        createdAt: serverTimestamp(),
       })
     } finally {
       setSaving(false)
@@ -216,7 +204,7 @@ export default function Properties() {
   async function handleDelete(listing) {
     if (!window.confirm(`Delete listing in "${listing.area}"?`)) return
     try {
-      await deleteDoc(doc(db, 'properties', listing.id))
+      await removeItem('properties', listing.id)
     } catch (err) {
       setError('Failed to delete: ' + err.message)
     }
@@ -334,10 +322,10 @@ export default function Properties() {
         </h2>
       </div>
 
-      {!db && (
-        <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3">
-          <AlertCircle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-amber-800">Firebase not configured. Add your credentials to enable property listings.</p>
+      {isDemoMode && (
+        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex gap-3">
+          <AlertCircle size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-blue-800">Demo Mode — listings are saved on this device only.</p>
         </div>
       )}
 

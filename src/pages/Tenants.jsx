@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import {
-  collection,
-  onSnapshot,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  serverTimestamp,
-  query,
-  orderBy,
-} from 'firebase/firestore'
-import { db } from '../firebase/config'
+import { watchCollection, addItem, updateItem, removeItem, isDemoMode } from '../data/db'
 import {
   Plus,
   Search,
@@ -189,15 +178,12 @@ export default function Tenants() {
   const [editTenant, setEditTenant] = useState(null)
 
   useEffect(() => {
-    if (!db) {
-      setLoading(false)
-      return
-    }
-    const q = query(collection(db, 'tenants'), orderBy('createdAt', 'desc'))
-    const unsub = onSnapshot(
-      q,
-      (snap) => {
-        setTenants(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+    return watchCollection(
+      'tenants',
+      'createdAt',
+      'desc',
+      (data) => {
+        setTenants(data)
         setLoading(false)
       },
       (err) => {
@@ -206,7 +192,6 @@ export default function Tenants() {
         setLoading(false)
       }
     )
-    return unsub
   }, [])
 
   const filtered = tenants.filter((t) => {
@@ -222,27 +207,18 @@ export default function Tenants() {
   async function handleSave(form) {
     setSaving(true)
     try {
+      const payload = {
+        name: form.name.trim(),
+        phone: form.phone.trim(),
+        unit: form.unit.trim(),
+        rentAmount: Number(form.rentAmount),
+        dueDate: form.dueDate,
+        paid: form.paid,
+      }
       if (editTenant) {
-        const ref = doc(db, 'tenants', editTenant.id)
-        await updateDoc(ref, {
-          name: form.name.trim(),
-          phone: form.phone.trim(),
-          unit: form.unit.trim(),
-          rentAmount: Number(form.rentAmount),
-          dueDate: form.dueDate,
-          paid: form.paid,
-          updatedAt: serverTimestamp(),
-        })
+        await updateItem('tenants', editTenant.id, payload)
       } else {
-        await addDoc(collection(db, 'tenants'), {
-          name: form.name.trim(),
-          phone: form.phone.trim(),
-          unit: form.unit.trim(),
-          rentAmount: Number(form.rentAmount),
-          dueDate: form.dueDate,
-          paid: form.paid,
-          createdAt: serverTimestamp(),
-        })
+        await addItem('tenants', payload)
       }
     } finally {
       setSaving(false)
@@ -252,7 +228,7 @@ export default function Tenants() {
   async function handleDelete(tenant) {
     if (!window.confirm(`Delete tenant "${tenant.name}"? This cannot be undone.`)) return
     try {
-      await deleteDoc(doc(db, 'tenants', tenant.id))
+      await removeItem('tenants', tenant.id)
     } catch (err) {
       setError('Failed to delete tenant: ' + err.message)
     }
@@ -303,10 +279,10 @@ export default function Tenants() {
         </div>
       )}
 
-      {!db && (
-        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3">
-          <AlertCircle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-amber-800">Firebase not configured. Add your credentials to <code className="bg-amber-100 px-1 rounded">.env</code> to enable data storage.</p>
+      {isDemoMode && (
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex gap-3">
+          <AlertCircle size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-blue-800">Demo Mode — changes are saved on this device only. Add Firebase to sync across phones.</p>
         </div>
       )}
 

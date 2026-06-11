@@ -58,11 +58,11 @@ export default function Login() {
           {/* Form */}
           <div className="px-8 py-8">
             {!firebaseConfigured && (
-              <div className="mb-5 p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3">
-                <AlertCircle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-amber-800">
-                  <p className="font-semibold">Firebase not configured</p>
-                  <p className="mt-1">Copy <code className="bg-amber-100 px-1 rounded">.env.example</code> to <code className="bg-amber-100 px-1 rounded">.env</code> and add your Firebase credentials to enable authentication.</p>
+              <div className="mb-5 p-4 bg-blue-50 border border-blue-200 rounded-lg flex gap-3">
+                <AlertCircle size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-blue-800">
+                  <p className="font-semibold">Demo Mode</p>
+                  <p className="mt-1">Sign in with any email and password to preview the app with sample data. Connect Firebase later for real-time sync across phones.</p>
                 </div>
               </div>
             )}

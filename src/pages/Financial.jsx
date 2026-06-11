@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore'
-import { db } from '../firebase/config'
+import { watchCollection, isDemoMode } from '../data/db'
 import {
   DollarSign,
   TrendingUp,
@@ -81,15 +80,12 @@ export default function Financial() {
   const [tab, setTab] = useState('monthly')
 
   useEffect(() => {
-    if (!db) {
-      setLoading(false)
-      return
-    }
-    const q = query(collection(db, 'tenants'), orderBy('createdAt', 'desc'))
-    const unsub = onSnapshot(
-      q,
-      (snap) => {
-        setTenants(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+    return watchCollection(
+      'tenants',
+      'createdAt',
+      'desc',
+      (data) => {
+        setTenants(data)
         setLoading(false)
       },
       (err) => {
@@ -98,7 +94,6 @@ export default function Financial() {
         setLoading(false)
       }
     )
-    return unsub
   }, [])
 
   const totalCollected = tenants.filter((t) => t.paid).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
@@ -152,10 +147,10 @@ export default function Financial() {
         </div>
       )}
 
-      {!db && (
-        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3">
-          <AlertCircle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-amber-800">Firebase not configured. Add your credentials to enable real-time financial tracking.</p>
+      {isDemoMode && (
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex gap-3">
+          <AlertCircle size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-blue-800">Demo Mode — figures are based on sample data on this device.</p>
         </div>
       )}
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore'
-import { db } from '../firebase/config'
+import { watchCollection, isDemoMode } from '../data/db'
 import { useAuth } from '../contexts/AuthContext'
 import { Users, DollarSign, AlertCircle, TrendingUp, Bell, Clock } from 'lucide-react'
 import { format, isWithinInterval, addDays, parseISO } from 'date-fns'
@@ -29,17 +28,11 @@ export default function Dashboard() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!db) {
-      setLoadingTenants(false)
-      setLoadingReminders(false)
-      return
-    }
-
-    const tenantsQuery = query(collection(db, 'tenants'), orderBy('createdAt', 'desc'))
-    const unsubTenants = onSnapshot(
-      tenantsQuery,
-      (snapshot) => {
-        const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+    const unsubTenants = watchCollection(
+      'tenants',
+      'createdAt',
+      'desc',
+      (data) => {
         setTenants(data)
         setLoadingTenants(false)
       },
@@ -50,11 +43,11 @@ export default function Dashboard() {
       }
     )
 
-    const remindersQuery = query(collection(db, 'reminders'), orderBy('dueDate', 'asc'))
-    const unsubReminders = onSnapshot(
-      remindersQuery,
-      (snapshot) => {
-        const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+    const unsubReminders = watchCollection(
+      'reminders',
+      'dueDate',
+      'asc',
+      (data) => {
         setReminders(data)
         setLoadingReminders(false)
       },
@@ -108,12 +101,12 @@ export default function Dashboard() {
         </div>
       )}
 
-      {!db && (
-        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3">
-          <AlertCircle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-amber-800">
-            <p className="font-semibold">Firebase not configured</p>
-            <p className="mt-1">Add your Firebase credentials to a <code className="bg-amber-100 px-1 rounded">.env</code> file to enable real-time data. Copy <code className="bg-amber-100 px-1 rounded">.env.example</code> to get started.</p>
+      {isDemoMode && (
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex gap-3">
+          <AlertCircle size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-blue-800">
+            <p className="font-semibold">Demo Mode — sample data loaded</p>
+            <p className="mt-1">You're previewing the app with example data saved on this device. Add Firebase credentials to enable real-time sync across phones.</p>
           </div>
         </div>
       )}

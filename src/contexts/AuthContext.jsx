@@ -5,8 +5,10 @@ import {
   onAuthStateChanged,
 } from 'firebase/auth'
 import { auth, firebaseConfigured } from '../firebase/config'
+import { isDemoMode, seedDemoDataIfEmpty } from '../data/db'
 
 const ALLOWED_EMAILS = ['abbasrehmat88@gmail.com', 'father@example.com']
+const DEMO_SESSION_KEY = 'ajman_demo_user'
 
 const AuthContext = createContext(null)
 
@@ -21,10 +23,15 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!firebaseConfigured || !auth) {
+    // Demo mode: restore any saved local session, no Firebase needed.
+    if (isDemoMode) {
+      seedDemoDataIfEmpty()
+      const saved = localStorage.getItem(DEMO_SESSION_KEY)
+      if (saved) setCurrentUser({ email: saved, demo: true })
       setLoading(false)
       return
     }
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user && ALLOWED_EMAILS.includes(user.email?.toLowerCase())) {
         setCurrentUser(user)
@@ -41,17 +48,28 @@ export function AuthProvider({ children }) {
   }, [])
 
   async function login(email, password) {
-    if (!firebaseConfigured || !auth) {
-      throw new Error('Firebase is not configured. Please add your Firebase credentials to the .env file.')
+    const normalized = email.trim().toLowerCase()
+
+    // Demo mode: accept any email + any non-empty password, persist locally.
+    if (isDemoMode) {
+      if (!password) throw new Error('Please enter a password.')
+      localStorage.setItem(DEMO_SESSION_KEY, normalized)
+      setCurrentUser({ email: normalized, demo: true })
+      return { user: { email: normalized } }
     }
-    if (!ALLOWED_EMAILS.includes(email.toLowerCase())) {
+
+    if (!ALLOWED_EMAILS.includes(normalized)) {
       throw new Error('Access denied. Unauthorized user.')
     }
-    const result = await signInWithEmailAndPassword(auth, email, password)
-    return result
+    return signInWithEmailAndPassword(auth, normalized, password)
   }
 
   async function logout() {
+    if (isDemoMode) {
+      localStorage.removeItem(DEMO_SESSION_KEY)
+      setCurrentUser(null)
+      return
+    }
     if (!auth) return
     await signOut(auth)
     setCurrentUser(null)
@@ -63,6 +81,7 @@ export function AuthProvider({ children }) {
     logout,
     loading,
     firebaseConfigured,
+    isDemoMode,
   }
 
   return (

@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import {
-  collection,
-  onSnapshot,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  serverTimestamp,
-  query,
-  orderBy,
-} from 'firebase/firestore'
-import { db } from '../firebase/config'
+import { watchCollection, addItem, updateItem, removeItem, isDemoMode } from '../data/db'
 import {
   Bell,
   Plus,
@@ -222,15 +211,12 @@ export default function Reminders() {
   const [editReminder, setEditReminder] = useState(null)
 
   useEffect(() => {
-    if (!db) {
-      setLoading(false)
-      return
-    }
-    const q = query(collection(db, 'reminders'), orderBy('dueDate', 'asc'))
-    const unsub = onSnapshot(
-      q,
-      (snap) => {
-        setReminders(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+    return watchCollection(
+      'reminders',
+      'dueDate',
+      'asc',
+      (data) => {
+        setReminders(data)
         setLoading(false)
       },
       (err) => {
@@ -239,7 +225,6 @@ export default function Reminders() {
         setLoading(false)
       }
     )
-    return unsub
   }, [])
 
   const dueWithin7 = reminders.filter((r) => {
@@ -250,26 +235,18 @@ export default function Reminders() {
   async function handleSave(form) {
     setSaving(true)
     try {
+      const payload = {
+        title: form.title.trim(),
+        type: form.type,
+        dueDate: form.dueDate,
+        amount: form.amount ? Number(form.amount) : null,
+        notes: form.notes.trim(),
+        tenantName: form.tenantName.trim(),
+      }
       if (editReminder) {
-        await updateDoc(doc(db, 'reminders', editReminder.id), {
-          title: form.title.trim(),
-          type: form.type,
-          dueDate: form.dueDate,
-          amount: form.amount ? Number(form.amount) : null,
-          notes: form.notes.trim(),
-          tenantName: form.tenantName.trim(),
-          updatedAt: serverTimestamp(),
-        })
+        await updateItem('reminders', editReminder.id, payload)
       } else {
-        await addDoc(collection(db, 'reminders'), {
-          title: form.title.trim(),
-          type: form.type,
-          dueDate: form.dueDate,
-          amount: form.amount ? Number(form.amount) : null,
-          notes: form.notes.trim(),
-          tenantName: form.tenantName.trim(),
-          createdAt: serverTimestamp(),
-        })
+        await addItem('reminders', payload)
       }
     } finally {
       setSaving(false)
@@ -279,7 +256,7 @@ export default function Reminders() {
   async function handleDelete(reminder) {
     if (!window.confirm(`Delete reminder "${reminder.title}"?`)) return
     try {
-      await deleteDoc(doc(db, 'reminders', reminder.id))
+      await removeItem('reminders', reminder.id)
     } catch (err) {
       setError('Failed to delete: ' + err.message)
     }
@@ -332,10 +309,10 @@ export default function Reminders() {
         </div>
       )}
 
-      {!db && (
-        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3">
-          <AlertCircle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-amber-800">Firebase not configured. Add your credentials to store reminders.</p>
+      {isDemoMode && (
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex gap-3">
+          <AlertCircle size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-blue-800">Demo Mode — reminders are saved on this device only.</p>
         </div>
       )}
 
