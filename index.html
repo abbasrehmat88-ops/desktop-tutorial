@@ -2,43 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0f2744" />
   <title>RentFlow — Rental Business Manager</title>
   <link rel="stylesheet" href="assets/styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- LOGIN SCREEN -->
+  <!-- LOGIN -->
   <div id="login-screen" class="login-screen">
     <div class="login-card">
       <div class="login-brand">
         <div class="logo-mark">R</div>
         <h1>RentFlow</h1>
-        <p>Rental business, organized.</p>
+        <p>Property rental management — UAE</p>
       </div>
       <form id="login-form" class="login-form">
-        <label><span>Email</span><input type="email" value="admin@rentflow.app" required /></label>
-        <label><span>Password</span><input type="password" value="demo1234" required /></label>
-        <button type="submit" class="btn-primary">Sign in</button>
+        <div class="form-field"><span>Email</span><input type="email" value="admin@rentflow.app" required /></div>
+        <div class="form-field"><span>Password</span><input type="password" value="demo1234" required /></div>
+        <button type="submit" class="btn-primary" style="width:100%;padding:14px;">Sign in</button>
         <p class="login-hint">Demo mode — any credentials work.</p>
       </form>
     </div>
-    <div class="login-side">
-      <div class="login-side-inner">
-        <h2>Manage every rental in one place.</h2>
-        <ul>
-          <li><span class="dot"></span> Track owners, tenants &amp; properties</li>
-          <li><span class="dot"></span> Auto-sync rent payments from WhatsApp</li>
-          <li><span class="dot"></span> Message clients straight from the app</li>
-          <li><span class="dot"></span> Monthly income &amp; expense reports</li>
-        </ul>
-      </div>
-    </div>
   </div>
 
-  <!-- APP SHELL -->
+  <!-- APP -->
   <div id="app-shell" class="app-shell hidden">
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
     <aside class="sidebar">
       <div class="sidebar-brand">
         <div class="logo-mark">R</div>
@@ -58,7 +52,7 @@
           Owners
         </a>
         <a href="#" class="nav-item" data-view="clients">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3 3-5.5 6-5.5s6 2.5 6 5.5"/><path d="M14.5 20c.5-2 2-3.5 4-3.5s3 1 3.5 2.5"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3 3-5.5 6-5.5s6 2.5 6 5.5"/></svg>
           Clients
         </a>
         <a href="#" class="nav-item" data-view="payments">
@@ -90,21 +84,22 @@
 
     <main class="main">
       <header class="topbar">
-        <div class="topbar-left">
-          <h2 id="view-title">Dashboard</h2>
-          <p id="view-sub">Overview of your rental business</p>
+        <div class="topbar-left" style="display:flex;align-items:center;gap:12px;">
+          <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </button>
+          <div>
+            <h2 id="view-title">Dashboard</h2>
+            <p id="view-sub">Overview of your rental business</p>
+          </div>
         </div>
         <div class="topbar-right">
           <div class="search">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-            <input placeholder="Search clients, properties..." />
+            <input placeholder="Search..." />
           </div>
           <button class="icon-btn" title="Reset demo data" onclick="resetData()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
-          </button>
-          <button class="icon-btn" title="Notifications">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
-            <span class="badge">3</span>
           </button>
         </div>
       </header>
@@ -113,116 +108,42 @@
         <!-- DASHBOARD -->
         <div class="view" id="view-dashboard">
           <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-label">Monthly Income</div>
-              <div class="stat-value" id="stat-income">—</div>
-              <div class="stat-trend up">Paid this month</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Pending Dues</div>
-              <div class="stat-value" id="stat-pending">—</div>
-              <div class="stat-trend down" id="stat-pending-sub">—</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Active Properties</div>
-              <div class="stat-value" id="stat-properties">—</div>
-              <div class="stat-trend neutral" id="stat-properties-sub">—</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Total Clients</div>
-              <div class="stat-value" id="stat-clients">—</div>
-              <div class="stat-trend up">All tenants</div>
-            </div>
+            <div class="stat-card"><div class="stat-label">Monthly Income</div><div class="stat-value" id="stat-income">—</div><div class="stat-trend up">Paid this month</div></div>
+            <div class="stat-card"><div class="stat-label">Pending Dues</div><div class="stat-value" id="stat-pending">—</div><div class="stat-trend down" id="stat-pending-sub">—</div></div>
+            <div class="stat-card"><div class="stat-label">Properties</div><div class="stat-value" id="stat-properties">—</div><div class="stat-trend neutral" id="stat-properties-sub">—</div></div>
+            <div class="stat-card"><div class="stat-label">Total Clients</div><div class="stat-value" id="stat-clients">—</div><div class="stat-trend up">Active tenants</div></div>
           </div>
-
           <div class="grid-2">
-            <div class="panel">
-              <div class="panel-head">
-                <h3>Recent Payments</h3>
-                <a href="#" class="link" data-view="payments">View all</a>
-              </div>
-              <table class="table">
-                <thead><tr><th>Client</th><th>Property</th><th>Amount</th><th>Status</th></tr></thead>
-                <tbody id="recent-payments"></tbody>
-              </table>
+            <div class="panel"><div class="panel-head"><h3>Recent Payments</h3><a href="#" class="link" data-view="payments">View all</a></div>
+              <table class="table"><thead><tr><th>Client</th><th>Property</th><th>Amount</th><th>Status</th></tr></thead><tbody id="recent-payments"></tbody></table>
             </div>
-
-            <div class="panel">
-              <div class="panel-head">
-                <h3>WhatsApp Activity</h3>
-                <span class="status-pill connected">● Connected</span>
-              </div>
-              <div class="wa-feed" id="wa-feed"></div>
-            </div>
+            <div class="panel"><div class="panel-head"><h3>WhatsApp Activity</h3><span class="status-pill connected">Connected</span></div><div class="wa-feed" id="wa-feed"></div></div>
           </div>
-
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Income — Last 6 Months</h3>
-              <span class="muted">Monthly collection trend</span>
-            </div>
-            <div class="chart" id="chart"></div>
-          </div>
+          <div class="panel"><div class="panel-head"><h3>Income — Last 6 Months</h3><span class="muted">Monthly collection trend (AED)</span></div><div class="chart" id="chart"></div></div>
         </div>
 
         <!-- PROPERTIES -->
         <div class="view hidden" id="view-properties">
-          <div class="toolbar">
-            <div class="tabs" data-tabs="properties">
-              <button class="tab active">All</button>
-              <button class="tab">Occupied</button>
-              <button class="tab">Vacant</button>
-            </div>
-            <button class="btn-primary" onclick="addProperty()">+ Add Property</button>
-          </div>
+          <div class="toolbar"><div class="tabs" data-tabs="properties"><button class="tab active">All</button><button class="tab">Occupied</button><button class="tab">Vacant</button></div><button class="btn-primary" onclick="addProperty()">+ Add Property</button></div>
           <div class="cards-grid" id="property-cards"></div>
         </div>
 
         <!-- OWNERS -->
         <div class="view hidden" id="view-owners">
-          <div class="toolbar">
-            <h3 class="toolbar-title">Property Owners</h3>
-            <button class="btn-primary" onclick="addOwner()">+ Add Owner</button>
-          </div>
-          <div class="panel">
-            <table class="table">
-              <thead><tr><th>Name</th><th>Phone</th><th>Properties</th><th>Earnings (MTD)</th><th>Pending</th><th></th></tr></thead>
-              <tbody id="owners-rows"></tbody>
-            </table>
-          </div>
+          <div class="toolbar"><h3 class="toolbar-title">Property Owners</h3><button class="btn-primary" onclick="addOwner()">+ Add Owner</button></div>
+          <div class="panel"><table class="table"><thead><tr><th>Name</th><th>Phone</th><th>Properties</th><th>Earnings (MTD)</th><th>Pending</th><th></th></tr></thead><tbody id="owners-rows"></tbody></table></div>
         </div>
 
         <!-- CLIENTS -->
         <div class="view hidden" id="view-clients">
-          <div class="toolbar">
-            <h3 class="toolbar-title">Clients / Tenants</h3>
-            <button class="btn-primary" onclick="addClient()">+ Add Client</button>
-          </div>
-          <div class="panel">
-            <table class="table">
-              <thead><tr><th>Name</th><th>Property</th><th>Phone</th><th>Rent</th><th>Last Payment</th><th></th></tr></thead>
-              <tbody id="clients-rows"></tbody>
-            </table>
-          </div>
+          <div class="toolbar"><h3 class="toolbar-title">Clients / Tenants</h3><button class="btn-primary" onclick="addClient()">+ Add Client</button></div>
+          <div class="panel"><table class="table"><thead><tr><th>Name</th><th>Property</th><th>Phone</th><th>Rent</th><th>Status</th><th></th></tr></thead><tbody id="clients-rows"></tbody></table></div>
         </div>
 
         <!-- PAYMENTS -->
         <div class="view hidden" id="view-payments">
-          <div class="toolbar">
-            <div class="tabs" data-tabs="payments">
-              <button class="tab active">All</button>
-              <button class="tab">Paid</button>
-              <button class="tab">Pending</button>
-              <button class="tab">Overdue</button>
-            </div>
-            <button class="btn-primary" onclick="addPayment()">+ Record Payment</button>
-          </div>
-          <div class="panel">
-            <table class="table">
-              <thead><tr><th>Date</th><th>Client</th><th>Property</th><th>Amount</th><th>Method</th><th>Status</th><th></th></tr></thead>
-              <tbody id="payments-rows"></tbody>
-            </table>
-          </div>
+          <div class="toolbar"><div class="tabs" data-tabs="payments"><button class="tab active">All</button><button class="tab">Paid</button><button class="tab">Pending</button><button class="tab">Overdue</button></div><button class="btn-primary" onclick="addPayment()">+ Record Payment</button></div>
+          <div class="panel"><table class="table"><thead><tr><th>Date</th><th>Client</th><th>Property</th><th>Amount</th><th>Method</th><th>Status</th><th></th></tr></thead><tbody id="payments-rows"></tbody></table></div>
         </div>
 
         <!-- WHATSAPP -->
@@ -231,36 +152,23 @@
             <div class="panel wa-status-panel">
               <h3>WhatsApp Integration</h3>
               <div class="wa-status-row">
-                <div><div class="muted">Connection</div><div class="big">● Connected</div></div>
-                <div><div class="muted">Linked Number</div><div class="big">+92 300 1234567</div></div>
+                <div><div class="muted">Connection</div><div class="big" style="color:var(--good);">Connected</div></div>
+                <div><div class="muted">Business Number</div><div class="big">+971 50 123 4567</div></div>
                 <div><div class="muted">Group</div><div class="big">Rental Updates</div></div>
               </div>
-              <p class="muted">
-                Messages posted in your WhatsApp group are auto-parsed and matched to clients.
-                Outgoing reminders below are sent from your business number.
-              </p>
+              <p class="muted">Messages in your WhatsApp group are auto-parsed and matched to clients. Outgoing reminders are sent from your business number.</p>
             </div>
-
             <div class="grid-2">
-              <div class="panel">
-                <div class="panel-head"><h3>Incoming from Group</h3><span class="muted">Auto-detected</span></div>
-                <div class="wa-feed" id="wa-feed-2"></div>
-              </div>
-              <div class="panel">
-                <div class="panel-head"><h3>Send Message</h3></div>
+              <div class="panel"><div class="panel-head"><h3>Incoming from Group</h3><span class="muted">Auto-detected</span></div><div class="wa-feed" id="wa-feed-2"></div></div>
+              <div class="panel"><div class="panel-head"><h3>Send Message</h3></div>
                 <form class="wa-send" onsubmit="event.preventDefault(); alert('Demo: message would be sent via WhatsApp Business API');">
-                  <label><span>To client</span><select id="wa-to"></select></label>
-                  <label><span>Template</span>
-                    <select id="wa-template">
-                      <option>Rent reminder</option>
-                      <option>Payment received — thanks</option>
-                      <option>Maintenance update</option>
-                      <option>Custom message</option>
-                    </select>
-                  </label>
-                  <label><span>Message</span>
-                    <textarea rows="5">Assalam-o-Alaikum, this is a friendly reminder that your monthly rent is due on the 5th. Please confirm once paid. — RentFlow</textarea>
-                  </label>
+                  <div class="form-field"><span>To client</span><select id="wa-to"></select></div>
+                  <div class="form-field"><span>Template</span>
+                    <select><option>Rent reminder</option><option>Payment received — thanks</option><option>Maintenance update</option><option>Custom message</option></select>
+                  </div>
+                  <div class="form-field"><span>Message</span>
+                    <textarea rows="4">Dear tenant, this is a friendly reminder that your monthly rent is due on the 5th. Please confirm once paid. — RentFlow</textarea>
+                  </div>
                   <button class="btn-primary" type="submit">Send via WhatsApp</button>
                 </form>
               </div>
@@ -271,16 +179,9 @@
         <!-- REPORTS -->
         <div class="view hidden" id="view-reports">
           <div class="grid-2">
-            <div class="panel">
-              <div class="panel-head"><h3>Income vs Expenses</h3><span class="muted">Last 6 months</span></div>
-              <div class="chart" id="chart-2"></div>
-            </div>
-            <div class="panel">
-              <div class="panel-head"><h3>Top Earning Properties</h3><span class="muted">This year</span></div>
-              <table class="table">
-                <thead><tr><th>Property</th><th>Owner</th><th>Collected</th></tr></thead>
-                <tbody id="top-properties"></tbody>
-              </table>
+            <div class="panel"><div class="panel-head"><h3>Income vs Expenses</h3><span class="muted">Last 6 months (AED)</span></div><div class="chart" id="chart-2"></div></div>
+            <div class="panel"><div class="panel-head"><h3>Top Earning Properties</h3><span class="muted">This year</span></div>
+              <table class="table"><thead><tr><th>Property</th><th>Owner</th><th>Collected</th></tr></thead><tbody id="top-properties"></tbody></table>
             </div>
           </div>
         </div>
@@ -288,9 +189,7 @@
     </main>
   </div>
 
-  <!-- Modal root -->
   <div id="modal-root" class="hidden"></div>
-
   <script src="assets/app.js"></script>
 </body>
 </html>
