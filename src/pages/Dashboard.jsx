@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { watchCollection, isDemoMode } from '../data/db'
 import { useAuth } from '../contexts/AuthContext'
 import { Users, DollarSign, AlertCircle, TrendingUp, Bell, Clock } from 'lucide-react'
@@ -167,9 +168,9 @@ export default function Dashboard() {
               <Users size={18} className="text-primary-600" />
               Recent Tenants
             </h2>
-            <a href="/tenants" className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+            <Link to="/tenants" className="text-sm text-primary-600 hover:text-primary-700 font-medium">
               View all
-            </a>
+            </Link>
           </div>
           <div className="divide-y divide-gray-50">
             {loadingTenants ? (
@@ -215,9 +216,9 @@ export default function Dashboard() {
               <Bell size={18} className="text-primary-600" />
               Upcoming Reminders
             </h2>
-            <a href="/reminders" className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+            <Link to="/reminders" className="text-sm text-primary-600 hover:text-primary-700 font-medium">
               View all
-            </a>
+            </Link>
           </div>
           <div className="divide-y divide-gray-50">
             {loadingReminders ? (
