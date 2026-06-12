@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { watchCollection, addItem, updateItem, removeItem, isDemoMode } from '../data/db'
 import { format, parseISO } from 'date-fns'
 import {
-  Plus, Search, Edit2, Trash2, MessageCircle, X, Loader2, AlertCircle, Users,
+  Plus, Search, Edit2, Trash2, MessageCircle, X, Loader2, AlertCircle, Users, Check,
 } from 'lucide-react'
 
 // ── Per-month helpers ───────────────────────────────────────────────────────
@@ -206,6 +206,8 @@ export default function Tenants() {
   })
   const [modalOpen, setModalOpen] = useState(false)
   const [editTenant, setEditTenant] = useState(null)
+  const [partialId,  setPartialId]  = useState(null)  // tenant.id currently editing partial
+  const [partialAmt, setPartialAmt] = useState('')
 
   function setFilterAndUrl(f) {
     setFilter(f)
@@ -276,6 +278,34 @@ export default function Tenants() {
       })
     } catch (err) {
       setError('Could not update payment status: ' + err.message)
+    }
+  }
+
+  async function savePartial(tenant) {
+    const val = Number(partialAmt)
+    if (isNaN(val) || val < 0) return
+    const existing = (tenant.partialPayments && typeof tenant.partialPayments === 'object')
+      ? tenant.partialPayments : {}
+    try {
+      await updateItem('tenants', tenant.id, {
+        partialPayments: { ...existing, [MONTH]: val },
+      })
+    } catch (err) {
+      setError('Could not save partial payment: ' + err.message)
+    }
+    setPartialId(null)
+    setPartialAmt('')
+  }
+
+  async function clearPartial(tenant) {
+    const existing = (tenant.partialPayments && typeof tenant.partialPayments === 'object')
+      ? tenant.partialPayments : {}
+    const updated = { ...existing }
+    delete updated[MONTH]
+    try {
+      await updateItem('tenants', tenant.id, { partialPayments: updated })
+    } catch (err) {
+      setError('Could not clear partial payment: ' + err.message)
     }
   }
 
@@ -405,14 +435,19 @@ export default function Tenants() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger">
           {filtered.map(tenant => {
-            const paidNow = isPaid(tenant, MONTH)
+            const paidNow    = isPaid(tenant, MONTH)
+            const partialPaid = !paidNow ? (tenant.partialPayments?.[MONTH] ?? 0) : 0
+            const remaining   = partialPaid > 0 ? Math.max(0, Number(tenant.rentAmount || 0) - partialPaid) : 0
+            const pct         = partialPaid > 0 && tenant.rentAmount
+              ? Math.min(100, Math.round((partialPaid / Number(tenant.rentAmount)) * 100)) : 0
+
             let startDateStr = ''
             try { if (tenant.startDate) startDateStr = format(parseISO(tenant.startDate), 'MMM d, yyyy') } catch {}
             let dueDateStr = ''
             try { if (tenant.dueDate) dueDateStr = format(parseISO(tenant.dueDate), 'MMM d, yyyy') } catch {}
 
             return (
-              <div key={tenant.id} className="card p-5">
+              <div key={tenant.id} className={`card p-5 ${partialPaid > 0 && !paidNow ? 'ring-2 ring-amber-300 ring-offset-1' : ''}`}>
                 {/* Name row */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -428,9 +463,11 @@ export default function Tenants() {
                   <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
                     paidNow
                       ? 'bg-primary-100 text-primary-700'
-                      : 'bg-rust-50 text-rust-600'
+                      : partialPaid > 0
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-rust-50 text-rust-600'
                   }`}>
-                    {paidNow ? 'Paid' : 'Unpaid'}
+                    {paidNow ? 'Paid' : partialPaid > 0 ? 'Partial' : 'Unpaid'}
                   </span>
                 </div>
 
@@ -475,7 +512,7 @@ export default function Tenants() {
                 </div>
 
                 {/* ── PAID / UNPAID buttons ── */}
-                <div className="grid grid-cols-2 gap-2 mb-3">
+                <div className="grid grid-cols-2 gap-2 mb-2">
                   <button
                     onClick={() => togglePaid(tenant, true)}
                     className={`py-3 rounded-xl text-sm font-bold tracking-wide transition-all duration-200 ${
@@ -497,6 +534,86 @@ export default function Tenants() {
                     Unpaid
                   </button>
                 </div>
+
+                {/* ── PARTIAL PAYMENT section ── */}
+                {!paidNow && (
+                  <div className="mb-3">
+                    {partialId === tenant.id ? (
+                      /* ── inline edit mode ── */
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                        <p className="text-xs font-semibold text-amber-700 mb-2">
+                          Partial payment — Rent is AED {Number(tenant.rentAmount || 0).toLocaleString()}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500 flex-shrink-0">AED</span>
+                          <input
+                            type="number"
+                            min="0"
+                            max={tenant.rentAmount}
+                            value={partialAmt}
+                            onChange={e => setPartialAmt(e.target.value)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') savePartial(tenant)
+                              if (e.key === 'Escape') { setPartialId(null); setPartialAmt('') }
+                            }}
+                            className="input-field py-1.5 text-sm flex-1"
+                            placeholder="Amount paid"
+                            autoFocus
+                          />
+                          <button onClick={() => savePartial(tenant)}
+                            className="p-1.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors flex-shrink-0">
+                            <Check size={14} />
+                          </button>
+                          <button onClick={() => { setPartialId(null); setPartialAmt('') }}
+                            className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors flex-shrink-0">
+                            <X size={14} />
+                          </button>
+                        </div>
+                        {partialAmt && !isNaN(Number(partialAmt)) && Number(partialAmt) > 0 && (
+                          <p className="text-xs text-rust-600 font-semibold mt-2">
+                            Remaining: AED {Math.max(0, Number(tenant.rentAmount || 0) - Number(partialAmt)).toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                    ) : partialPaid > 0 ? (
+                      /* ── partial amount recorded ── */
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-xs font-semibold text-amber-700">
+                            AED {Number(partialPaid).toLocaleString()} paid
+                          </span>
+                          <span className="text-xs font-semibold text-rust-600">
+                            AED {Number(remaining).toLocaleString()} remaining
+                          </span>
+                        </div>
+                        {/* Progress bar */}
+                        <div className="h-1.5 bg-amber-200 rounded-full overflow-hidden mb-2">
+                          <div className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                            style={{ width: `${pct}%` }} />
+                        </div>
+                        <div className="flex gap-1.5">
+                          <button
+                            onClick={() => { setPartialId(tenant.id); setPartialAmt(String(partialPaid)) }}
+                            className="flex-1 text-xs font-semibold py-1.5 text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-lg transition-colors">
+                            Edit Amount
+                          </button>
+                          <button
+                            onClick={() => clearPartial(tenant)}
+                            className="px-2.5 py-1.5 text-xs text-gray-400 hover:text-rust-600 hover:bg-rust-50 rounded-lg transition-colors">
+                            <X size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      /* ── no partial recorded yet ── */
+                      <button
+                        onClick={() => { setPartialId(tenant.id); setPartialAmt('') }}
+                        className="w-full py-2 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl transition-colors">
+                        ½ Partial Payment
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {/* Action row */}
                 <div className="flex gap-2 pt-3 border-t border-gray-100">
