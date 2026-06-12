@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Banknote,
   Zap,
@@ -9,8 +10,13 @@ import {
   Wallet,
   ShieldCheck,
   Flame,
+  Plus,
+  X,
+  Trash2,
+  Loader2,
 } from 'lucide-react';
 import businessData from '../data/businessData.json';
+import { watchCollection, addItem, removeItem } from '../data/db';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -271,29 +277,155 @@ function MonthlyCashFlow({ cashflow }) {
 
 // ---------- Tab 2: FEWA Bills ----------
 
+function AddFewaBillModal({ open, onClose, villas, defaultYear }) {
+  const now = new Date();
+  const [villaId, setVillaId] = useState(villas[0]?.id || '');
+  const [year, setYear] = useState(defaultYear || String(now.getFullYear()));
+  const [month, setMonth] = useState(now.getMonth());
+  const [amount, setAmount] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (open) {
+      setAmount('');
+      setError('');
+      setYear(defaultYear || String(now.getFullYear()));
+      setMonth(now.getMonth());
+    }
+  }, [open]); // eslint-disable-line
+
+  async function handleSave(e) {
+    e.preventDefault();
+    const val = Number(amount);
+    if (!villaId) return setError('Pick a villa.');
+    if (!amount || isNaN(val) || val < 0) return setError('Enter a valid bill amount.');
+    setSaving(true);
+    try {
+      const villa = villas.find((v) => v.id === villaId);
+      await addItem('fewaBills', {
+        villaId,
+        villaName: villa?.name || villaId,
+        year: String(year),
+        month,            // 0-11
+        amount: val,
+      });
+      onClose();
+    } catch (err) {
+      setError('Could not save: ' + err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!open) return null;
+
+  const yearOptions = [];
+  for (let y = now.getFullYear() - 2; y <= now.getFullYear() + 1; y++) yearOptions.push(String(y));
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
+    >
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm max-h-[92vh] flex flex-col animate-scale-in">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <Zap size={18} className="text-amber-500" /> Add FEWA Bill
+          </h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <X size={18} className="text-gray-500" />
+          </button>
+        </div>
+        <form onSubmit={handleSave} className="px-6 py-5 space-y-4 overflow-y-auto">
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error}</div>
+          )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Villa *</label>
+            <select value={villaId} onChange={(e) => setVillaId(e.target.value)} className="input-field">
+              {villas.map((v) => (
+                <option key={v.id} value={v.id}>{v.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+              <select value={year} onChange={(e) => setYear(e.target.value)} className="input-field">
+                {yearOptions.map((y) => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Month</label>
+              <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className="input-field">
+                {MONTHS.map((m, i) => <option key={m} value={i}>{m}</option>)}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Bill Amount (AED) *</label>
+            <input
+              type="number" min="0" step="0.01" value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="input-field" placeholder="e.g. 2450" autoFocus
+            />
+          </div>
+          <div className="flex gap-3 pt-1">
+            <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
+            <button type="submit" disabled={saving} className="btn-primary flex-1 flex items-center justify-center gap-2">
+              {saving ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
+              Save Bill
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 function FewaBills({ villas }) {
+  const [liveBills, setLiveBills] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  useEffect(() => {
+    return watchCollection('fewaBills', 'createdAt', 'desc',
+      (data) => setLiveBills(data),
+      (err) => console.error(err)
+    );
+  }, []);
+
   const years = useMemo(() => {
     const set = new Set();
     villas.forEach((v) => Object.keys(v.fewaConsumption || {}).forEach((y) => set.add(y)));
+    liveBills.forEach((b) => set.add(String(b.year)));
     return [...set].sort();
-  }, [villas]);
-  const [year, setYear] = useState(years.includes('2025') ? '2025' : years[years.length - 1]);
+  }, [villas, liveBills]);
+  const [year, setYear] = useState(years.includes('2026') ? '2026' : years[years.length - 1]);
 
   const rows = useMemo(
     () =>
       villas
-        .filter((v) => {
-          const arr = v.fewaConsumption?.[year];
-          return Array.isArray(arr) && arr.some((x) => x != null && x !== 0);
-        })
         .map((v) => {
-          const arr = v.fewaConsumption[year];
+          // Start from the Excel data, then overlay live uploaded bills
+          const base = v.fewaConsumption?.[year];
+          const arr = Array.isArray(base) ? [...base] : Array(12).fill(null);
+          liveBills
+            .filter((b) => b.villaId === v.id && String(b.year) === String(year))
+            .forEach((b) => { arr[b.month] = (arr[b.month] || 0) + Number(b.amount || 0); });
           const total = arr.reduce((s, x) => s + (x || 0), 0);
           const max = Math.max(...arr.map((x) => x || 0));
           return { villa: v, arr, total, max };
-        }),
-    [villas, year]
+        })
+        .filter((r) => r.arr.some((x) => x != null && x !== 0)),
+    [villas, year, liveBills]
   );
+
+  async function deleteBill(bill) {
+    if (!window.confirm(`Delete FEWA bill of AED ${Number(bill.amount).toLocaleString()} for ${bill.villaName} (${MONTHS[bill.month]} ${bill.year})?`)) return;
+    try { await removeItem('fewaBills', bill.id); } catch (e) { console.error(e); }
+  }
 
   const grandTotal = rows.reduce((s, r) => s + r.total, 0);
   const colTotals = MONTHS.map((_, i) => rows.reduce((s, r) => s + (r.arr[i] || 0), 0));
@@ -309,7 +441,15 @@ function FewaBills({ villas }) {
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-gray-500 -mt-2">Electricity &amp; water (FEWA) cost per villa per month</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 -mt-2">
+        <p className="text-sm text-gray-500">Electricity &amp; water (FEWA) cost per villa per month</p>
+        <button
+          onClick={() => setModalOpen(true)}
+          className="btn-primary flex items-center gap-2 self-start sm:self-auto text-sm"
+        >
+          <Plus size={16} /> Add FEWA Bill
+        </button>
+      </div>
 
       <div className="flex flex-wrap gap-1.5">
         {years.map((y) => (
@@ -384,6 +524,39 @@ function FewaBills({ villas }) {
           </div>
         )}
       </div>
+
+      {/* recently uploaded bills (live, deletable) */}
+      {liveBills.length > 0 && (
+        <div className="card !p-0 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+            <Zap size={15} className="text-amber-500" />
+            <h3 className="font-semibold text-charcoal-900 text-sm">Recently Uploaded Bills</h3>
+            <span className="text-[11px] text-gray-400 ml-auto">{liveBills.length} added from app</span>
+          </div>
+          <ul className="divide-y divide-gray-100">
+            {liveBills.slice(0, 15).map((b) => (
+              <li key={b.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
+                <span className="font-medium text-charcoal-900 flex-1 min-w-0 truncate">{b.villaName}</span>
+                <span className="text-xs text-gray-500 whitespace-nowrap">{MONTHS[b.month]} {b.year}</span>
+                <span className="font-semibold text-charcoal-900 whitespace-nowrap">AED {Number(b.amount).toLocaleString()}</span>
+                <button
+                  onClick={() => deleteBill(b)}
+                  className="p-1.5 text-gray-400 hover:text-rust-600 hover:bg-rust-50 rounded-lg transition-colors"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <AddFewaBillModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        villas={villas}
+        defaultYear={year}
+      />
     </div>
   );
 }
