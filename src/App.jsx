@@ -8,6 +8,7 @@ import Tenants from './pages/Tenants';
 import Financial from './pages/Financial';
 import Reminders from './pages/Reminders';
 import Properties from './pages/Properties';
+import ImportData from './pages/ImportData';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
               <Route path="/financial" element={<Financial />} />
               <Route path="/reminders" element={<Reminders />} />
               <Route path="/properties" element={<Properties />} />
+              <Route path="/import-data" element={<ImportData />} />
             </Route>
           </Route>
         </Routes>
