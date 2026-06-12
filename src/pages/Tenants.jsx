@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useSearchParams } from 'react-router-dom'
 import { watchCollection, addItem, updateItem, removeItem, isDemoMode } from '../data/db'
 import { format, parseISO } from 'date-fns'
@@ -91,9 +92,9 @@ function TenantModal({ open, onClose, onSave, initial, saving }) {
 
   if (!open) return null
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
     >
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[92vh] flex flex-col">
@@ -185,7 +186,8 @@ function TenantModal({ open, onClose, onSave, initial, saving }) {
           </form>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
