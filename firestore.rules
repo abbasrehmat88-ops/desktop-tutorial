@@ -8,8 +8,8 @@ service cloud.firestore {
           'rehmat.ae@gmail.com'
         ];
     }
-    match /tenants/{document=**}    { allow read, write: if isFamily(); }
-    match /reminders/{document=**}  { allow read, write: if isFamily(); }
-    match /properties/{document=**} { allow read, write: if isFamily(); }
+    // Family-only access to every collection (tenants, owners,
+    // fewaBills, reminders, properties, and anything added later).
+    match /{collection}/{document=**} { allow read, write: if isFamily(); }
   }
 }
