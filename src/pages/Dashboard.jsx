@@ -1,16 +1,69 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { watchCollection, isDemoMode } from '../data/db'
 import { useAuth } from '../contexts/AuthContext'
-import { Users, DollarSign, AlertCircle, TrendingUp, Bell, Clock, ArrowRight } from 'lucide-react'
-import { format, isWithinInterval, addDays, parseISO } from 'date-fns'
+import { Users, DollarSign, AlertCircle, TrendingUp, Bell, Clock, ArrowRight, Trophy } from 'lucide-react'
+import { format, isWithinInterval, addDays, addMonths, subMonths, parseISO } from 'date-fns'
+import {
+  ResponsiveContainer, BarChart, Bar, AreaChart, Area,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+} from 'recharts'
 import CountUp from '../components/CountUp'
+import businessData from '../data/businessData.json'
 
 function monthKey(d = new Date()) { return format(d, 'yyyy-MM') }
 function isPaid(tenant, key = monthKey()) {
   const p = tenant?.payments
   if (p && typeof p === 'object' && key in p) return !!p[key]
   return key === monthKey() ? !!tenant?.paid : false
+}
+
+const fmtAED = (v) => `AED ${Number(v || 0).toLocaleString()}`
+
+/** Last 12 months (ending at the current month) of cash flow totals. */
+function buildMonthlySeries() {
+  const now = new Date()
+  const series = []
+  for (let i = 11; i >= 0; i--) {
+    const d = subMonths(now, i)
+    const block = (businessData.cashflow || []).find(
+      (b) => b.year === d.getFullYear() && b.month === d.getMonth() + 1
+    )
+    let incoming = 0
+    let outgoing = 0
+    if (block) {
+      for (const e of block.entries || []) {
+        incoming += Number(e.incoming) || 0
+        outgoing += (Number(e.fewa) || 0) + (Number(e.ejaar) || 0) + (Number(e.others) || 0)
+      }
+    }
+    series.push({
+      label: format(d, 'MMM yy'),
+      incoming,
+      outgoing,
+      net: incoming - outgoing,
+    })
+  }
+  return series
+}
+
+/** Top 5 villas by net (incoming − outgoing) for the current year. */
+function buildTopVillas() {
+  const year = new Date().getFullYear()
+  const byVilla = {}
+  for (const block of businessData.cashflow || []) {
+    if (block.year !== year) continue
+    for (const e of block.entries || []) {
+      const name = e.villa || 'Unknown'
+      if (!byVilla[name]) byVilla[name] = { villa: name, incoming: 0, outgoing: 0 }
+      byVilla[name].incoming += Number(e.incoming) || 0
+      byVilla[name].outgoing += (Number(e.fewa) || 0) + (Number(e.ejaar) || 0) + (Number(e.others) || 0)
+    }
+  }
+  return Object.values(byVilla)
+    .map((v) => ({ ...v, net: v.incoming - v.outgoing }))
+    .sort((a, b) => b.net - a.net)
+    .slice(0, 5)
 }
 
 function StatCard({ icon: Icon, label, value, color, subtext, animate, to }) {
@@ -52,6 +105,7 @@ export default function Dashboard() {
   const { currentUser } = useAuth()
   const [tenants, setTenants] = useState([])
   const [reminders, setReminders] = useState([])
+  const [owners, setOwners] = useState([])
   const [loadingTenants, setLoadingTenants] = useState(true)
   const [loadingReminders, setLoadingReminders] = useState(true)
   const [error, setError] = useState('')
@@ -86,9 +140,18 @@ export default function Dashboard() {
       }
     )
 
+    const unsubOwners = watchCollection(
+      'owners',
+      'createdAt',
+      'desc',
+      (data) => setOwners(data),
+      (err) => console.error('Owners fetch error:', err)
+    )
+
     return () => {
       unsubTenants()
       unsubReminders()
+      unsubOwners()
     }
   }, [])
 
@@ -111,6 +174,28 @@ export default function Dashboard() {
   }).slice(0, 3)
 
   const recentTenants = tenants.slice(0, 5)
+
+  // Owner payments due within the next 7 days (not yet paid for this month)
+  const upcomingOwnerPayments = useMemo(() => {
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    return owners
+      .map((o) => {
+        const dueDay = Number(o.dueDay)
+        if (!dueDay) return null
+        if (o.payments?.[MONTH] === true) return null
+        const base = dueDay >= today.getDate() ? startOfToday : addMonths(startOfToday, 1)
+        const dueDate = new Date(base.getFullYear(), base.getMonth(), dueDay)
+        const daysUntil = Math.round((dueDate - startOfToday) / 86400000)
+        if (daysUntil < 0 || daysUntil > 7) return null
+        return { ...o, daysUntil }
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.daysUntil - b.daysUntil)
+  }, [owners, MONTH])
+
+  // Static business analytics (from imported cash flow data)
+  const monthlySeries = useMemo(() => buildMonthlySeries(), [])
+  const topVillas = useMemo(() => buildTopVillas(), [])
 
   const loading = loadingTenants || loadingReminders
   const firstName = currentUser?.email?.split('@')[0] || 'there'
@@ -321,6 +406,160 @@ export default function Dashboard() {
               })
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Upcoming owner payments */}
+      <div className="card border-l-4 border-primary-500 mt-6 animate-fade-up">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+          <div>
+            <h2 className="font-display text-xl text-charcoal-900 flex items-center gap-2">
+              <Bell size={18} className="text-primary-600" />
+              Upcoming Payments
+            </h2>
+            <p className="text-xs text-gray-400 mt-1">Owner payments due in the next 7 days</p>
+          </div>
+        </div>
+        <div className="divide-y divide-gray-100">
+          {upcomingOwnerPayments.length === 0 ? (
+            <div className="px-6 py-5 flex items-center gap-2 text-sm text-emerald2-600">
+              <span className="font-semibold">No payments due in the next 7 days ✓</span>
+            </div>
+          ) : (
+            upcomingOwnerPayments.map((owner) => (
+              <Link
+                key={owner.id}
+                to="/owners"
+                className="flex items-center gap-3 px-6 py-4 transition-colors duration-300 hover:bg-gray-50 cursor-pointer"
+              >
+                <span
+                  className={`text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wider flex-shrink-0 ${
+                    owner.daysUntil === 0
+                      ? 'bg-red-50 text-red-600'
+                      : owner.daysUntil === 1
+                      ? 'bg-rust-50 text-rust-600'
+                      : 'bg-amber-50 text-amber-700'
+                  }`}
+                >
+                  {owner.daysUntil === 0
+                    ? 'TODAY'
+                    : owner.daysUntil === 1
+                    ? 'TOMORROW'
+                    : `${owner.daysUntil} DAYS`}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-charcoal-900 text-sm truncate">{owner.name}</p>
+                  <p className="text-xs text-gray-500 truncate">{owner.property}</p>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <p className="font-bold text-charcoal-900 text-sm">
+                    AED {Number(owner.rentAmount || 0).toLocaleString()}
+                  </p>
+                  <p className="text-[11px] text-gray-400 capitalize">
+                    {owner.paymentMethod === 'check'
+                      ? `Check${owner.bankName ? ` · ${owner.bankName}` : ''}`
+                      : owner.paymentMethod || ''}
+                  </p>
+                </div>
+              </Link>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Business Analytics */}
+      <div className="mt-10">
+        <h2 className="font-display text-xl text-charcoal-900">Business Analytics</h2>
+        <span className="gold-rule" />
+        <p className="text-xs text-gray-400 mt-1 mb-5">Villa cash flow over the last 12 months</p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Chart A — Income vs Outgoing */}
+          <div className="card p-5 sm:p-6">
+            <h3 className="font-display text-lg text-charcoal-900">Income vs Outgoing</h3>
+            <p className="text-xs text-gray-400 mb-4">Last 12 months · AED</p>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={monthlySeries} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e7e5dd" vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#9ca3af' }} tickLine={false} axisLine={false} />
+                <YAxis tick={{ fontSize: 12, fill: '#9ca3af' }} tickLine={false} axisLine={false} />
+                <Tooltip formatter={(value, name) => [fmtAED(value), name]} cursor={{ fill: 'rgba(201,161,84,0.06)' }} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Bar dataKey="incoming" name="Incoming" fill="#c9a154" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="outgoing" name="Outgoing" fill="#b3573f" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Chart B — Net Kept per Month */}
+          <div className="card p-5 sm:p-6">
+            <h3 className="font-display text-lg text-charcoal-900">Net Kept per Month</h3>
+            <p className="text-xs text-gray-400 mb-4">Incoming minus outgoing · AED</p>
+            <ResponsiveContainer width="100%" height={240}>
+              <AreaChart data={monthlySeries} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="netGoldGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#c9a154" stopOpacity={0.4} />
+                    <stop offset="100%" stopColor="#c9a154" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e7e5dd" vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#9ca3af' }} tickLine={false} axisLine={false} />
+                <YAxis tick={{ fontSize: 12, fill: '#9ca3af' }} tickLine={false} axisLine={false} />
+                <Tooltip formatter={(value) => [fmtAED(value), 'Net kept']} />
+                <Area
+                  type="monotone"
+                  dataKey="net"
+                  name="Net kept"
+                  stroke="#c9a154"
+                  strokeWidth={2}
+                  fill="url(#netGoldGradient)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Top Villas leaderboard */}
+      <div className="card mt-6 animate-fade-up">
+        <div className="px-6 py-5 border-b border-gray-100">
+          <h2 className="font-display text-xl text-charcoal-900 flex items-center gap-2">
+            <Trophy size={18} className="text-primary-600" />
+            Top Villas This Year
+          </h2>
+          <p className="text-xs text-gray-400 mt-1">Based on {new Date().getFullYear()} cash flow</p>
+        </div>
+        <div className="divide-y divide-gray-100">
+          {topVillas.length === 0 ? (
+            <div className="p-6 text-center text-gray-400 text-sm">
+              No cash flow data for this year yet.
+            </div>
+          ) : (
+            topVillas.map((villa, i) => (
+              <div key={villa.villa} className="flex items-center gap-3 px-6 py-4">
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
+                    i === 0
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  {i + 1}
+                </div>
+                <p className="flex-1 min-w-0 font-semibold text-charcoal-900 text-sm truncate">
+                  {villa.villa}
+                </p>
+                <p
+                  className={`text-sm font-bold text-right flex-shrink-0 ${
+                    villa.net >= 0 ? 'text-emerald2-600' : 'text-rust-600'
+                  }`}
+                >
+                  {villa.net < 0 ? '−' : ''}AED {Math.abs(villa.net).toLocaleString()}
+                </p>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
