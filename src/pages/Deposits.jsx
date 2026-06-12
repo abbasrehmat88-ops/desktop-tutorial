@@ -51,6 +51,21 @@ export default function Deposits() {
     }
   }
 
+  async function returnDeposit(tenant) {
+    if (!tenant.deposit || tenant.deposit === 0) return
+    if (!window.confirm(
+      `Return AED ${Number(tenant.deposit).toLocaleString()} deposit for ${tenant.name}?\n\nThis will set their deposit to 0 and cannot be undone.`
+    )) return
+    setSaving(true)
+    try {
+      await updateItem('tenants', tenant.id, { deposit: 0 })
+    } catch (e) {
+      setError('Return failed: ' + e.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   // Parse bulk text and build a preview list of { tenant, newDeposit }
   function parseBulk() {
     setError('')
@@ -314,12 +329,23 @@ export default function Deposits() {
                           </button>
                         </div>
                       ) : (
-                        <button
-                          onClick={() => { setEditId(tenant.id); setEditVal(tenant.deposit ? String(tenant.deposit) : '') }}
-                          className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors"
-                        >
-                          <Edit2 size={12} /> Edit
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => { setEditId(tenant.id); setEditVal(tenant.deposit ? String(tenant.deposit) : '') }}
+                            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors"
+                          >
+                            <Edit2 size={12} /> Edit
+                          </button>
+                          {tenant.deposit > 0 && (
+                            <button
+                              onClick={() => returnDeposit(tenant)}
+                              disabled={saving}
+                              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-rust-600 bg-rust-50 hover:bg-rust-100 rounded-lg transition-colors disabled:opacity-50"
+                            >
+                              <X size={12} /> Return
+                            </button>
+                          )}
+                        </div>
                       )}
                     </td>
                   </tr>
