@@ -406,8 +406,9 @@ export default function Owners() {
     const isPast = new Date(yearlyYear, idx, 1) < new Date(new Date().getFullYear(), new Date().getMonth(), 1)
     return { name, key, totalAmt, paidAmt, pct, paidOwners, unpaidOwners, isCurrentMonth, isPast }
   })
-  const yearlyTotalExpected = owners.reduce((s, o) => s + Number(o.rentAmount || 0), 0) * 12
-  const yearlyTotalPaid     = yearlyRows.reduce((s, r) => s + r.paidAmt, 0)
+  const yearlyTotalExpected    = owners.reduce((s, o) => s + Number(o.rentAmount || 0), 0) * 12
+  const yearlyTotalPaid        = yearlyRows.reduce((s, r) => s + r.paidAmt, 0)
+  const yearlyTotalPaidMonths  = yearlyRows.reduce((s, r) => s + r.paidOwners.length, 0)
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
@@ -487,9 +488,9 @@ export default function Owners() {
                     <Check size={22} className="text-emerald2-600" />
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Total Paid</p>
-                    <p className="text-2xl font-bold text-charcoal-900 mt-1">AED {yearlyTotalPaid.toLocaleString()}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">Across all months</p>
+                    <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Total Paid Months</p>
+                    <p className="text-2xl font-bold text-charcoal-900 mt-1">{yearlyTotalPaidMonths}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">of {owners.length * 12} owner-months</p>
                   </div>
                 </div>
               </div>
