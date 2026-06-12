@@ -6,7 +6,13 @@ import {
   Building2, Plus, Edit2, Trash2, Mail, Check, X,
   Loader2, AlertCircle, ChevronDown, ChevronUp,
   Bell, CreditCard, Banknote, Search, Users,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react'
+
+const MONTH_NAMES = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December',
+]
 
 // ── Due-date helpers ────────────────────────────────────────────────────────
 
@@ -249,6 +255,9 @@ export default function Owners() {
   const [saving,  setSaving]  = useState(false)
   const [error,   setError]   = useState('')
   const [search,  setSearch]  = useState('')
+  const [tab, setTab]         = useState('owners') // 'owners' | 'yearly'
+  const [yearlyYear, setYearlyYear] = useState(new Date().getFullYear())
+  const [expandedMonth, setExpandedMonth] = useState(null)
   const [modalOpen, setModalOpen]   = useState(false)
   const [editOwner, setEditOwner]   = useState(null)
   const [bulkOpen, setBulkOpen]     = useState(false)
@@ -385,6 +394,21 @@ export default function Owners() {
 
   const MONTH_LABEL = format(new Date(), 'MMMM yyyy')
 
+  // ── Yearly tab data ─────────────────────────────────────────────────────────
+  const yearlyRows = MONTH_NAMES.map((name, idx) => {
+    const key = `${yearlyYear}-${String(idx + 1).padStart(2, '0')}`
+    const totalAmt  = owners.reduce((s, o) => s + Number(o.rentAmount || 0), 0)
+    const paidAmt   = owners.filter(o => isPaid(o, key)).reduce((s, o) => s + Number(o.rentAmount || 0), 0)
+    const paidOwners   = owners.filter(o => isPaid(o, key))
+    const unpaidOwners = owners.filter(o => !isPaid(o, key))
+    const pct = totalAmt > 0 ? Math.round((paidAmt / totalAmt) * 100) : 0
+    const isCurrentMonth = key === MONTH
+    const isPast = new Date(yearlyYear, idx, 1) < new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+    return { name, key, totalAmt, paidAmt, pct, paidOwners, unpaidOwners, isCurrentMonth, isPast }
+  })
+  const yearlyTotalExpected = owners.reduce((s, o) => s + Number(o.rentAmount || 0), 0) * 12
+  const yearlyTotalPaid     = yearlyRows.reduce((s, r) => s + r.paidAmt, 0)
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
 
@@ -405,12 +429,173 @@ export default function Owners() {
         </button>
       </div>
 
+      {/* Tab toggle */}
+      <div className="flex gap-2 mb-6">
+        {[{id:'owners',label:'Owners'},{id:'yearly',label:'Yearly Schedule'}].map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)}
+            className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${
+              tab === t.id
+                ? 'bg-charcoal-900 text-primary-400 shadow-card'
+                : 'bg-white text-gray-600 border border-gray-300 hover:border-primary-500 hover:text-primary-700'
+            }`}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       {error && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-2 items-center text-red-700 text-sm">
           <AlertCircle size={16} />{error}
           <button onClick={() => setError('')} className="ml-auto"><X size={14} /></button>
         </div>
       )}
+
+      {/* ── YEARLY SCHEDULE TAB ── */}
+      {tab === 'yearly' && (
+        <div>
+          {/* Year selector */}
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <button onClick={() => setYearlyYear(y => y - 1)}
+              className="p-2 rounded-xl bg-white border border-gray-200 hover:border-primary-400 transition-colors">
+              <ChevronLeft size={18} className="text-gray-600" />
+            </button>
+            <span className="text-2xl font-bold text-charcoal-900 min-w-[5rem] text-center">{yearlyYear}</span>
+            <button onClick={() => setYearlyYear(y => y + 1)}
+              className="p-2 rounded-xl bg-white border border-gray-200 hover:border-primary-400 transition-colors">
+              <ChevronRight size={18} className="text-gray-600" />
+            </button>
+          </div>
+
+          {/* Summary cards */}
+          {!loading && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              <div className="stat-card">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-charcoal-900 flex items-center justify-center flex-shrink-0">
+                    <Building2 size={22} className="text-primary-400" />
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Total Expected</p>
+                    <p className="text-2xl font-bold text-charcoal-900 mt-1">AED {yearlyTotalExpected.toLocaleString()}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{yearlyYear} annual outgoing</p>
+                  </div>
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald2-50 flex items-center justify-center flex-shrink-0">
+                    <Check size={22} className="text-emerald2-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Total Paid</p>
+                    <p className="text-2xl font-bold text-charcoal-900 mt-1">AED {yearlyTotalPaid.toLocaleString()}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Across all months</p>
+                  </div>
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-rust-50 flex items-center justify-center flex-shrink-0">
+                    <AlertCircle size={22} className="text-rust-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Outstanding</p>
+                    <p className="text-2xl font-bold text-charcoal-900 mt-1">AED {(yearlyTotalExpected - yearlyTotalPaid).toLocaleString()}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Remaining to pay</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 12-month grid */}
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+              {[...Array(12)].map((_,i) => <div key={i} className="card p-4 animate-pulse h-28" />)}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+              {yearlyRows.map((row) => {
+                const isExpanded = expandedMonth === row.key
+                const allPaid    = row.pct === 100 && owners.length > 0
+                const hasIssue   = row.isPast && row.pct < 100 && owners.length > 0
+
+                return (
+                  <div key={row.key}
+                    className={`card overflow-hidden cursor-pointer transition-all duration-200 ${
+                      row.isCurrentMonth ? 'ring-2 ring-primary-400' :
+                      allPaid ? 'ring-1 ring-emerald2-300' :
+                      hasIssue ? 'ring-1 ring-rust-300' : ''
+                    }`}
+                    onClick={() => setExpandedMonth(isExpanded ? null : row.key)}
+                  >
+                    <div className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-semibold text-sm text-charcoal-900">{row.name}</span>
+                        {allPaid
+                          ? <Check size={16} className="text-emerald2-600" />
+                          : hasIssue
+                            ? <AlertCircle size={16} className="text-rust-500" />
+                            : row.isCurrentMonth
+                              ? <Bell size={16} className="text-primary-500" />
+                              : null
+                        }
+                      </div>
+                      <p className="text-lg font-bold text-charcoal-900">
+                        AED {row.totalAmt.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {row.paidOwners.length} paid · {row.unpaidOwners.length} unpaid
+                      </p>
+                      {/* Progress bar */}
+                      <div className="mt-2.5 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            allPaid ? 'bg-emerald2-500' :
+                            hasIssue ? 'bg-rust-500' : 'bg-primary-500'
+                          }`}
+                          style={{ width: `${row.pct}%` }}
+                        />
+                      </div>
+                      <p className="text-[11px] text-gray-400 mt-1 text-right">{row.pct}%</p>
+                    </div>
+
+                    {/* Expanded owner list */}
+                    {isExpanded && owners.length > 0 && (
+                      <div className="border-t border-gray-100 bg-gray-50 px-4 py-3 space-y-1.5">
+                        {owners.map(o => {
+                          const paid = isPaid(o, row.key)
+                          return (
+                            <div key={o.id} className="flex items-center justify-between text-sm">
+                              <div className="min-w-0">
+                                <span className="font-medium text-gray-900 truncate block">{o.name}</span>
+                                <span className="text-xs text-gray-400">{o.property}</span>
+                              </div>
+                              <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                                <span className="text-xs font-semibold text-gray-700">
+                                  AED {Number(o.rentAmount || 0).toLocaleString()}
+                                </span>
+                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                                  paid ? 'bg-emerald2-100 text-emerald2-700' : 'bg-rust-50 text-rust-600'
+                                }`}>
+                                  {paid ? 'Paid' : 'Unpaid'}
+                                </span>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── OWNERS TAB (existing content wrapped) ── */}
+      {tab === 'owners' && <>
 
       {/* ── Upcoming reminders ── */}
       {upcoming.length > 0 && (
@@ -758,6 +943,8 @@ export default function Owners() {
           })}
         </div>
       )}
+
+      </> /* end owners tab */}
 
       <OwnerModal
         key={editOwner ? editOwner.id : '__new__'}
