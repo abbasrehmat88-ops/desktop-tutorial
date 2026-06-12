@@ -10,6 +10,7 @@ import {
   Home,
   Upload,
   Landmark,
+  KeyRound,
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -18,6 +19,7 @@ const navItems = [
   { to: '/tenants',    icon: Users,           label: 'Tenants'    },
   { to: '/financial',  icon: DollarSign,      label: 'Financial'  },
   { to: '/deposits',   icon: Landmark,        label: 'Deposits'   },
+  { to: '/owners',     icon: KeyRound,        label: 'Owners'     },
   { to: '/reminders',  icon: Bell,            label: 'Reminders'  },
   { to: '/properties', icon: Building2,       label: 'Properties' },
 ]
