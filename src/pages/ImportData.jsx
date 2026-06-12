@@ -169,6 +169,8 @@ export default function ImportData() {
         property: t.property,
         rentAmount: t.rentAmount,
         rentSchedule: t.rentSchedule,
+        deposit: 0,
+        startDate: '',
         phone: '',
         dueDate: '',
         paid: false,

@@ -98,6 +98,7 @@ export default function Financial() {
 
   const totalCollected = tenants.filter((t) => t.paid).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
   const totalPending = tenants.filter((t) => !t.paid).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
+  const totalDeposits = tenants.reduce((s, t) => s + Number(t.deposit || 0), 0)
   const paidCount = tenants.filter((t) => t.paid).length
   const unpaidCount = tenants.filter((t) => !t.paid).length
 
@@ -217,6 +218,13 @@ export default function Financial() {
             color="bg-primary-100 text-primary-700"
             subtext="Tenants with pending status"
           />
+          <StatCard
+            icon={TrendingUp}
+            label="Total Deposits"
+            value={formatAED(totalDeposits)}
+            color="bg-charcoal-900 text-primary-400"
+            subtext="Security deposits held"
+          />
         </div>
       )}
 
@@ -309,7 +317,8 @@ export default function Financial() {
                   <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tenant</th>
                   <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Unit</th>
                   <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Rent (AED)</th>
-                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Due Date</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Deposit (AED)</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Rent Date</th>
                   <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
@@ -333,7 +342,10 @@ export default function Financial() {
                       <td className="px-6 py-4 font-medium text-gray-900">
                         {Number(t.rentAmount || 0).toLocaleString()}
                       </td>
-                      <td className="px-6 py-4 text-gray-600">{dueDateDisplay}</td>
+                      <td className="px-6 py-4 text-gray-600">
+                        {t.deposit ? Number(t.deposit).toLocaleString() : '—'}
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">{t.rentSchedule || dueDateDisplay}</td>
                       <td className="px-6 py-4">
                         <span className={t.paid ? 'badge-paid' : 'badge-unpaid'}>
                           {t.paid ? 'Paid' : 'Pending'}
@@ -348,6 +360,9 @@ export default function Financial() {
                   <td colSpan={2} className="px-6 py-3 text-sm font-semibold text-gray-700">Total</td>
                   <td className="px-6 py-3 text-sm font-bold text-gray-900">
                     {(totalCollected + totalPending).toLocaleString()}
+                  </td>
+                  <td className="px-6 py-3 text-sm font-bold text-gray-900">
+                    {totalDeposits.toLocaleString()}
                   </td>
                   <td />
                   <td className="px-6 py-3">

@@ -20,8 +20,28 @@ const EMPTY_FORM = {
   property: '',
   rentAmount: '',
   rentSchedule: '',
+  deposit: '',
+  startDate: '',
   dueDate: '',
   paid: false,
+}
+
+// Build clean form values from a tenant record, ignoring internal fields
+// (id, Firestore timestamps) and coercing everything to input-safe types.
+function toFormValues(t) {
+  if (!t) return { ...EMPTY_FORM }
+  return {
+    name: typeof t.name === 'string' ? t.name : '',
+    phone: typeof t.phone === 'string' ? t.phone : '',
+    unit: t.unit != null ? String(t.unit) : '',
+    property: typeof t.property === 'string' ? t.property : '',
+    rentAmount: t.rentAmount != null ? String(t.rentAmount) : '',
+    rentSchedule: typeof t.rentSchedule === 'string' ? t.rentSchedule : '',
+    deposit: t.deposit != null && t.deposit !== 0 ? String(t.deposit) : '',
+    startDate: typeof t.startDate === 'string' ? t.startDate : '',
+    dueDate: typeof t.dueDate === 'string' ? t.dueDate : '',
+    paid: !!t.paid,
+  }
 }
 
 function TenantModal({ open, onClose, onSave, initial, loading }) {
@@ -30,7 +50,7 @@ function TenantModal({ open, onClose, onSave, initial, loading }) {
 
   useEffect(() => {
     if (open) {
-      setForm(initial ? { ...EMPTY_FORM, ...initial } : { ...EMPTY_FORM })
+      setForm(toFormValues(initial))
       setError('')
     }
   }, [open, initial])
@@ -149,6 +169,32 @@ function TenantModal({ open, onClose, onSave, initial, loading }) {
               />
             </div>
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Deposit (AED)</label>
+              <input
+                name="deposit"
+                type="number"
+                min="0"
+                value={form.deposit}
+                onChange={handleChange}
+                className="input-field"
+                placeholder="e.g. 1000"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+              <input
+                name="startDate"
+                type="date"
+                value={form.startDate}
+                onChange={handleChange}
+                className="input-field"
+              />
+              <p className="text-[11px] text-gray-400 mt-1">When the tenant joined</p>
+            </div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
               <input
                 name="dueDate"
@@ -240,7 +286,9 @@ export default function Tenants() {
         property: (form.property || '').trim(),
         rentAmount: Number(form.rentAmount),
         rentSchedule: (form.rentSchedule || '').trim(),
-        dueDate: form.dueDate,
+        deposit: form.deposit ? Number(form.deposit) : 0,
+        startDate: form.startDate || '',
+        dueDate: form.dueDate || '',
         paid: form.paid,
       }
       if (editTenant) {
@@ -250,6 +298,15 @@ export default function Tenants() {
       }
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function setPaidStatus(tenant, value) {
+    if (!!tenant.paid === value) return
+    try {
+      await updateItem('tenants', tenant.id, { paid: value })
+    } catch (err) {
+      setError('Failed to update payment status: ' + err.message)
     }
   }
 
@@ -389,6 +446,10 @@ export default function Tenants() {
             try {
               if (tenant.dueDate) dueDateDisplay = format(parseISO(tenant.dueDate), 'MMM d, yyyy')
             } catch {}
+            let startDateDisplay = ''
+            try {
+              if (tenant.startDate) startDateDisplay = format(parseISO(tenant.startDate), 'MMM d, yyyy')
+            } catch {}
             return (
               <div key={tenant.id} className="card p-5 hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-3">
@@ -425,12 +486,46 @@ export default function Tenants() {
                     <span className="text-gray-500">Rent Date</span>
                     <span className="font-semibold text-primary-700">{tenant.rentSchedule || '—'}</span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Deposit</span>
+                    <span className="font-medium text-gray-900">
+                      {tenant.deposit ? `AED ${Number(tenant.deposit).toLocaleString()}` : '—'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Start Date</span>
+                    <span className="font-medium text-gray-900">{startDateDisplay || '—'}</span>
+                  </div>
                   {tenant.dueDate && (
                     <div className="flex justify-between">
                       <span className="text-gray-500">Due Date</span>
                       <span className="font-medium text-gray-900">{dueDateDisplay}</span>
                     </div>
                   )}
+                </div>
+
+                {/* One-tap payment status */}
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  <button
+                    onClick={() => setPaidStatus(tenant, true)}
+                    className={`py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
+                      tenant.paid
+                        ? 'bg-emerald2-600 text-white shadow-card'
+                        : 'bg-gray-100 text-gray-500 hover:bg-emerald2-50 hover:text-emerald2-600'
+                    }`}
+                  >
+                    ✓ Paid
+                  </button>
+                  <button
+                    onClick={() => setPaidStatus(tenant, false)}
+                    className={`py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
+                      !tenant.paid
+                        ? 'bg-rust-600 text-white shadow-card'
+                        : 'bg-gray-100 text-gray-500 hover:bg-rust-50 hover:text-rust-700'
+                    }`}
+                  >
+                    Unpaid
+                  </button>
                 </div>
 
                 <div className="flex gap-2 pt-3 border-t border-gray-100">
@@ -467,6 +562,7 @@ export default function Tenants() {
       )}
 
       <TenantModal
+        key={editTenant?.id || 'new'}
         open={modalOpen}
         onClose={() => {
           setModalOpen(false)
