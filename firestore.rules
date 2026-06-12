@@ -1,42 +1,15 @@
 rules_version = '2';
-
-// =============================================================================
-//  FIRESTORE SECURITY RULES  —  Ajman Rentals
-// =============================================================================
-//  These rules are what actually keep your business data private. Copy this
-//  whole file into:  Firebase Console -> Firestore Database -> Rules -> Publish
-//
-//  What they enforce:
-//   * Nobody can read or write anything unless they are signed in, AND
-//   * their email is one of the two family emails listed below.
-//  Even though the app's web keys are public, these rules mean only your two
-//  accounts can ever touch the data.
-//
-//  IMPORTANT: replace the second email with your father's real email — it must
-//  match exactly the account you create in Authentication -> Users.
-// =============================================================================
-
 service cloud.firestore {
   match /databases/{database}/documents {
-
     function isFamily() {
       return request.auth != null
         && request.auth.token.email in [
           'abbasrehmat88@gmail.com',
-          'PASTE_FATHER_EMAIL_HERE@gmail.com'
+          'rehmat.ae@gmail.com'
         ];
     }
-
-    match /tenants/{document=**} {
-      allow read, write: if isFamily();
-    }
-
-    match /reminders/{document=**} {
-      allow read, write: if isFamily();
-    }
-
-    match /properties/{document=**} {
-      allow read, write: if isFamily();
-    }
+    match /tenants/{document=**}    { allow read, write: if isFamily(); }
+    match /reminders/{document=**}  { allow read, write: if isFamily(); }
+    match /properties/{document=**} { allow read, write: if isFamily(); }
   }
 }
