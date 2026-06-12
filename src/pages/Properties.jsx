@@ -1,425 +1,465 @@
-import React, { useState, useEffect } from 'react'
-import { watchCollection, addItem, removeItem, isDemoMode } from '../data/db'
+import { useMemo, useState } from 'react';
 import {
-  Search,
-  Plus,
-  Trash2,
-  ExternalLink,
+  Building2,
+  ArrowLeft,
+  TrendingUp,
+  TrendingDown,
+  Zap,
   Home,
-  AlertCircle,
-  Loader2,
-  X,
-  MapPin,
-  DollarSign,
-  BedDouble,
-} from 'lucide-react'
+  DoorOpen,
+  Wallet,
+} from 'lucide-react';
+import businessData from '../data/businessData.json';
 
-const AREAS = [
-  'Al Nuaimia',
-  'Al Rashidiya',
-  'Al Jurf',
-  'Al Hamidiya',
-  'Al Tallah',
-  'Ajman Downtown',
-  'Al Rawda',
-  'Al Mowaihat',
-  'Al Rumaila',
-  'Other',
-]
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-const BEDROOMS = ['Any', 'Studio', '1 BR', '2 BR', '3 BR', '4 BR', '5+ BR', 'Villa']
-const PROPERTY_TYPES = ['Any', 'Apartment', 'Villa', 'Townhouse', 'Studio', 'Penthouse']
+// ---------- helpers ----------
 
-const EMPTY_SEARCH = { area: '', minPrice: '', maxPrice: '', bedrooms: 'Any', type: 'Any' }
-const EMPTY_LISTING = { area: '', price: '', bedrooms: '2 BR', type: 'Apartment', notes: '', contact: '', link: '' }
+const fmt = (n) => {
+  if (n === null || n === undefined || Number.isNaN(n)) return '–';
+  return Math.round(n).toLocaleString();
+};
 
-function buildBayutUrl(filters) {
-  const parts = []
-  if (filters.area) parts.push(filters.area.toLowerCase().replace(/\s+/g, '-'))
-  const typeMap = { Apartment: 'apartments', Villa: 'villas', Townhouse: 'townhouses', Studio: 'studio-for-rent', Penthouse: 'penthouses', Any: '' }
-  const type = typeMap[filters.type] || 'properties'
-  const bedMap = { Studio: 'studio', '1 BR': '1', '2 BR': '2', '3 BR': '3', '4 BR': '4', '5+ BR': '5', Villa: '', Any: '' }
-  const bed = bedMap[filters.bedrooms] || ''
+const fmtSigned = (n) => {
+  if (n === null || n === undefined || Number.isNaN(n)) return '–';
+  const v = Math.round(n);
+  return v < 0 ? `−${Math.abs(v).toLocaleString()}` : v.toLocaleString();
+};
 
-  let url = 'https://www.bayut.com/to-rent/' + (type || 'properties') + '/ajman/'
-  if (parts.length) url += parts.join('-') + '/'
-  if (bed && bed !== '') url += bed + '-bedroom/'
-  if (filters.minPrice || filters.maxPrice) {
-    const min = filters.minPrice || '0'
-    const max = filters.maxPrice || '999999'
-    url += `price-${min}-${max}/`
-  }
-  return url
-}
+// Year keys can be "2018" or "2023-24" — plain string sort orders them correctly.
+const sortedYears = (yearsObj) => Object.keys(yearsObj || {}).sort();
 
-function buildDubizzleUrl(filters) {
-  const params = new URLSearchParams()
-  params.set('location', 'ajman')
-  if (filters.area) params.set('neighborhood', filters.area)
-  if (filters.minPrice) params.set('price__gte', filters.minPrice)
-  if (filters.maxPrice) params.set('price__lte', filters.maxPrice)
-  const bedMap = { Studio: '0', '1 BR': '1', '2 BR': '2', '3 BR': '3', '4 BR': '4', '5+ BR': '5' }
-  if (filters.bedrooms !== 'Any' && bedMap[filters.bedrooms]) params.set('bedrooms', bedMap[filters.bedrooms])
-  return `https://uae.dubizzle.com/rentals/?${params.toString()}`
-}
+const sumNonNull = (arr) =>
+  (arr || []).reduce((s, v) => (v === null || v === undefined ? s : s + v), 0);
 
-function AddListingModal({ open, onClose, onSave, saving }) {
-  const [form, setForm] = useState({ ...EMPTY_LISTING })
-  const [error, setError] = useState('')
+const profitClass = (n) => (n !== null && n !== undefined && n < 0 ? 'text-rust-600' : 'text-emerald2-600');
 
-  useEffect(() => {
-    if (open) { setForm({ ...EMPTY_LISTING }); setError('') }
-  }, [open])
+// ---------- small pieces ----------
 
-  function handleChange(e) {
-    const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    setError('')
-    if (!form.area.trim()) return setError('Area is required.')
-    if (!form.price) return setError('Price is required.')
-    try {
-      await onSave(form)
-      onClose()
-    } catch (err) {
-      setError(err.message || 'Failed to save listing.')
-    }
-  }
-
-  if (!open) return null
-
+function ProfitSparkline({ monthly }) {
+  const data = Array.isArray(monthly) ? monthly : Array(12).fill(null);
+  const maxAbs = Math.max(1, ...data.map((v) => Math.abs(v || 0)));
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">Add Manual Listing</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-            <X size={18} className="text-gray-500" />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex gap-2 items-center text-red-700 text-sm">
-              <AlertCircle size={15} className="flex-shrink-0" />
-              {error}
-            </div>
-          )}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Area *</label>
-              <select name="area" value={form.area} onChange={handleChange} className="input-field" required>
-                <option value="">Select area</option>
-                {AREAS.map((a) => <option key={a} value={a}>{a}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Price / Year (AED) *</label>
-              <input name="price" type="number" min="0" value={form.price} onChange={handleChange} className="input-field" placeholder="e.g. 30000" required />
-            </div>
+    <div className="flex items-end gap-[3px] h-10 mt-3" aria-hidden="true">
+      {data.map((v, i) => {
+        const val = v || 0;
+        const h = Math.max(2, Math.round((Math.abs(val) / maxAbs) * 36));
+        return (
+          <div key={i} className="flex-1 flex items-end justify-center h-full">
+            <div
+              className={`w-full rounded-sm ${val < 0 ? 'bg-rust-600/70' : 'bg-emerald2-600/70'}`}
+              style={{ height: `${h}px` }}
+              title={`${MONTHS[i]}: ${fmtSigned(v)}`}
+            />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Bedrooms</label>
-              <select name="bedrooms" value={form.bedrooms} onChange={handleChange} className="input-field">
-                {BEDROOMS.filter(b => b !== 'Any').map((b) => <option key={b} value={b}>{b}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-              <select name="type" value={form.type} onChange={handleChange} className="input-field">
-                {PROPERTY_TYPES.filter(t => t !== 'Any').map((t) => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Contact Info</label>
-            <input name="contact" value={form.contact} onChange={handleChange} className="input-field" placeholder="Agent name / phone" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Listing URL (optional)</label>
-            <input name="link" value={form.link} onChange={handleChange} className="input-field" placeholder="https://..." />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-            <textarea name="notes" value={form.notes} onChange={handleChange} rows={2} className="input-field resize-none" placeholder="Any details about the property..." />
-          </div>
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
-            <button type="submit" disabled={saving} className="btn-primary flex-1 flex items-center justify-center gap-2">
-              {saving && <Loader2 size={16} className="animate-spin" />}
-              Add Listing
-            </button>
-          </div>
-        </form>
-      </div>
+        );
+      })}
     </div>
-  )
+  );
 }
 
-export default function Properties() {
-  const [listings, setListings] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
-  const [search, setSearch] = useState({ ...EMPTY_SEARCH })
-  const [modalOpen, setModalOpen] = useState(false)
+function MiniStat({ icon: Icon, label, value, sub, valueClass = 'text-charcoal-900' }) {
+  return (
+    <div className="stat-card !p-4 sm:!p-5">
+      <div className="flex items-center gap-2 text-gray-500 text-[11px] uppercase font-semibold tracking-wide">
+        <Icon size={14} className="text-primary-600" />
+        {label}
+      </div>
+      <div className={`mt-1.5 text-lg sm:text-xl font-bold ${valueClass}`}>{value}</div>
+      {sub && <div className="mt-0.5 text-[11px] text-gray-400 truncate">{sub}</div>}
+    </div>
+  );
+}
 
-  useEffect(() => {
-    return watchCollection(
-      'properties',
-      'createdAt',
-      'desc',
-      (data) => {
-        setListings(data)
-        setLoading(false)
-      },
-      (err) => {
-        console.error(err)
-        setError('Failed to load listings.')
-        setLoading(false)
-      }
-    )
-  }, [])
+const thBase = 'px-2 py-1.5 text-left whitespace-nowrap';
+const tdBase = 'px-2 py-1.5 whitespace-nowrap';
 
-  async function handleSave(form) {
-    setSaving(true)
-    try {
-      await addItem('properties', {
-        area: form.area.trim(),
-        price: Number(form.price),
-        bedrooms: form.bedrooms,
-        type: form.type,
-        contact: form.contact.trim(),
-        link: form.link.trim(),
-        notes: form.notes.trim(),
-      })
-    } finally {
-      setSaving(false)
-    }
-  }
+function MonthlyHeader({ first, second }) {
+  return (
+    <thead className="bg-gray-50 text-gray-500 uppercase text-[10px] font-semibold">
+      <tr>
+        <th className={thBase}>{first}</th>
+        {second !== undefined && <th className={thBase}>{second}</th>}
+        {MONTHS.map((m) => (
+          <th key={m} className={`${thBase} text-right`}>
+            {m}
+          </th>
+        ))}
+        <th className={`${thBase} text-right`}>Total</th>
+      </tr>
+    </thead>
+  );
+}
 
-  async function handleDelete(listing) {
-    if (!window.confirm(`Delete listing in "${listing.area}"?`)) return
-    try {
-      await removeItem('properties', listing.id)
-    } catch (err) {
-      setError('Failed to delete: ' + err.message)
-    }
-  }
+// ---------- detail view ----------
 
-  function handleSearchChange(e) {
-    const { name, value } = e.target
-    setSearch((prev) => ({ ...prev, [name]: value }))
-  }
+function VillaDetail({ villa, onBack }) {
+  const years = sortedYears(villa.years);
+  const [year, setYear] = useState(years[years.length - 1]);
+  const yd = villa.years[year] || {};
 
-  const filtered = listings.filter((l) => {
-    if (search.area && l.area !== search.area) return false
-    if (search.minPrice && Number(l.price) < Number(search.minPrice)) return false
-    if (search.maxPrice && Number(l.price) > Number(search.maxPrice)) return false
-    if (search.bedrooms !== 'Any' && l.bedrooms !== search.bedrooms) return false
-    if (search.type !== 'Any' && l.type !== search.type) return false
-    return true
-  })
+  const fewaMonthly =
+    yd.expenses?.['Electricity (FEWA)']?.monthly || villa.fewaConsumption?.[year] || null;
+  const fewaTotal = fewaMonthly ? sumNonNull(fewaMonthly) : null;
+  const fewaStrip = villa.fewaConsumption?.[year];
+  const fewaStripMax = fewaStrip ? Math.max(1, ...fewaStrip.map((v) => v || 0)) : 1;
+
+  const expenseTypes = Object.keys(yd.expenses || {});
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <button
+        onClick={onBack}
+        className="btn-secondary inline-flex items-center gap-2 mb-5 text-sm"
+      >
+        <ArrowLeft size={16} />
+        All Properties
+      </button>
+
+      <div className="flex items-center gap-3">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-charcoal-900 flex items-center justify-center font-bold text-lg shadow-card shrink-0">
+          {villa.num}
+        </div>
         <div>
-          <h1 className="page-title">Property Research</h1><span className="gold-rule" />
-          <p className="text-gray-500 text-sm mt-0.5">Search for new rental properties in Ajman</p>
+          <h1 className="page-title">{villa.name}</h1>
+          <span className="gold-rule" />
         </div>
-        <button
-          onClick={() => setModalOpen(true)}
-          className="btn-primary flex items-center gap-2 self-start sm:self-auto"
-        >
-          <Plus size={18} />
-          Add Manual Listing
-        </button>
       </div>
 
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-2 items-center text-red-700 text-sm">
-          <AlertCircle size={16} />
-          {error}
-          <button onClick={() => setError('')} className="ml-auto"><X size={14} /></button>
-        </div>
-      )}
-
-      {/* Search Panel */}
-      <div className="card p-5 mb-6">
-        <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Search size={17} className="text-primary-600" />
-          Search Listings Online
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Area</label>
-            <select name="area" value={search.area} onChange={handleSearchChange} className="input-field text-sm">
-              <option value="">Any Area</option>
-              {AREAS.map((a) => <option key={a} value={a}>{a}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Min Price (AED)</label>
-            <input name="minPrice" type="number" min="0" value={search.minPrice} onChange={handleSearchChange} className="input-field text-sm" placeholder="0" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Max Price (AED)</label>
-            <input name="maxPrice" type="number" min="0" value={search.maxPrice} onChange={handleSearchChange} className="input-field text-sm" placeholder="Any" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Bedrooms</label>
-            <select name="bedrooms" value={search.bedrooms} onChange={handleSearchChange} className="input-field text-sm">
-              {BEDROOMS.map((b) => <option key={b} value={b}>{b}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Type</label>
-            <select name="type" value={search.type} onChange={handleSearchChange} className="input-field text-sm">
-              {PROPERTY_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <a
-            href={buildBayutUrl(search)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-primary flex items-center gap-2 text-sm"
-          >
-            <ExternalLink size={15} />
-            Search on Bayut
-          </a>
-          <a
-            href={buildDubizzleUrl(search)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-secondary flex items-center gap-2 text-sm"
-          >
-            <ExternalLink size={15} />
-            Search on Dubizzle
-          </a>
+      {/* year pills */}
+      <div className="flex flex-wrap gap-2 mt-6">
+        {years.map((y) => (
           <button
-            onClick={() => setSearch({ ...EMPTY_SEARCH })}
-            className="btn-secondary flex items-center gap-2 text-sm"
+            key={y}
+            onClick={() => setYear(y)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+              y === year
+                ? 'bg-charcoal-900 text-primary-400 shadow-card'
+                : 'bg-primary-50 text-charcoal-900 hover:bg-primary-100'
+            }`}
           >
-            <X size={15} />
-            Clear
+            {y}
           </button>
+        ))}
+      </div>
+
+      {/* stat mini-cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-5">
+        <MiniStat icon={TrendingUp} label="Income" value={`AED ${fmt(yd.incomeTotal)}`} />
+        <MiniStat icon={TrendingDown} label="Expenses" value={`AED ${fmt(yd.expenseTotal)}`} />
+        <MiniStat
+          icon={Wallet}
+          label="Net Profit"
+          value={`AED ${fmtSigned(yd.profitTotal)}`}
+          valueClass={profitClass(yd.profitTotal)}
+        />
+        <MiniStat
+          icon={Zap}
+          label="FEWA Total"
+          value={fewaTotal !== null ? `AED ${fmt(fewaTotal)}` : '–'}
+        />
+      </div>
+
+      {/* room income table */}
+      <div className="card mt-6 !p-0 overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+          <DoorOpen size={16} className="text-primary-600" />
+          <h2 className="font-semibold text-charcoal-900 text-sm">Room Income — {year}</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-xs">
+            <MonthlyHeader first="Room" second="Tenant" />
+            <tbody className="divide-y divide-gray-100">
+              {(yd.rooms || []).map((r, i) => (
+                <tr key={i} className="hover:bg-gray-50">
+                  <td className={`${tdBase} font-medium text-charcoal-900`}>{r.room}</td>
+                  <td className={`${tdBase} text-gray-600 max-w-[140px] truncate`}>{r.tenant}</td>
+                  {(r.monthly || Array(12).fill(null)).map((v, j) => (
+                    <td key={j} className={`${tdBase} text-right text-gray-700`}>
+                      {fmt(v)}
+                    </td>
+                  ))}
+                  <td className={`${tdBase} text-right font-semibold text-charcoal-900`}>
+                    {fmt(r.total)}
+                  </td>
+                </tr>
+              ))}
+              <tr className="bg-primary-50 font-bold text-charcoal-900">
+                <td className={tdBase} colSpan={2}>
+                  Total Income
+                </td>
+                {(yd.incomeMonthly || Array(12).fill(null)).map((v, j) => (
+                  <td key={j} className={`${tdBase} text-right`}>
+                    {fmt(v)}
+                  </td>
+                ))}
+                <td className={`${tdBase} text-right`}>{fmt(yd.incomeTotal)}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* Manual Listings */}
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-display text-xl text-charcoal-900">
-          Manual Listings
-          <span className="ml-2 text-sm font-normal text-gray-400">
-            {filtered.length} of {listings.length}
-          </span>
-        </h2>
+      {/* expenses table */}
+      <div className="card mt-6 !p-0 overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+          <TrendingDown size={16} className="text-rust-600" />
+          <h2 className="font-semibold text-charcoal-900 text-sm">Expenses — {year}</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-xs">
+            <MonthlyHeader first="Expense" />
+            <tbody className="divide-y divide-gray-100">
+              {expenseTypes.map((name) => {
+                const e = yd.expenses[name];
+                return (
+                  <tr key={name} className="hover:bg-gray-50">
+                    <td className={`${tdBase} font-medium text-charcoal-900`}>{name}</td>
+                    {(e.monthly || Array(12).fill(null)).map((v, j) => (
+                      <td key={j} className={`${tdBase} text-right text-gray-700`}>
+                        {fmt(v)}
+                      </td>
+                    ))}
+                    <td className={`${tdBase} text-right font-semibold text-charcoal-900`}>
+                      {fmt(e.total)}
+                    </td>
+                  </tr>
+                );
+              })}
+              <tr className="bg-rust-50 font-bold text-charcoal-900">
+                <td className={tdBase}>Total Expenses</td>
+                {(yd.expenseMonthly || Array(12).fill(null)).map((v, j) => (
+                  <td key={j} className={`${tdBase} text-right`}>
+                    {fmt(v)}
+                  </td>
+                ))}
+                <td className={`${tdBase} text-right`}>{fmt(yd.expenseTotal)}</td>
+              </tr>
+              <tr className="bg-gray-50 font-bold">
+                <td className={`${tdBase} text-charcoal-900`}>Net Profit</td>
+                {(yd.profitMonthly || Array(12).fill(null)).map((v, j) => (
+                  <td
+                    key={j}
+                    className={`${tdBase} text-right ${
+                      v === null || v === undefined ? 'text-gray-400' : profitClass(v)
+                    }`}
+                  >
+                    {fmtSigned(v)}
+                  </td>
+                ))}
+                <td className={`${tdBase} text-right ${profitClass(yd.profitTotal)}`}>
+                  {fmtSigned(yd.profitTotal)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {isDemoMode && (
-        <div className="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-lg flex gap-3">
-          <AlertCircle size={18} className="text-primary-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-gray-700">Demo Mode — listings are saved on this device only.</p>
+      {/* FEWA consumption strip */}
+      {fewaStrip && (
+        <div className="card mt-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Zap size={16} className="text-amber-500" />
+            <h2 className="font-semibold text-charcoal-900 text-sm">
+              FEWA Consumption — {year} (AED)
+            </h2>
+          </div>
+          <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-12 gap-2">
+            {fewaStrip.map((v, i) => (
+              <div
+                key={i}
+                className="rounded-lg border border-gray-100 bg-gray-50 p-2 flex flex-col items-center"
+              >
+                <span className="text-[10px] uppercase font-semibold text-gray-400">
+                  {MONTHS[i]}
+                </span>
+                <span className="text-xs font-semibold text-charcoal-900 mt-0.5">{fmt(v)}</span>
+                <div className="w-full h-8 flex items-end mt-1">
+                  <div
+                    className="w-full rounded-sm bg-gradient-to-t from-amber-500 to-primary-400"
+                    style={{
+                      height: `${Math.max(2, Math.round(((v || 0) / fewaStripMax) * 32))}px`,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="card p-5 animate-pulse">
-              <div className="h-5 bg-gray-200 rounded w-32 mb-3" />
-              <div className="space-y-2">
-                <div className="h-3 bg-gray-200 rounded w-full" />
-                <div className="h-3 bg-gray-200 rounded w-3/4" />
-              </div>
-            </div>
-          ))}
+      {/* year-over-year table */}
+      <div className="card mt-6 !p-0 overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+          <TrendingUp size={16} className="text-primary-600" />
+          <h2 className="font-semibold text-charcoal-900 text-sm">Year over Year</h2>
         </div>
-      ) : filtered.length === 0 ? (
-        <div className="card p-12 text-center">
-          <Home size={48} className="text-gray-300 mx-auto mb-3" />
-          <h3 className="text-gray-500 font-medium">No manual listings yet</h3>
-          <p className="text-gray-400 text-sm mt-1">
-            {listings.length > 0 ? 'No listings match your filters.' : 'Add a property listing manually or search online above.'}
-          </p>
-          {listings.length === 0 && (
-            <button onClick={() => setModalOpen(true)} className="btn-primary mt-4 inline-flex items-center gap-2">
-              <Plus size={16} />
-              Add First Listing
-            </button>
-          )}
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-xs">
+            <thead className="bg-gray-50 text-gray-500 uppercase text-[10px] font-semibold">
+              <tr>
+                <th className={thBase}>Year</th>
+                <th className={`${thBase} text-right`}>Income</th>
+                <th className={`${thBase} text-right`}>Expenses</th>
+                <th className={`${thBase} text-right`}>Profit</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {years.map((y) => {
+                const d = villa.years[y];
+                return (
+                  <tr
+                    key={y}
+                    className={`hover:bg-gray-50 cursor-pointer ${y === year ? 'bg-primary-50' : ''}`}
+                    onClick={() => setYear(y)}
+                  >
+                    <td className={`${tdBase} font-semibold text-charcoal-900`}>{y}</td>
+                    <td className={`${tdBase} text-right text-gray-700`}>{fmt(d.incomeTotal)}</td>
+                    <td className={`${tdBase} text-right text-gray-700`}>{fmt(d.expenseTotal)}</td>
+                    <td
+                      className={`${tdBase} text-right font-semibold ${
+                        d.profitTotal === null || d.profitTotal === undefined
+                          ? 'text-gray-400'
+                          : profitClass(d.profitTotal)
+                      }`}
+                    >
+                      {fmtSigned(d.profitTotal)}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger">
-          {filtered.map((listing) => (
-            <div key={listing.id} className="card p-5 hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Home size={17} className="text-primary-700" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 text-sm">{listing.area}</h3>
-                    <p className="text-xs text-gray-500">{listing.type}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleDelete(listing)}
-                  className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center gap-2 text-sm">
-                  <DollarSign size={14} className="text-green-600 flex-shrink-0" />
-                  <span className="font-semibold text-gray-900">AED {Number(listing.price || 0).toLocaleString()}</span>
-                  <span className="text-gray-400 text-xs">/ year</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <BedDouble size={14} className="text-gray-400 flex-shrink-0" />
-                  <span>{listing.bedrooms}</span>
-                </div>
-                {listing.contact && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <MapPin size={14} className="text-gray-400 flex-shrink-0" />
-                    <span className="truncate">{listing.contact}</span>
-                  </div>
-                )}
-                {listing.notes && (
-                  <p className="text-xs text-gray-400 line-clamp-2">{listing.notes}</p>
-                )}
-              </div>
-
-              {listing.link && (
-                <a
-                  href={listing.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1.5 w-full px-3 py-2 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors"
-                >
-                  <ExternalLink size={13} />
-                  View Listing
-                </a>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      <AddListingModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={handleSave}
-        saving={saving}
-      />
+      </div>
     </div>
-  )
+  );
+}
+
+// ---------- portfolio grid ----------
+
+function VillaCard({ villa, onSelect }) {
+  const years = sortedYears(villa.years);
+  const latest = years[years.length - 1];
+  const yd = villa.years[latest] || {};
+  const maxRooms = Math.max(0, ...years.map((y) => (villa.years[y].rooms || []).length));
+
+  return (
+    <button
+      onClick={onSelect}
+      className="card text-left w-full hover:shadow-float hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+    >
+      <div className="flex items-start gap-3">
+        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-charcoal-900 flex items-center justify-center font-bold shadow-card shrink-0">
+          {villa.num}
+        </div>
+        <div className="min-w-0">
+          <h3 className="font-semibold text-charcoal-900 text-sm leading-snug truncate">
+            {villa.name}
+          </h3>
+          <p className="text-[11px] text-gray-400 mt-0.5">
+            {years[0]} – {latest}
+          </p>
+          <p className="text-[11px] text-gray-500 mt-0.5 flex items-center gap-1">
+            <Home size={11} className="text-primary-600" />
+            {maxRooms} room{maxRooms === 1 ? '' : 's'}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 space-y-1.5 text-xs">
+        <div className="flex justify-between">
+          <span className="text-gray-500">Income {latest}</span>
+          <span className="font-semibold text-charcoal-900">AED {fmt(yd.incomeTotal)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-gray-500">Expenses {latest}</span>
+          <span className="font-semibold text-charcoal-900">AED {fmt(yd.expenseTotal)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-gray-500">Net Profit {latest}</span>
+          <span className={`font-bold ${profitClass(yd.profitTotal)}`}>
+            AED {fmtSigned(yd.profitTotal)}
+          </span>
+        </div>
+      </div>
+
+      <ProfitSparkline monthly={yd.profitMonthly} />
+    </button>
+  );
+}
+
+export default function Properties() {
+  const [selectedId, setSelectedId] = useState(null);
+  const villas = businessData.villas || [];
+
+  const stats = useMemo(() => {
+    let best = null; // { villa, year, profit }
+    villas.forEach((v) => {
+      Object.entries(v.years).forEach(([y, d]) => {
+        if (d.profitTotal !== null && d.profitTotal !== undefined) {
+          if (!best || d.profitTotal > best.profit) {
+            best = { villa: v.name, year: y, profit: d.profitTotal };
+          }
+        }
+      });
+    });
+
+    // most recent year (across all villas) that has any profit data
+    const allYears = new Set();
+    villas.forEach((v) =>
+      Object.entries(v.years).forEach(([y, d]) => {
+        if (d.profitTotal !== null && d.profitTotal !== undefined) allYears.add(y);
+      })
+    );
+    const latestYear = [...allYears].sort().pop() || null;
+    const latestCombined = latestYear
+      ? villas.reduce((s, v) => {
+          const p = v.years[latestYear]?.profitTotal;
+          return p === null || p === undefined ? s : s + p;
+        }, 0)
+      : null;
+
+    return { best, latestYear, latestCombined };
+  }, [villas]);
+
+  const selected = villas.find((v) => v.id === selectedId);
+  if (selected) {
+    return <VillaDetail key={selected.id} villa={selected} onBack={() => setSelectedId(null)} />;
+  }
+
+  return (
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
+      <h1 className="page-title">Properties</h1>
+      <span className="gold-rule" />
+      <p className="text-gray-500 text-sm mt-3">14 villas — full income &amp; expense history</p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-6">
+        <MiniStat icon={Building2} label="Total Villas" value={villas.length} />
+        <MiniStat
+          icon={TrendingUp}
+          label="Best Year Profit"
+          value={stats.best ? `AED ${fmtSigned(stats.best.profit)}` : '–'}
+          sub={stats.best ? `${stats.best.villa} · ${stats.best.year}` : undefined}
+          valueClass={stats.best ? profitClass(stats.best.profit) : 'text-charcoal-900'}
+        />
+        <MiniStat
+          icon={Wallet}
+          label={`Combined Profit ${stats.latestYear || ''}`}
+          value={stats.latestCombined !== null ? `AED ${fmtSigned(stats.latestCombined)}` : '–'}
+          sub={stats.latestYear ? `All villas · ${stats.latestYear}` : undefined}
+          valueClass={
+            stats.latestCombined !== null ? profitClass(stats.latestCombined) : 'text-charcoal-900'
+          }
+        />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 mt-6">
+        {villas.map((v) => (
+          <VillaCard key={v.id} villa={v} onSelect={() => setSelectedId(v.id)} />
+        ))}
+      </div>
+    </div>
+  );
 }

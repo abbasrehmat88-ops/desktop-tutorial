@@ -11,6 +11,7 @@ import {
   Upload,
   Landmark,
   KeyRound,
+  Wallet,
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -20,6 +21,7 @@ const navItems = [
   { to: '/financial',  icon: DollarSign,      label: 'Financial'  },
   { to: '/deposits',   icon: Landmark,        label: 'Deposits'   },
   { to: '/owners',     icon: KeyRound,        label: 'Owners'     },
+  { to: '/cashflow',   icon: Wallet,          label: 'Cash Flow'  },
   { to: '/reminders',  icon: Bell,            label: 'Reminders'  },
   { to: '/properties', icon: Building2,       label: 'Properties' },
 ]
