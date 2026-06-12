@@ -13,9 +13,9 @@ function isPaid(tenant, key = monthKey()) {
   return key === monthKey() ? !!tenant?.paid : false
 }
 
-function StatCard({ icon: Icon, label, value, color, subtext, animate }) {
-  return (
-    <div className="stat-card flex items-start gap-4">
+function StatCard({ icon: Icon, label, value, color, subtext, animate, to }) {
+  const inner = (
+    <>
       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${color}`}>
         <Icon size={22} />
       </div>
@@ -26,6 +26,24 @@ function StatCard({ icon: Icon, label, value, color, subtext, animate }) {
         </p>
         {subtext && <p className="text-xs text-gray-400 mt-0.5">{subtext}</p>}
       </div>
+      <ArrowRight size={16} className="text-primary-500 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-0.5 self-center flex-shrink-0" />
+    </>
+  )
+
+  if (to) {
+    return (
+      <Link
+        to={to}
+        className="stat-card flex items-start gap-4 group ring-1 ring-transparent hover:ring-primary-400 hover:shadow-glow active:scale-[0.98] transition-all duration-200 cursor-pointer"
+      >
+        {inner}
+      </Link>
+    )
+  }
+
+  return (
+    <div className="stat-card flex items-start gap-4">
+      {inner}
     </div>
   )
 }
@@ -164,6 +182,7 @@ export default function Dashboard() {
             animate
             color="bg-charcoal-900 text-primary-400"
             subtext={`${paidCount} paid · ${unpaidCount} pending`}
+            to="/tenants"
           />
           <StatCard
             icon={DollarSign}
@@ -172,6 +191,7 @@ export default function Dashboard() {
             animate
             color="bg-emerald2-50 text-emerald2-600"
             subtext="Tenants with paid status"
+            to="/tenants?filter=paid"
           />
           <StatCard
             icon={AlertCircle}
@@ -180,6 +200,7 @@ export default function Dashboard() {
             animate
             color="bg-rust-50 text-rust-600"
             subtext="Tenants with unpaid status"
+            to="/tenants?filter=unpaid"
           />
           <StatCard
             icon={TrendingUp}
@@ -187,6 +208,7 @@ export default function Dashboard() {
             value={`AED ${totalRevenue.toLocaleString()}`}
             color="bg-primary-100 text-primary-700"
             subtext="From paid tenants"
+            to="/financial"
           />
         </div>
       )}
@@ -224,7 +246,7 @@ export default function Dashboard() {
               </div>
             ) : (
               recentTenants.map((tenant) => (
-                <div key={tenant.id} className="flex items-center gap-3 px-6 py-4 transition-colors duration-300 hover:bg-gray-50">
+                <Link key={tenant.id} to="/tenants" className="flex items-center gap-3 px-6 py-4 transition-colors duration-300 hover:bg-gray-50 cursor-pointer">
                   <div className="w-10 h-10 bg-charcoal-900 rounded-full flex items-center justify-center text-primary-400 font-bold text-sm flex-shrink-0">
                     {tenant.name?.charAt(0).toUpperCase() || 'T'}
                   </div>
@@ -235,7 +257,7 @@ export default function Dashboard() {
                   <span className={isPaid(tenant, MONTH) ? 'badge-paid' : 'badge-unpaid'}>
                     {isPaid(tenant, MONTH) ? 'Paid' : 'Unpaid'}
                   </span>
-                </div>
+                </Link>
               ))
             )}
           </div>

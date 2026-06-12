@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { watchCollection, addItem, updateItem, removeItem, isDemoMode } from '../data/db'
 import { format, parseISO } from 'date-fns'
 import {
@@ -191,14 +192,29 @@ function TenantModal({ open, onClose, onSave, initial, saving }) {
 // ── Main page ───────────────────────────────────────────────────────────────
 
 export default function Tenants() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [tenants, setTenants]   = useState([])
   const [loading, setLoading]   = useState(true)
   const [saving,  setSaving]    = useState(false)
   const [error,   setError]     = useState('')
   const [search,  setSearch]    = useState('')
-  const [filter,  setFilter]    = useState('all')
+  const [filter,  setFilter]    = useState(() => {
+    const f = searchParams.get('filter')
+    return (f === 'paid' || f === 'unpaid') ? f : 'all'
+  })
   const [modalOpen, setModalOpen] = useState(false)
   const [editTenant, setEditTenant] = useState(null)
+
+  function setFilterAndUrl(f) {
+    setFilter(f)
+    const next = new URLSearchParams(searchParams)
+    if (f === 'all') {
+      next.delete('filter')
+    } else {
+      next.set('filter', f)
+    }
+    setSearchParams(next, { replace: true })
+  }
 
   const MONTH = monthKey()
   const MONTH_LABEL = monthLabel()
@@ -332,7 +348,7 @@ export default function Tenants() {
         </div>
         <div className="flex gap-2">
           {['all', 'paid', 'unpaid'].map(f => (
-            <button key={f} onClick={() => setFilter(f)}
+            <button key={f} onClick={() => setFilterAndUrl(f)}
               className={`px-4 py-2 rounded-xl text-sm font-semibold capitalize transition-all duration-200 ${
                 filter === f
                   ? f === 'paid'   ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-charcoal-900 shadow-glow'
