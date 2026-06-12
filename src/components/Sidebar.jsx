@@ -8,6 +8,7 @@ import {
   Building2,
   LogOut,
   Home,
+  Upload,
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -85,6 +86,22 @@ export default function Sidebar({ open, onClose }) {
             </NavLink>
           ))}
         </nav>
+
+        {/* One-time import link */}
+        <NavLink
+          to="/import-data"
+          onClick={onClose}
+          className={({ isActive }) =>
+            `relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all duration-300 ${
+              isActive
+                ? 'bg-primary-500/20 text-primary-300 font-semibold'
+                : 'text-primary-400 font-medium border border-primary-500/30 hover:bg-primary-500/10 hover:text-primary-300'
+            }`
+          }
+        >
+          <Upload size={16} />
+          Import Tenant Data
+        </NavLink>
 
         {/* User footer */}
         <div className="px-3 py-4 border-t border-white/[0.08]">
