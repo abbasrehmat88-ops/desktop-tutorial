@@ -6,6 +6,13 @@ import { Users, DollarSign, AlertCircle, TrendingUp, Bell, Clock, ArrowRight } f
 import { format, isWithinInterval, addDays, parseISO } from 'date-fns'
 import CountUp from '../components/CountUp'
 
+function monthKey(d = new Date()) { return format(d, 'yyyy-MM') }
+function isPaid(tenant, key = monthKey()) {
+  const p = tenant?.payments
+  if (p && typeof p === 'object' && key in p) return !!p[key]
+  return key === monthKey() ? !!tenant?.paid : false
+}
+
 function StatCard({ icon: Icon, label, value, color, subtext, animate }) {
   return (
     <div className="stat-card flex items-start gap-4">
@@ -67,10 +74,11 @@ export default function Dashboard() {
     }
   }, [])
 
+  const MONTH = monthKey()
   const totalTenants = tenants.length
-  const paidCount = tenants.filter((t) => t.paid).length
-  const unpaidCount = tenants.filter((t) => !t.paid).length
-  const totalRevenue = tenants.filter((t) => t.paid).reduce((sum, t) => sum + (Number(t.rentAmount) || 0), 0)
+  const paidCount    = tenants.filter(t =>  isPaid(t, MONTH)).length
+  const unpaidCount  = tenants.filter(t => !isPaid(t, MONTH)).length
+  const totalRevenue = tenants.filter(t =>  isPaid(t, MONTH)).reduce((sum, t) => sum + (Number(t.rentAmount) || 0), 0)
 
   const today = new Date()
   const sevenDaysLater = addDays(today, 7)
@@ -224,8 +232,8 @@ export default function Dashboard() {
                     <p className="font-semibold text-charcoal-900 text-sm truncate">{tenant.name}</p>
                     <p className="text-xs text-gray-500">Unit {tenant.unit} · AED {Number(tenant.rentAmount || 0).toLocaleString()}</p>
                   </div>
-                  <span className={tenant.paid ? 'badge-paid' : 'badge-unpaid'}>
-                    {tenant.paid ? 'Paid' : 'Unpaid'}
+                  <span className={isPaid(tenant, MONTH) ? 'badge-paid' : 'badge-unpaid'}>
+                    {isPaid(tenant, MONTH) ? 'Paid' : 'Unpaid'}
                   </span>
                 </div>
               ))

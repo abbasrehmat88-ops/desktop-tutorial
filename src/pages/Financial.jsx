@@ -1,29 +1,25 @@
 import React, { useState, useEffect } from 'react'
 import { watchCollection, isDemoMode } from '../data/db'
+import { format, subMonths, startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns'
 import {
-  DollarSign,
-  TrendingUp,
-  TrendingDown,
-  Users,
-  AlertCircle,
-  CheckCircle,
+  DollarSign, TrendingUp, TrendingDown, Users, AlertCircle, CheckCircle,
 } from 'lucide-react'
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  PieChart, Pie, Cell, ResponsiveContainer,
 } from 'recharts'
-import { format, subMonths, startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns'
 
 const PIE_COLORS = ['#c9a154', '#b3573f']
+
+// ── Per-month helpers (same logic as Tenants.jsx) ──────────────────────────
+function monthKey(d = new Date()) { return format(d, 'yyyy-MM') }
+function monthLabel(d = new Date()) { return format(d, 'MMMM yyyy') }
+
+function isPaid(tenant, key = monthKey()) {
+  const p = tenant?.payments
+  if (p && typeof p === 'object' && key in p) return !!p[key]
+  return key === monthKey() ? !!tenant?.paid : false
+}
 
 function StatCard({ icon: Icon, label, value, subtext, color }) {
   return (
@@ -45,31 +41,12 @@ function StatCard({ icon: Icon, label, value, subtext, color }) {
 function buildMonthlyData(tenants) {
   const now = new Date()
   return Array.from({ length: 6 }, (_, i) => {
-    const monthDate = subMonths(now, 5 - i)
-    const start = startOfMonth(monthDate)
-    const end = endOfMonth(monthDate)
-    const monthLabel = format(monthDate, 'MMM yy')
-
-    let collected = 0
-    let pending = 0
-
-    tenants.forEach((t) => {
-      const amount = Number(t.rentAmount || 0)
-      let inMonth = false
-      try {
-        if (t.dueDate) {
-          const due = parseISO(t.dueDate)
-          inMonth = isWithinInterval(due, { start, end })
-        }
-      } catch {}
-
-      if (inMonth) {
-        if (t.paid) collected += amount
-        else pending += amount
-      }
-    })
-
-    return { month: monthLabel, Collected: collected, Pending: pending }
+    const d   = subMonths(now, 5 - i)
+    const key = monthKey(d)
+    const label = format(d, 'MMM yy')
+    const collected = tenants.filter(t =>  isPaid(t, key)).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
+    const pending   = tenants.filter(t => !isPaid(t, key)).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
+    return { month: label, Collected: collected, Pending: pending }
   })
 }
 
@@ -96,11 +73,14 @@ export default function Financial() {
     )
   }, [])
 
-  const totalCollected = tenants.filter((t) => t.paid).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
-  const totalPending = tenants.filter((t) => !t.paid).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
-  const totalDeposits = tenants.reduce((s, t) => s + Number(t.deposit || 0), 0)
-  const paidCount = tenants.filter((t) => t.paid).length
-  const unpaidCount = tenants.filter((t) => !t.paid).length
+  const MONTH       = monthKey()
+  const MONTH_LABEL = monthLabel()
+
+  const totalCollected = tenants.filter(t =>  isPaid(t, MONTH)).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
+  const totalPending   = tenants.filter(t => !isPaid(t, MONTH)).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
+  const totalDeposits  = tenants.reduce((s, t) => s + Number(t.deposit || 0), 0)
+  const paidCount   = tenants.filter(t =>  isPaid(t, MONTH)).length
+  const unpaidCount = tenants.filter(t => !isPaid(t, MONTH)).length
 
   const pieData = [
     { name: 'Paid', value: totalCollected },
@@ -109,28 +89,15 @@ export default function Financial() {
 
   const monthlyData = buildMonthlyData(tenants)
 
+  // Yearly: sum up payments across all 12 months of this year
   const now = new Date()
-  const yearlyCollected = tenants
-    .filter((t) => {
-      if (!t.paid || !t.dueDate) return false
-      try {
-        return parseISO(t.dueDate).getFullYear() === now.getFullYear()
-      } catch {
-        return false
-      }
-    })
-    .reduce((s, t) => s + Number(t.rentAmount || 0), 0)
-
-  const yearlyPending = tenants
-    .filter((t) => {
-      if (t.paid || !t.dueDate) return false
-      try {
-        return parseISO(t.dueDate).getFullYear() === now.getFullYear()
-      } catch {
-        return false
-      }
-    })
-    .reduce((s, t) => s + Number(t.rentAmount || 0), 0)
+  let yearlyCollected = 0, yearlyPending = 0
+  for (let m = 0; m < 12; m++) {
+    const d   = new Date(now.getFullYear(), m, 1)
+    const key = monthKey(d)
+    yearlyCollected += tenants.filter(t =>  isPaid(t, key)).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
+    yearlyPending   += tenants.filter(t => !isPaid(t, key)).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
+  }
 
   const formatAED = (v) => `AED ${Number(v).toLocaleString()}`
 
@@ -139,7 +106,9 @@ export default function Financial() {
       <div className="mb-6">
         <h1 className="page-title">Financial Overview</h1>
         <span className="gold-rule" />
-        <p className="text-gray-500 text-sm mt-3">Track your rental income and outstanding payments</p>
+        <p className="text-gray-500 text-sm mt-3">
+          {MONTH_LABEL} — payment status resets automatically each new month
+        </p>
       </div>
 
       {error && (
@@ -347,8 +316,8 @@ export default function Financial() {
                       </td>
                       <td className="px-6 py-4 text-gray-600">{t.rentSchedule || dueDateDisplay}</td>
                       <td className="px-6 py-4">
-                        <span className={t.paid ? 'badge-paid' : 'badge-unpaid'}>
-                          {t.paid ? 'Paid' : 'Pending'}
+                        <span className={isPaid(t, MONTH) ? 'badge-paid' : 'badge-unpaid'}>
+                          {isPaid(t, MONTH) ? 'Paid' : 'Unpaid'}
                         </span>
                       </td>
                     </tr>
