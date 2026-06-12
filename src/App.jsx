@@ -10,6 +10,7 @@ import Reminders from './pages/Reminders';
 import Properties from './pages/Properties';
 import ImportData from './pages/ImportData';
 import Deposits from './pages/Deposits';
+import Owners from './pages/Owners';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
               <Route path="/reminders" element={<Reminders />} />
               <Route path="/properties" element={<Properties />} />
               <Route path="/deposits" element={<Deposits />} />
+              <Route path="/owners" element={<Owners />} />
               <Route path="/import-data" element={<ImportData />} />
             </Route>
           </Route>
