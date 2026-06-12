@@ -1,161 +1,215 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { addItem } from '../data/db'
-import { CheckCircle, Loader2, AlertCircle, Upload } from 'lucide-react'
+import { addItem, removeItem, watchCollection } from '../data/db'
+import { CheckCircle, Loader2, AlertCircle, Upload, Trash2 } from 'lucide-react'
 
-// All tenants read from the spreadsheet image.
-// rentSchedule = payment date range written in the sheet (e.g. "5 To 10").
-// paid is set to false by default — mark each one paid once you collect.
+// All tenants from the spreadsheet (verified against the clear photos).
+// rentSchedule = the "Rent date" column in the sheet (e.g. "1 To 5").
+// paid starts false — mark each tenant paid in the Tenants page after collecting.
 const TENANTS = [
-  // ── ADIL VILLA 8 ──────────────────────────────────────────────────
-  { property:'Adil Villa 8',    unit:'ADV-1',    name:'Amal Deen / Abid',       rentAmount:720,  rentSchedule:'5 To 5'   },
-  { property:'Adil Villa 8',    unit:'ADV-2',    name:'Sajid Khan',              rentAmount:720,  rentSchedule:'1 To 5'   },
-  { property:'Adil Villa 8',    unit:'ADV-3',    name:'Sohail',                  rentAmount:720,  rentSchedule:'5 To 5'   },
-  { property:'Adil Villa 8',    unit:'ADV-4',    name:'Usman Dhani',             rentAmount:1500, rentSchedule:'5 To 10'  },
-  { property:'Adil Villa 8',    unit:'ADV-5',    name:'Shereen Benzeer',         rentAmount:1400, rentSchedule:'20 To 5'  },
-  { property:'Adil Villa 8',    unit:'ADV-6',    name:'Talaab Punjabi',          rentAmount:1400, rentSchedule:'1 To 5'   },
-  { property:'Adil Villa 8',    unit:'ADV-7',    name:'Shereen',                 rentAmount:1500, rentSchedule:''         },
-  { property:'Adil Villa 8',    unit:'ADV-8',    name:'Arif Rao',                rentAmount:1650, rentSchedule:'5 To 10'  },
-  { property:'Adil Villa 8',    unit:'ADV-9',    name:'Saloon',                  rentAmount:1100, rentSchedule:'1 To 5'   },
-  { property:'Adil Villa 8',    unit:'ADV-10',   name:'Saqib Baloch',            rentAmount:800,  rentSchedule:''         },
+  // ── ADIL VILLA 8 / 1 ──────────────────────────────────────────────
+  { property:'Adil Villa 8',      unit:'1',   name:'Amal Deen / Abid',      rentAmount:1700, rentSchedule:'1 To 5'   },
+  { property:'Adil Villa 8',      unit:'2',   name:'Sajid Khan',            rentAmount:720,  rentSchedule:'1 To 5'   },
+  { property:'Adil Villa 8',      unit:'3',   name:'Shafiullah',            rentAmount:1820, rentSchedule:'5 To 10'  },
+  { property:'Adil Villa 8',      unit:'4',   name:'Usman Ghani',           rentAmount:1500, rentSchedule:'5 To 10'  },
+  { property:'Adil Villa 8',      unit:'5',   name:'Shereen Boneer',        rentAmount:1100, rentSchedule:'20 To 25' },
+  { property:'Adil Villa 8',      unit:'6',   name:'Talabat Punjabi',       rentAmount:1400, rentSchedule:'1 To 5'   },
+  { property:'Adil Villa 8',      unit:'7',   name:'Shereen Roommate',      rentAmount:1000, rentSchedule:'1 To 5'   },
+  { property:'Adil Villa 8',      unit:'8',   name:'Asif Rao',              rentAmount:1650, rentSchedule:'5 To 10'  },
+  { property:'Adil Villa 8',      unit:'9',   name:'Abid Saloon',           rentAmount:1100, rentSchedule:'1 To 5'   },
+  { property:'Adil Villa 8',      unit:'10',  name:'Baqala Bangali',        rentAmount:900,  rentSchedule:'15 To 20' },
 
-  // ── DAWOOD VILLA 6 ────────────────────────────────────────────────
-  { property:'Dawood Villa 6',  unit:'DWV-11',   name:'Nizam Deen',              rentAmount:800,  rentSchedule:'1 To 5'   },
-  { property:'Dawood Villa 6',  unit:'DWV-12',   name:'Shahid Ali',              rentAmount:1400, rentSchedule:'1 To 5'   },
-  { property:'Dawood Villa 6',  unit:'DWV-13',   name:'Maqsood',                 rentAmount:1500, rentSchedule:'5 To 5'   },
-  { property:'Dawood Villa 6',  unit:'DWV-14',   name:'Cha Cha Cafeteria',       rentAmount:1150, rentSchedule:'3 To 5'   },
-  { property:'Dawood Villa 6',  unit:'DWV-15',   name:'Sohail',                  rentAmount:1500, rentSchedule:'1 To 5'   },
-  { property:'Dawood Villa 6',  unit:'DWV-16',   name:'Shahzad / Adidi',         rentAmount:1000, rentSchedule:'1 To 5'   },
-  { property:'Dawood Villa 6',  unit:'DWV-17',   name:'Shahzad / Rauf',          rentAmount:1000, rentSchedule:'5 To 10'  },
-  { property:'Dawood Villa 6',  unit:'DWV-18',   name:'Farhan / Bangali',        rentAmount:1000, rentSchedule:'1 To 10'  },
-  { property:'Dawood Villa 6',  unit:'DWV-19',   name:'Saeed CCTV',              rentAmount:800,  rentSchedule:'1 To 10'  },
-  { property:'Dawood Villa 6',  unit:'DWV-20',   name:'Hamza Afgan',             rentAmount:800,  rentSchedule:'5 To 5'   },
-  { property:'Dawood Villa 6',  unit:'DWV-201',  name:'Sharjafat Taxi',          rentAmount:900,  rentSchedule:'5 To 10'  },
+  // ── DAWOOD VILLA 6 / 2 ────────────────────────────────────────────
+  { property:'Dawood Villa 6',    unit:'11',  name:'Nizam Deen',            rentAmount:1500, rentSchedule:'1 To 5'   },
+  { property:'Dawood Villa 6',    unit:'12',  name:'Shahid Ali',            rentAmount:1450, rentSchedule:'1 To 5'   },
+  { property:'Dawood Villa 6',    unit:'13',  name:'Wazeer Zada',           rentAmount:1100, rentSchedule:'1 To 5'   },
+  { property:'Dawood Villa 6',    unit:'14',  name:'Cha Cha Caftria',       rentAmount:1150, rentSchedule:'1 To 5'   },
+  { property:'Dawood Villa 6',    unit:'15',  name:'Sohail',                rentAmount:1500, rentSchedule:'1 To 5'   },
+  { property:'Dawood Villa 6',    unit:'16',  name:'Sadiq Afridi',          rentAmount:1600, rentSchedule:'1 To 5'   },
+  { property:'Dawood Villa 6',    unit:'17',  name:'Shehzad / Rauf',        rentAmount:1000, rentSchedule:'5 To 10'  },
+  { property:'Dawood Villa 6',    unit:'18',  name:'Farhan / Ibrahim',      rentAmount:1000, rentSchedule:'5 To 10'  },
+  { property:'Dawood Villa 6',    unit:'19',  name:'Sajeel CCTV',           rentAmount:800,  rentSchedule:'1 To 10'  },
+  { property:'Dawood Villa 6',    unit:'20',  name:'Hamza Afsar',           rentAmount:600,  rentSchedule:'5 To 10'  },
+  { property:'Dawood Villa 6',    unit:'201', name:'Sharafat Taxi',         rentAmount:1000, rentSchedule:'5 To 10'  },
 
-  // ── MUSTAFA VILLA 9 ───────────────────────────────────────────────
-  { property:'Mustafa Villa 9', unit:'MSV-21',   name:'Karim / Noor Hasan',      rentAmount:1400, rentSchedule:'1 To 5'   },
-  { property:'Mustafa Villa 9', unit:'MSV-22',   name:'Noor Hasan',              rentAmount:1900, rentSchedule:'3 To 5'   },
-  { property:'Mustafa Villa 9', unit:'MSV-23',   name:'Noman Tanker Wala',       rentAmount:1000, rentSchedule:'1 To 5'   },
-  { property:'Mustafa Villa 9', unit:'MSV-24',   name:'Alam',                    rentAmount:770,  rentSchedule:'1 To 8'   },
-  { property:'Mustafa Villa 9', unit:'MSV-25',   name:'Store Room Alam Son',     rentAmount:300,  rentSchedule:'3 To 5'   },
+  // ── MUSTAFA VILLA 9 / 3 ───────────────────────────────────────────
+  { property:'Mustafa Villa 9',   unit:'21',  name:'Karim / Noor Ghani',    rentAmount:1600, rentSchedule:'1 To 5'   },
+  { property:'Mustafa Villa 9',   unit:'22',  name:'Noor Hasan',            rentAmount:1900, rentSchedule:'1 To 5'   },
+  { property:'Mustafa Villa 9',   unit:'23',  name:'Noman Tankar Wala',     rentAmount:1100, rentSchedule:'1 To 7'   },
+  { property:'Mustafa Villa 9',   unit:'24',  name:'Alam',                  rentAmount:770,  rentSchedule:'1 To 8'   },
+  { property:'Mustafa Villa 9',   unit:'25',  name:'Store Room Alam Son',   rentAmount:900,  rentSchedule:'1 To 9'   },
 
-  // ── ARIF VILLA 10 ─────────────────────────────────────────────────
-  { property:'Arif Villa 10',   unit:'ARV-31',   name:'Du Haj',                  rentAmount:1100, rentSchedule:'5 To 5'   },
-  { property:'Arif Villa 10',   unit:'ARV-32',   name:'Hamza Baloch',            rentAmount:1400, rentSchedule:'1 To 5'   },
-  { property:'Arif Villa 10',   unit:'ARV-33',   name:'Rahimullah / Manto',      rentAmount:1400, rentSchedule:'3 To 5'   },
-  { property:'Arif Villa 10',   unit:'ARV-34',   name:'Bilal / Rachman',         rentAmount:1000, rentSchedule:'1 To 5'   },
-  { property:'Arif Villa 10',   unit:'ARV-35',   name:'Bilal Shah',              rentAmount:1000, rentSchedule:'1 To 5'   },
-  { property:'Arif Villa 10',   unit:'ARV-36',   name:'Ali Khan Sweetly',        rentAmount:875,  rentSchedule:'1 To 10'  },
-  { property:'Arif Villa 10',   unit:'ARV-37',   name:'Shoaib Haji',             rentAmount:1020, rentSchedule:'1 To 10'  },
-  { property:'Arif Villa 10',   unit:'ARV-38',   name:'Ahmad Abdul Aziz',        rentAmount:1400, rentSchedule:'1 To 10'  },
-  { property:'Arif Villa 10',   unit:'ARV-39',   name:'Arif Hawas Kesh',         rentAmount:600,  rentSchedule:'1 To 5'   },
+  // ── ARIF VILLA 10 / 4 ─────────────────────────────────────────────
+  { property:'Arif Villa 10',     unit:'31',  name:'Taj Haji',              rentAmount:1300, rentSchedule:'1 To 5'   },
+  { property:'Arif Villa 10',     unit:'32',  name:'Hammad Saloon',         rentAmount:1400, rentSchedule:'5 To 10'  },
+  { property:'Arif Villa 10',     unit:'33',  name:'Rahimullah / Masto',    rentAmount:1400, rentSchedule:'1 To 10'  },
+  { property:'Arif Villa 10',     unit:'34',  name:'Bilal / Reshmin',       rentAmount:1600, rentSchedule:'1 To 5'   },
+  { property:'Arif Villa 10',     unit:'35',  name:'Bilal Shah',            rentAmount:1000, rentSchedule:'1 To 5'   },
+  { property:'Arif Villa 10',     unit:'36',  name:'Ali Khan Swaty',        rentAmount:800,  rentSchedule:'5 To 10'  },
+  { property:'Arif Villa 10',     unit:'37',  name:'Shoaib Haji',           rentAmount:1020, rentSchedule:'1 To 10'  },
+  { property:'Arif Villa 10',     unit:'38',  name:'Mangal Afghan',         rentAmount:1850, rentSchedule:'1 To 10'  },
+  { property:'Arif Villa 10',     unit:'39',  name:'Arif Hawa Kash',        rentAmount:600,  rentSchedule:'1 To 5'   },
+  { property:'Arif Villa 10',     unit:'40',  name:'Sheer Alam',            rentAmount:800,  rentSchedule:'1 To 5'   },
 
-  // ── NO ENTRY VILLA 12 ─────────────────────────────────────────────
-  { property:'No Entry Villa 12', unit:'NEV-41', name:'Du Wala',                 rentAmount:1300, rentSchedule:'10 To 15' },
-  { property:'No Entry Villa 12', unit:'NEV-42', name:'Umar / Saeed',            rentAmount:800,  rentSchedule:'1 To 5'   },
-  { property:'No Entry Villa 12', unit:'NEV-43', name:'Totano Bandwal',          rentAmount:800,  rentSchedule:'1 To 5'   },
-  { property:'No Entry Villa 12', unit:'NEV-44', name:'Nizar',                   rentAmount:800,  rentSchedule:'1 To 5'   },
-  { property:'No Entry Villa 12', unit:'NEV-45', name:'Adnan Lalor',             rentAmount:1500, rentSchedule:'1 To 5'   },
-  { property:'No Entry Villa 12', unit:'NEV-46', name:'Adnan Zafar',             rentAmount:1500, rentSchedule:'1 To 5'   },
-  { property:'No Entry Villa 12', unit:'NEV-47', name:'Hussain Bangal',          rentAmount:1500, rentSchedule:'1 To 5'   },
-  { property:'No Entry Villa 12', unit:'NEV-48', name:'Ajay Makwari',            rentAmount:1000, rentSchedule:'20 To 25' },
-  { property:'No Entry Villa 12', unit:'NEV-50', name:'Taxi Seeni Room',         rentAmount:1500, rentSchedule:'5 To 20'  },
+  // ── NO ENTRY VILLA 12 / 5 ─────────────────────────────────────────
+  { property:'No Entry Villa 12', unit:'41',  name:'Du Wala Butti Room',    rentAmount:1300, rentSchedule:'10 To 15' },
+  { property:'No Entry Villa 12', unit:'42',  name:'Umar / Saeed',          rentAmount:1400, rentSchedule:'1 To 5'   },
+  { property:'No Entry Villa 12', unit:'43',  name:'Totano Bandwal',        rentAmount:800,  rentSchedule:'1 To 5'   },
+  { property:'No Entry Villa 12', unit:'44',  name:'Nizar DTC',             rentAmount:800,  rentSchedule:'1 To 5'   },
+  { property:'No Entry Villa 12', unit:'45',  name:'Salman Labor',          rentAmount:1500, rentSchedule:'1 To 5'   },
+  { property:'No Entry Villa 12', unit:'46',  name:'Adnan Zulal',           rentAmount:1500, rentSchedule:'5 To 10'  },
+  { property:'No Entry Villa 12', unit:'47',  name:'Hussain Bangali',       rentAmount:1700, rentSchedule:'5 To 10'  },
+  { property:'No Entry Villa 12', unit:'48',  name:'Ajay Malwari',          rentAmount:800,  rentSchedule:'20 To 25' },
+  { property:'No Entry Villa 12', unit:'49',  name:'M. Nawaz',              rentAmount:1000, rentSchedule:'1 To 5'   },
+  { property:'No Entry Villa 12', unit:'50',  name:'Taxi Seeri Room',       rentAmount:1000, rentSchedule:'5 To 10'  },
 
-  // ── ZAM ZAM VILLA 7 ───────────────────────────────────────────────
-  { property:'Zam Zam Villa 7', unit:'ZZV-51',   name:'Imran Typing Wala',       rentAmount:1100, rentSchedule:'1 To 5'   },
-  { property:'Zam Zam Villa 7', unit:'ZZV-52',   name:'Said Ali',                rentAmount:3100, rentSchedule:'3 To 5'   },
-  { property:'Zam Zam Villa 7', unit:'ZZV-53',   name:'Aleem Forman',            rentAmount:1500, rentSchedule:'1 To 5'   },
-  { property:'Zam Zam Villa 7', unit:'ZZV-54',   name:'Punjabi Back Room',       rentAmount:800,  rentSchedule:'5 To 10'  },
+  // ── ZAM ZAM VILLA 7 / 6 ───────────────────────────────────────────
+  { property:'Zam Zam Villa 7',   unit:'51',  name:'Imran Typing Wala',     rentAmount:1200, rentSchedule:'1 To 10'  },
+  { property:'Zam Zam Villa 7',   unit:'52',  name:'Said Ali',              rentAmount:1100, rentSchedule:'1 To 5'   },
+  { property:'Zam Zam Villa 7',   unit:'53',  name:'Aleem Forman',          rentAmount:1000, rentSchedule:'1 To 5'   },
+  { property:'Zam Zam Villa 7',   unit:'54',  name:'Punjabi Back Room',     rentAmount:800,  rentSchedule:'5 To 10'  },
+  { property:'Zam Zam Villa 7',   unit:'55',  name:'Irfan Door Wala',       rentAmount:1600, rentSchedule:'10 To 15' },
 
-  // ── PARK VILLA 34 ─────────────────────────────────────────────────
-  { property:'Park Villa 34',   unit:'PKV-61',   name:'Misbah Afghan',           rentAmount:1300, rentSchedule:'1 To 5'   },
-  { property:'Park Villa 34',   unit:'PKV-62',   name:'Sajeed',                  rentAmount:1400, rentSchedule:'10 To 15' },
-  { property:'Park Villa 34',   unit:'PKV-63',   name:'Imran Makhbaz',           rentAmount:1400, rentSchedule:'1 To 5'   },
-  { property:'Park Villa 34',   unit:'PKV-64',   name:'M Shah Nawaz',            rentAmount:1400, rentSchedule:'1 To 5'   },
-  { property:'Park Villa 34',   unit:'PKV-65',   name:'Subhan Taxi',             rentAmount:1000, rentSchedule:'5 To 10'  },
-  { property:'Park Villa 34',   unit:'PKV-66',   name:'Khuram Afghan',           rentAmount:800,  rentSchedule:'1 To 5'   },
-  { property:'Park Villa 34',   unit:'PKV-67',   name:'Ameer Sodani',            rentAmount:1000, rentSchedule:'1 To 5'   },
-  { property:'Park Villa 34',   unit:'PKV-68',   name:'DTC Driver',              rentAmount:800,  rentSchedule:'1 To 5'   },
+  // ── PARK VILLA 34 / 7 ─────────────────────────────────────────────
+  { property:'Park Villa 34',     unit:'61',  name:'Misbah / Ghufran',      rentAmount:1400, rentSchedule:'1 To 5'   },
+  { property:'Park Villa 34',     unit:'62',  name:'Sajjad',                rentAmount:1300, rentSchedule:'1 To 5'   },
+  { property:'Park Villa 34',     unit:'63',  name:'Imran Makhbaz',         rentAmount:1400, rentSchedule:'10 To 15' },
+  { property:'Park Villa 34',     unit:'64',  name:'M Shah Nawaz',          rentAmount:1400, rentSchedule:'1 To 5'   },
+  { property:'Park Villa 34',     unit:'65',  name:'Subhan Taxi',           rentAmount:1500, rentSchedule:'5 To 10'  },
+  { property:'Park Villa 34',     unit:'66',  name:'Khuram Shehzad',        rentAmount:1000, rentSchedule:'1 To 5'   },
+  { property:'Park Villa 34',     unit:'67',  name:'Aiman Sodani',          rentAmount:1000, rentSchedule:'1 To 5'   },
+  { property:'Park Villa 34',     unit:'68',  name:'DTC Driver',            rentAmount:500,  rentSchedule:'20 To 25' },
+  { property:'Park Villa 34',     unit:'69',  name:'DTC Driver',            rentAmount:2000, rentSchedule:'20 To 25' },
 
-  // ── ABRAR VILLA 42 ────────────────────────────────────────────────
-  { property:'Abrar Villa 42',  unit:'ABV-71',   name:'Dil Haji',                rentAmount:1100, rentSchedule:'1 To 10'  },
-  { property:'Abrar Villa 42',  unit:'ABV-72',   name:'Kamal Front Room',        rentAmount:1300, rentSchedule:'1 To 5'   },
-  { property:'Abrar Villa 42',  unit:'ABV-73',   name:'Kamal Back Room',         rentAmount:1000, rentSchedule:'1 To 5'   },
-  { property:'Abrar Villa 42',  unit:'ABV-74',   name:'Himmat Labor 2',          rentAmount:1600, rentSchedule:'1 To 5'   },
-  { property:'Abrar Villa 42',  unit:'ABV-75',   name:'Afghan Last Room',        rentAmount:1000, rentSchedule:'1 To 5'   },
-  { property:'Abrar Villa 42',  unit:'ABV-76',   name:'Himmat Hujri',            rentAmount:1000, rentSchedule:'1 To 5'   },
-  { property:'Abrar Villa 42',  unit:'ABV-77',   name:'Bahadur',                 rentAmount:875,  rentSchedule:'1 To 5'   },
-  { property:'Abrar Villa 42',  unit:'ABV-78',   name:'Hijamat Oil Wala',        rentAmount:4800, rentSchedule:'1 To 10'  },
-  { property:'Abrar Villa 42',  unit:'ABV-79',   name:'Rehmat Big Room / Haider',rentAmount:1500, rentSchedule:''         },
+  // ── ABRAR VILLA 42 / 8 ────────────────────────────────────────────
+  { property:'Abrar Villa 42',    unit:'71',  name:'Oli Haji',              rentAmount:1500, rentSchedule:'1 To 10'  },
+  { property:'Abrar Villa 42',    unit:'72',  name:'Kamal Front Room',      rentAmount:1300, rentSchedule:'1 To 5'   },
+  { property:'Abrar Villa 42',    unit:'73',  name:'Hikmat Labor 1',        rentAmount:1600, rentSchedule:'1 To 5'   },
+  { property:'Abrar Villa 42',    unit:'74',  name:'Hikmat Labor 2',        rentAmount:1600, rentSchedule:'1 To 5'   },
+  { property:'Abrar Villa 42',    unit:'75',  name:'Afghan Last Room',      rentAmount:1300, rentSchedule:'1 To 5'   },
+  { property:'Abrar Villa 42',    unit:'76',  name:'Akhter Bonir',          rentAmount:700,  rentSchedule:'1 To 5'   },
+  { property:'Abrar Villa 42',    unit:'77',  name:'Baitullah',             rentAmount:600,  rentSchedule:'1 To 5'   },
+  { property:'Abrar Villa 42',    unit:'78',  name:'Hikmat Oil Wala',       rentAmount:4800, rentSchedule:'1 To 10'  },
+  { property:'Abrar Villa 42',    unit:'79',  name:'Rehmat Cylinder',       rentAmount:800,  rentSchedule:'1 To 5'   },
 
-  // ── FLAT BUILDING 24 ──────────────────────────────────────────────
-  { property:'Flat Building 24', unit:'FLB-81',  name:'Noman B1',                rentAmount:1500, rentSchedule:'15 To 20' },
-  { property:'Flat Building 24', unit:'FLB-82',  name:'Noman B1 (2)',            rentAmount:1500, rentSchedule:'15 To 20' },
-  { property:'Flat Building 24', unit:'FLB-83',  name:'Flat Building Room',      rentAmount:1650, rentSchedule:'15 To 20' },
-  { property:'Flat Building 24', unit:'FLB-84',  name:'Qazi Link Room',          rentAmount:1600, rentSchedule:''         },
-  { property:'Flat Building 24', unit:'FLB-85',  name:'Said MC Room',            rentAmount:1800, rentSchedule:'10 To 15' },
-  { property:'Flat Building 24', unit:'FLB-87',  name:'M Akbar',                 rentAmount:900,  rentSchedule:'1 To 10'  },
+  // ── FLAT BUILDING 24 / 9/1 ────────────────────────────────────────
+  { property:'Flat Building 24 (9/1)', unit:'81', name:'Noman R1',          rentAmount:1500, rentSchedule:'15 To 20' },
+  { property:'Flat Building 24 (9/1)', unit:'82', name:'Noman R2',          rentAmount:1500, rentSchedule:'15 To 20' },
+  { property:'Flat Building 24 (9/1)', unit:'83', name:'Talabat Punjabi',   rentAmount:1650, rentSchedule:'15 To 20' },
+  { property:'Flat Building 24 (9/1)', unit:'84', name:'Qair Link New',     rentAmount:1100, rentSchedule:'1 To 10'  },
 
-  // ── MUNEER VILLA 13 ───────────────────────────────────────────────
-  { property:'Muneer Villa 13', unit:'MNV-89',   name:'Ihsan / Zafar',           rentAmount:875,  rentSchedule:'15 onwards'},
-  { property:'Muneer Villa 13', unit:'MNV-90',   name:'Ihsan / Zafar (2)',       rentAmount:875,  rentSchedule:'15 onwards'},
-  { property:'Muneer Villa 13', unit:'MNV-91',   name:'Ihsan / Zafar (3)',       rentAmount:875,  rentSchedule:'15 onwards'},
-  { property:'Muneer Villa 13', unit:'MNV-92',   name:'Ihsan (4)',               rentAmount:875,  rentSchedule:'15 onwards'},
-  { property:'Muneer Villa 13', unit:'MNV-93',   name:'Rasool Jan',              rentAmount:1100, rentSchedule:'1 To 5'   },
-  { property:'Muneer Villa 13', unit:'MNV-94',   name:'Razaallah',               rentAmount:875,  rentSchedule:'15 onwards'},
+  // ── FLAT BUILDING 24 / 9/6 ────────────────────────────────────────
+  { property:'Flat Building 24 (9/6)', unit:'85', name:'Sajid - Nabil Advert', rentAmount:1800, rentSchedule:'1 To 5'   },
+  { property:'Flat Building 24 (9/6)', unit:'86', name:'Safeer - Ibrahim',  rentAmount:1600, rentSchedule:'25 To 30' },
+  { property:'Flat Building 24 (9/6)', unit:'87', name:'M. Akbar',          rentAmount:1500, rentSchedule:'1 To 10'  },
+  { property:'Flat Building 24 (9/6)', unit:'88', name:'Wasi Eng',          rentAmount:900,  rentSchedule:'1 To 10'  },
 
-  // ── MUNEER VILLA 10 ───────────────────────────────────────────────
-  { property:'Muneer Villa 10', unit:'MNV2-101', name:'Hamid Recovery',          rentAmount:0,    rentSchedule:'1 To 5'   },
-  { property:'Muneer Villa 10', unit:'MNV2-102', name:'Sadeen Kitchen Room',     rentAmount:1500, rentSchedule:'5 To 10'  },
-  { property:'Muneer Villa 10', unit:'MNV2-103', name:'Said Afghan',             rentAmount:1500, rentSchedule:'1 To 5'   },
-  { property:'Muneer Villa 10', unit:'MNV2-104', name:'Imran Afghan',            rentAmount:1000, rentSchedule:'1 To 5'   },
-  { property:'Muneer Villa 10', unit:'MNV2-105', name:'Imran Afghan (2)',        rentAmount:1000, rentSchedule:'1 To 10'  },
-  { property:'Muneer Villa 10', unit:'MNV2-106', name:'Hamid Afghan',            rentAmount:1000, rentSchedule:'5 To 5'   },
-  { property:'Muneer Villa 10', unit:'MNV2-107', name:'Hawaya Big Room',         rentAmount:1500, rentSchedule:'5 To 5'   },
+  // ── MUNEER VILLA 13 / 10 ──────────────────────────────────────────
+  { property:'Muneer Villa 13',   unit:'91',  name:'Ihsan / Zafar',         rentAmount:875,  rentSchedule:'15 onwards' },
+  { property:'Muneer Villa 13',   unit:'92',  name:'Ihsan / Zafar',         rentAmount:875,  rentSchedule:'15 onwards' },
+  { property:'Muneer Villa 13',   unit:'93',  name:'Ihsan / Zafar',         rentAmount:875,  rentSchedule:'15 onwards' },
+  { property:'Muneer Villa 13',   unit:'94',  name:'Ihsan / Zafar',         rentAmount:875,  rentSchedule:'15 onwards' },
+  { property:'Muneer Villa 13',   unit:'95',  name:'Ihsan / Zafar',         rentAmount:875,  rentSchedule:'15 onwards' },
+  { property:'Muneer Villa 13',   unit:'96',  name:'Ihsan / Zafar',         rentAmount:875,  rentSchedule:'15 onwards' },
+  { property:'Muneer Villa 13',   unit:'97',  name:'Rasool Jan',            rentAmount:1100, rentSchedule:'1 To 10'  },
+  { property:'Muneer Villa 13',   unit:'98',  name:'Ihsan / Zafar',         rentAmount:2000, rentSchedule:'15 onwards' },
+  { property:'Muneer Villa 13',   unit:'99',  name:'Sing Paji',             rentAmount:1000, rentSchedule:'20 To 25' },
+  { property:'Muneer Villa 13',   unit:'100', name:'Shafiq Taxi',           rentAmount:1400, rentSchedule:'10 To 15' },
 
-  // ── ABU MARIAM VILLA 3 ────────────────────────────────────────────
-  { property:'Abu Mariam Villa 3', unit:'AMV-111', name:'Taxi Terminal Clinic',  rentAmount:1100, rentSchedule:'1 To 10'  },
-  { property:'Abu Mariam Villa 3', unit:'AMV-112', name:'Jabor Dewa',            rentAmount:1600, rentSchedule:'20 To 25' },
-  { property:'Abu Mariam Villa 3', unit:'AMV-114', name:'Khalid Abdur Rahman',   rentAmount:1300, rentSchedule:'1 To 5'   },
-  { property:'Abu Mariam Villa 3', unit:'AMV-115', name:'Afghan Fazal Link',     rentAmount:1400, rentSchedule:'20 To 25' },
-  { property:'Abu Mariam Villa 3', unit:'AMV-116', name:'Imran Afghan 2',        rentAmount:1200, rentSchedule:'10 To 15' },
-  { property:'Abu Mariam Villa 3', unit:'AMV-119', name:'Sajad Afghan',          rentAmount:1000, rentSchedule:'10 To 15' },
+  // ── MUNEER VILLA 10 / 11 ──────────────────────────────────────────
+  { property:'Muneer Villa 10',   unit:'101', name:'Hamid Recovery',        rentAmount:1200, rentSchedule:'1 To 5'   },
+  { property:'Muneer Villa 10',   unit:'102', name:'Sodani Kitchen Room',   rentAmount:600,  rentSchedule:'1 To 5'   },
+  { property:'Muneer Villa 10',   unit:'103', name:'Sajid Pathan',          rentAmount:1650, rentSchedule:'5 To 10'  },
+  { property:'Muneer Villa 10',   unit:'104', name:'Rafi Afghan',           rentAmount:1000, rentSchedule:'1 To 5'   },
+  { property:'Muneer Villa 10',   unit:'105', name:'Imran Afghan',          rentAmount:1000, rentSchedule:'1 To 5'   },
+  { property:'Muneer Villa 10',   unit:'106', name:'Inayat Afghan',         rentAmount:1000, rentSchedule:'1 To 5'   },
+  { property:'Muneer Villa 10',   unit:'107', name:'Rawza Big Room',        rentAmount:1000, rentSchedule:'1 To 5'   },
+  { property:'Muneer Villa 10',   unit:'108', name:'M Zaman Back Room',     rentAmount:1600, rentSchedule:'5 To 10'  },
 
-  // ── KHALID VILLA 4 ────────────────────────────────────────────────
-  { property:'Khalid Villa 4',  unit:'KHV-121',  name:'Taxi Wala',               rentAmount:1800, rentSchedule:'1 To 5'   },
-  { property:'Khalid Villa 4',  unit:'KHV-122',  name:'Noor Kallwal Taxi',       rentAmount:2300, rentSchedule:'1 To 5'   },
+  // ── ABU MARYAM VILLA 3 / 12 ───────────────────────────────────────
+  { property:'Abu Maryam Villa 3', unit:'111', name:'Taxi Palawan Link',    rentAmount:1500, rentSchedule:'1 To 10'  },
+  { property:'Abu Maryam Villa 3', unit:'112', name:'Jabar Dewa',           rentAmount:1500, rentSchedule:'1 To 5'   },
+  { property:'Abu Maryam Villa 3', unit:'113', name:'Jabar Dewa',           rentAmount:1300, rentSchedule:'20 To 25' },
+  { property:'Abu Maryam Villa 3', unit:'114', name:'Jabar Dewa',           rentAmount:1300, rentSchedule:'20 To 25' },
+  { property:'Abu Maryam Villa 3', unit:'115', name:'Khalid Pathan - Ihsan', rentAmount:2000, rentSchedule:'1 To 5'  },
+  { property:'Abu Maryam Villa 3', unit:'116', name:'Afghan Fazal Link',    rentAmount:1400, rentSchedule:'20 To 25' },
+  { property:'Abu Maryam Villa 3', unit:'117', name:'Qari Waliullah',       rentAmount:2000, rentSchedule:'1 To 5'   },
+  { property:'Abu Maryam Villa 3', unit:'118', name:'UnHappy Chacha',       rentAmount:900,  rentSchedule:'1 To 10'  },
+  { property:'Abu Maryam Villa 3', unit:'119', name:'Jabar Dewa',           rentAmount:2000, rentSchedule:'1 To 10'  },
+  { property:'Abu Maryam Villa 3', unit:'120', name:'Bangali 4 Man',        rentAmount:1200, rentSchedule:'10 To 15' },
 
-  // ── GARI LINK TALABAT ─────────────────────────────────────────────
-  { property:'Gari Link Talabat', unit:'GLT-126', name:'Gari Link Talabat',      rentAmount:2100, rentSchedule:''         },
+  // ── KHALID VILLA 4 / 13 ───────────────────────────────────────────
+  { property:'Khalid Villa 4',    unit:'121', name:'Lal Bacha',             rentAmount:2500, rentSchedule:'1 To 5'   },
+  { property:'Khalid Villa 4',    unit:'122', name:'Noor Kaliwal Taxi',     rentAmount:2300, rentSchedule:'1 To 5'   },
+  { property:'Khalid Villa 4',    unit:'125', name:'Qari Link Talabat',     rentAmount:2100, rentSchedule:''         },
 ]
 
 const TOTAL = TENANTS.length
 const TOTAL_RENT = TENANTS.reduce((s, t) => s + t.rentAmount, 0)
+const PROPERTY_COUNT = new Set(TENANTS.map((t) => t.property)).size
 
 export default function ImportData() {
-  const [status, setStatus] = useState('idle') // idle | running | done | error
+  const [status, setStatus] = useState('idle') // idle | clearing | running | done | error
   const [done, setDone] = useState(0)
+  const [cleared, setCleared] = useState(0)
   const [errorMsg, setErrorMsg] = useState('')
+  const [existing, setExisting] = useState([])
   const navigate = useNavigate()
+
+  useEffect(() => {
+    return watchCollection('tenants', 'createdAt', 'desc', setExisting, () => {})
+  }, [])
+
+  async function importAll() {
+    for (let i = 0; i < TENANTS.length; i++) {
+      const t = TENANTS[i]
+      await addItem('tenants', {
+        name: t.name,
+        unit: t.unit,
+        property: t.property,
+        rentAmount: t.rentAmount,
+        rentSchedule: t.rentSchedule,
+        phone: '',
+        dueDate: '',
+        paid: false,
+      })
+      setDone(i + 1)
+    }
+  }
 
   async function runImport() {
     setStatus('running')
     setDone(0)
     setErrorMsg('')
     try {
-      for (let i = 0; i < TENANTS.length; i++) {
-        const t = TENANTS[i]
-        await addItem('tenants', {
-          name: t.name,
-          unit: t.unit,
-          rentAmount: t.rentAmount,
-          phone: '',
-          dueDate: '',
-          paid: false,
-          notes: `Property: ${t.property}${t.rentSchedule ? ' | Payment cycle: ' + t.rentSchedule : ''}`,
-        })
-        setDone(i + 1)
+      await importAll()
+      setStatus('done')
+    } catch (err) {
+      setErrorMsg(err.message || 'Import failed.')
+      setStatus('error')
+    }
+  }
+
+  async function runClearAndImport() {
+    const count = existing.length
+    if (
+      !window.confirm(
+        `This will DELETE all ${count} tenants currently in the app and replace them with the ${TOTAL} corrected tenants. Continue?`
+      )
+    )
+      return
+    setStatus('clearing')
+    setCleared(0)
+    setDone(0)
+    setErrorMsg('')
+    try {
+      const toDelete = [...existing]
+      for (let i = 0; i < toDelete.length; i++) {
+        await removeItem('tenants', toDelete[i].id)
+        setCleared(i + 1)
       }
+      setStatus('running')
+      await importAll()
       setStatus('done')
     } catch (err) {
       setErrorMsg(err.message || 'Import failed.')
@@ -171,8 +225,8 @@ export default function ImportData() {
         <span className="gold-rule" />
         <p className="text-gray-500 text-sm mt-3">
           Imports all <strong className="text-charcoal-900">{TOTAL} tenants</strong> from
-          your spreadsheet directly into Firebase. Run this once — after that, manage
-          everything through the Tenants page.
+          your spreadsheet — with the corrected rents, names, and the Rent Date column —
+          directly into Firebase.
         </p>
       </div>
 
@@ -190,7 +244,7 @@ export default function ImportData() {
         </div>
         <div className="flex-1">
           <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Properties</p>
-          <p className="text-4xl font-bold text-charcoal-900 mt-1">14</p>
+          <p className="text-4xl font-bold text-charcoal-900 mt-1">{PROPERTY_COUNT}</p>
         </div>
       </div>
 
@@ -198,14 +252,49 @@ export default function ImportData() {
       <div className="card p-6 mb-6">
         {status === 'idle' && (
           <div className="text-center py-4">
-            <p className="text-gray-600 mb-6 text-sm">
-              All tenants are shown in the table below. Click the button to upload them to Firebase.
-              Each tenant will start as <strong>Unpaid</strong> — you can mark them paid in the Tenants page.
-            </p>
-            <button onClick={runImport} className="btn-primary px-10 py-4 text-base flex items-center gap-2 mx-auto">
-              <Upload size={20} />
-              Import All {TOTAL} Tenants to Firebase
-            </button>
+            {existing.length > 0 ? (
+              <>
+                <p className="text-gray-600 mb-2 text-sm">
+                  You already have <strong className="text-charcoal-900">{existing.length} tenants</strong> in
+                  the app (the old import with wrong amounts).
+                </p>
+                <p className="text-gray-600 mb-6 text-sm">
+                  Use the red button to <strong>delete the old data and import the corrected list</strong> in one step.
+                </p>
+                <button
+                  onClick={runClearAndImport}
+                  className="btn-danger px-10 py-4 text-base flex items-center gap-2 mx-auto"
+                >
+                  <Trash2 size={20} />
+                  Delete Old Data & Import {TOTAL} Corrected Tenants
+                </button>
+                <button
+                  onClick={runImport}
+                  className="text-gray-400 text-xs underline mt-4 hover:text-gray-600"
+                >
+                  or import without deleting (will create duplicates)
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-gray-600 mb-6 text-sm">
+                  All tenants are shown in the table below. Click the button to upload them to Firebase.
+                  Each tenant starts as <strong>Unpaid</strong> — mark them paid in the Tenants page as you collect.
+                </p>
+                <button onClick={runImport} className="btn-primary px-10 py-4 text-base flex items-center gap-2 mx-auto">
+                  <Upload size={20} />
+                  Import All {TOTAL} Tenants to Firebase
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        {status === 'clearing' && (
+          <div className="text-center py-4">
+            <Loader2 size={40} className="animate-spin text-rust-600 mx-auto mb-4" />
+            <p className="text-charcoal-900 font-semibold text-lg">Deleting old data…</p>
+            <p className="text-gray-500 text-sm mt-1">{cleared} removed</p>
           </div>
         )}
 
@@ -228,7 +317,8 @@ export default function ImportData() {
             <CheckCircle size={48} className="text-emerald2-600 mx-auto mb-4" />
             <p className="text-charcoal-900 font-bold text-xl">Import Complete!</p>
             <p className="text-gray-500 text-sm mt-2 mb-6">
-              All {TOTAL} tenants are now in Firebase and syncing across every phone.
+              All {TOTAL} tenants are now in Firebase with the corrected rents and rent dates,
+              syncing across every phone.
             </p>
             <button onClick={() => navigate('/tenants')} className="btn-primary px-8 py-3">
               Go to Tenants →
@@ -242,11 +332,10 @@ export default function ImportData() {
             <p className="text-charcoal-900 font-semibold">Import Failed</p>
             <p className="text-rust-600 text-sm mt-1 mb-4">{errorMsg}</p>
             <p className="text-gray-500 text-xs mb-4">
-              Make sure you are signed in and Firebase is connected, then try again.
-              Already-imported tenants won't be duplicated.
+              Make sure you are signed in and connected to the internet, then try again.
             </p>
-            <button onClick={runImport} className="btn-primary px-8 py-3">
-              Retry
+            <button onClick={runClearAndImport} className="btn-primary px-8 py-3">
+              Retry (Delete All & Reimport)
             </button>
           </div>
         )}
@@ -263,11 +352,11 @@ export default function ImportData() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 text-left">
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Unit</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Room</th>
                   <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
                   <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Property</th>
                   <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Rent (AED)</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Payment Cycle</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Rent Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -276,9 +365,7 @@ export default function ImportData() {
                     <td className="px-4 py-3 font-mono text-xs text-gray-500">{t.unit}</td>
                     <td className="px-4 py-3 font-medium text-charcoal-900">{t.name}</td>
                     <td className="px-4 py-3 text-gray-600 text-xs">{t.property}</td>
-                    <td className="px-4 py-3 font-semibold text-charcoal-900">
-                      {t.rentAmount > 0 ? t.rentAmount.toLocaleString() : <span className="text-gray-400">—</span>}
-                    </td>
+                    <td className="px-4 py-3 font-semibold text-charcoal-900">{t.rentAmount.toLocaleString()}</td>
                     <td className="px-4 py-3 text-gray-500 text-xs">{t.rentSchedule || '—'}</td>
                   </tr>
                 ))}

@@ -17,7 +17,9 @@ const EMPTY_FORM = {
   name: '',
   phone: '',
   unit: '',
+  property: '',
   rentAmount: '',
+  rentSchedule: '',
   dueDate: '',
   paid: false,
 }
@@ -28,7 +30,7 @@ function TenantModal({ open, onClose, onSave, initial, loading }) {
 
   useEffect(() => {
     if (open) {
-      setForm(initial ? { ...initial } : { ...EMPTY_FORM })
+      setForm(initial ? { ...EMPTY_FORM, ...initial } : { ...EMPTY_FORM })
       setError('')
     }
   }, [open, initial])
@@ -99,13 +101,13 @@ function TenantModal({ open, onClose, onSave, initial, loading }) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Unit Number *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Room Number *</label>
               <input
                 name="unit"
                 value={form.unit}
                 onChange={handleChange}
                 className="input-field"
-                placeholder="e.g. A-101"
+                placeholder="e.g. 21"
                 required
               />
             </div>
@@ -125,14 +127,37 @@ function TenantModal({ open, onClose, onSave, initial, loading }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Property / Villa</label>
             <input
-              name="dueDate"
-              type="date"
-              value={form.dueDate}
+              name="property"
+              value={form.property}
               onChange={handleChange}
               className="input-field"
+              placeholder="e.g. Adil Villa 8"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Rent Date</label>
+              <input
+                name="rentSchedule"
+                value={form.rentSchedule}
+                onChange={handleChange}
+                className="input-field"
+                placeholder="e.g. 1 To 5"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+              <input
+                name="dueDate"
+                type="date"
+                value={form.dueDate}
+                onChange={handleChange}
+                className="input-field"
+              />
+            </div>
           </div>
 
           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
@@ -198,6 +223,7 @@ export default function Tenants() {
     const matchSearch =
       t.name?.toLowerCase().includes(search.toLowerCase()) ||
       t.unit?.toLowerCase().includes(search.toLowerCase()) ||
+      t.property?.toLowerCase().includes(search.toLowerCase()) ||
       t.phone?.includes(search)
     const matchFilter =
       filter === 'all' ? true : filter === 'paid' ? t.paid : !t.paid
@@ -211,7 +237,9 @@ export default function Tenants() {
         name: form.name.trim(),
         phone: form.phone.trim(),
         unit: form.unit.trim(),
+        property: (form.property || '').trim(),
         rentAmount: Number(form.rentAmount),
+        rentSchedule: (form.rentSchedule || '').trim(),
         dueDate: form.dueDate,
         paid: form.paid,
       }
@@ -249,11 +277,12 @@ export default function Tenants() {
     const amount = Number(tenant.rentAmount || 0).toLocaleString()
     const unit = tenant.unit || ''
     const name = tenant.name || ''
-    let dateStr = 'N/A'
+    let dateStr = ''
     try {
       if (tenant.dueDate) dateStr = format(parseISO(tenant.dueDate), 'MMMM d, yyyy')
     } catch {}
-    const text = `Dear ${name}, your rent of AED ${amount} for unit ${unit} is due on ${dateStr}. Please arrange payment. Thank you, Ajman Rentals.`
+    if (!dateStr && tenant.rentSchedule) dateStr = `the ${tenant.rentSchedule} of this month`
+    const text = `Dear ${name}, your rent of AED ${amount} for room ${unit} is due${dateStr ? ' on ' + dateStr : ''}. Please arrange payment. Thank you, Ajman Rentals.`
     return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
   }
 
@@ -379,17 +408,29 @@ export default function Tenants() {
 
                 <div className="space-y-1.5 mb-4 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Unit</span>
+                    <span className="text-gray-500">Room</span>
                     <span className="font-medium text-gray-900">{tenant.unit || 'N/A'}</span>
                   </div>
+                  {tenant.property && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Property</span>
+                      <span className="font-medium text-gray-900 text-right">{tenant.property}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-gray-500">Rent</span>
                     <span className="font-medium text-gray-900">AED {Number(tenant.rentAmount || 0).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Due Date</span>
-                    <span className="font-medium text-gray-900">{dueDateDisplay}</span>
+                    <span className="text-gray-500">Rent Date</span>
+                    <span className="font-semibold text-primary-700">{tenant.rentSchedule || '—'}</span>
                   </div>
+                  {tenant.dueDate && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Due Date</span>
+                      <span className="font-medium text-gray-900">{dueDateDisplay}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-2 pt-3 border-t border-gray-100">
