@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Building2,
   ArrowLeft,
@@ -8,8 +9,17 @@ import {
   Home,
   DoorOpen,
   Wallet,
+  ChevronRight,
 } from 'lucide-react';
 import businessData from '../data/businessData.json';
+
+// The app shell (<main>) is the scroll container, not the window —
+// must scroll it explicitly when switching views.
+function scrollAppToTop() {
+  const main = document.querySelector('main');
+  if (main) main.scrollTo({ top: 0, behavior: 'instant' });
+  window.scrollTo(0, 0);
+}
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -33,6 +43,27 @@ const sumNonNull = (arr) =>
   (arr || []).reduce((s, v) => (v === null || v === undefined ? s : s + v), 0);
 
 const profitClass = (n) => (n !== null && n !== undefined && n < 0 ? 'text-rust-600' : 'text-emerald2-600');
+
+// In-progress years sometimes lack the Total cell — derive it from
+// the monthly values or room totals so cards never show "–".
+const hasVal = (n) => n !== null && n !== undefined && !Number.isNaN(n);
+function effIncome(yd) {
+  if (hasVal(yd?.incomeTotal)) return yd.incomeTotal;
+  if (Array.isArray(yd?.incomeMonthly) && yd.incomeMonthly.some(hasVal)) return sumNonNull(yd.incomeMonthly);
+  if (Array.isArray(yd?.rooms) && yd.rooms.length) return yd.rooms.reduce((s, r) => s + (hasVal(r.total) ? r.total : sumNonNull(r.monthly)), 0);
+  return null;
+}
+function effExpense(yd) {
+  if (hasVal(yd?.expenseTotal)) return yd.expenseTotal;
+  if (Array.isArray(yd?.expenseMonthly) && yd.expenseMonthly.some(hasVal)) return sumNonNull(yd.expenseMonthly);
+  return null;
+}
+function effProfit(yd) {
+  if (hasVal(yd?.profitTotal)) return yd.profitTotal;
+  const inc = effIncome(yd), exp = effExpense(yd);
+  if (inc !== null && exp !== null) return inc - exp;
+  return null;
+}
 
 // ---------- small pieces ----------
 
@@ -143,15 +174,16 @@ function VillaDetail({ villa, onBack }) {
         ))}
       </div>
 
-      {/* stat mini-cards */}
+      {/* stat mini-cards — keyed by year so switching years re-animates */}
+      <div key={year} className="animate-fade-up">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-5">
-        <MiniStat icon={TrendingUp} label="Income" value={`AED ${fmt(yd.incomeTotal)}`} />
-        <MiniStat icon={TrendingDown} label="Expenses" value={`AED ${fmt(yd.expenseTotal)}`} />
+        <MiniStat icon={TrendingUp} label="Income" value={`AED ${fmt(effIncome(yd))}`} />
+        <MiniStat icon={TrendingDown} label="Expenses" value={`AED ${fmt(effExpense(yd))}`} />
         <MiniStat
           icon={Wallet}
           label="Net Profit"
-          value={`AED ${fmtSigned(yd.profitTotal)}`}
-          valueClass={profitClass(yd.profitTotal)}
+          value={`AED ${fmtSigned(effProfit(yd))}`}
+          valueClass={profitClass(effProfit(yd))}
         />
         <MiniStat
           icon={Zap}
@@ -315,16 +347,14 @@ function VillaDetail({ villa, onBack }) {
                     onClick={() => setYear(y)}
                   >
                     <td className={`${tdBase} font-semibold text-charcoal-900`}>{y}</td>
-                    <td className={`${tdBase} text-right text-gray-700`}>{fmt(d.incomeTotal)}</td>
-                    <td className={`${tdBase} text-right text-gray-700`}>{fmt(d.expenseTotal)}</td>
+                    <td className={`${tdBase} text-right text-gray-700`}>{fmt(effIncome(d))}</td>
+                    <td className={`${tdBase} text-right text-gray-700`}>{fmt(effExpense(d))}</td>
                     <td
                       className={`${tdBase} text-right font-semibold ${
-                        d.profitTotal === null || d.profitTotal === undefined
-                          ? 'text-gray-400'
-                          : profitClass(d.profitTotal)
+                        effProfit(d) === null ? 'text-gray-400' : profitClass(effProfit(d))
                       }`}
                     >
-                      {fmtSigned(d.profitTotal)}
+                      {fmtSigned(effProfit(d))}
                     </td>
                   </tr>
                 );
@@ -332,6 +362,7 @@ function VillaDetail({ villa, onBack }) {
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </div>
   );
@@ -344,17 +375,20 @@ function VillaCard({ villa, onSelect }) {
   const latest = years[years.length - 1];
   const yd = villa.years[latest] || {};
   const maxRooms = Math.max(0, ...years.map((y) => (villa.years[y].rooms || []).length));
+  const income = effIncome(yd);
+  const expense = effExpense(yd);
+  const profit = effProfit(yd);
 
   return (
     <button
       onClick={onSelect}
-      className="card text-left w-full hover:shadow-float hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+      className="card text-left w-full hover:shadow-float hover:-translate-y-1 active:scale-[0.97] active:bg-primary-50/40 transition-all duration-300 cursor-pointer group"
     >
       <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-charcoal-900 flex items-center justify-center font-bold shadow-card shrink-0">
+        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-charcoal-900 flex items-center justify-center font-bold shadow-card shrink-0 group-hover:scale-110 transition-transform duration-300">
           {villa.num}
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h3 className="font-semibold text-charcoal-900 text-sm leading-snug truncate">
             {villa.name}
           </h3>
@@ -366,21 +400,24 @@ function VillaCard({ villa, onSelect }) {
             {maxRooms} room{maxRooms === 1 ? '' : 's'}
           </p>
         </div>
+        <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-primary-700 bg-primary-50 group-hover:bg-primary-100 px-2 py-1 rounded-full transition-colors shrink-0">
+          View <ChevronRight size={11} />
+        </span>
       </div>
 
       <div className="mt-4 space-y-1.5 text-xs">
         <div className="flex justify-between">
           <span className="text-gray-500">Income {latest}</span>
-          <span className="font-semibold text-charcoal-900">AED {fmt(yd.incomeTotal)}</span>
+          <span className="font-semibold text-charcoal-900">AED {fmt(income)}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-gray-500">Expenses {latest}</span>
-          <span className="font-semibold text-charcoal-900">AED {fmt(yd.expenseTotal)}</span>
+          <span className="font-semibold text-charcoal-900">AED {fmt(expense)}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-gray-500">Net Profit {latest}</span>
-          <span className={`font-bold ${profitClass(yd.profitTotal)}`}>
-            AED {fmtSigned(yd.profitTotal)}
+          <span className={`font-bold ${profitClass(profit)}`}>
+            AED {fmtSigned(profit)}
           </span>
         </div>
       </div>
@@ -391,8 +428,21 @@ function VillaCard({ villa, onSelect }) {
 }
 
 export default function Properties() {
-  const [selectedId, setSelectedId] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedId = searchParams.get('villa');
   const villas = businessData.villas || [];
+
+  function setSelectedId(id) {
+    const next = new URLSearchParams(searchParams);
+    if (id) next.set('villa', id);
+    else next.delete('villa');
+    setSearchParams(next);   // pushState — phone back button returns to the list
+  }
+
+  // New view = start at the top, not wherever the list was scrolled to
+  useEffect(() => {
+    scrollAppToTop();
+  }, [selectedId]);
 
   const stats = useMemo(() => {
     let best = null; // { villa, year, profit }
