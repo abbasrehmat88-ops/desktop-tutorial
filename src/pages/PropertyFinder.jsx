@@ -512,18 +512,6 @@ function SearchAgent({ label, subtitle, criteria, steps, data, variant = 'defaul
         </div>
       )}
 
-      {/* Idle placeholder */}
-      {status === 'idle' && (
-        <div className="card p-10 text-center">
-          <div className="w-14 h-14 bg-primary-50 rounded-3xl flex items-center justify-center mx-auto mb-3">
-            <Building2 size={24} className="text-primary-500" />
-          </div>
-          <h3 className="text-charcoal-900 font-semibold mb-1">AI Agent Ready</h3>
-          <p className="text-gray-400 text-sm max-w-xs mx-auto">
-            Press <strong className="text-charcoal-700">Search Properties</strong> above — the AI agent will find matching listings instantly.
-          </p>
-        </div>
-      )}
     </div>
   )
 }
