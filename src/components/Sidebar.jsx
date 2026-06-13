@@ -13,6 +13,7 @@ import {
   KeyRound,
   Wallet,
   CalendarClock,
+  Sparkles,
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -25,7 +26,8 @@ const navItems = [
   { to: '/owners',     icon: KeyRound,        label: 'Owners'     },
   { to: '/cashflow',   icon: Wallet,          label: 'Cash Flow'  },
   { to: '/reminders',  icon: Bell,            label: 'Reminders'  },
-  { to: '/properties', icon: Building2,       label: 'Properties' },
+  { to: '/properties',      icon: Building2,   label: 'Properties'     },
+  { to: '/property-finder', icon: Sparkles,    label: 'Property Finder' },
 ]
 
 export default function Sidebar({ open, onClose }) {
