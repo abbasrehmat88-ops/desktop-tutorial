@@ -13,6 +13,7 @@ import Deposits from './pages/Deposits';
 import Owners from './pages/Owners';
 import CashFlow from './pages/CashFlow';
 import Dues from './pages/Dues';
+import PropertyFinder from './pages/PropertyFinder';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
               <Route path="/owners" element={<Owners />} />
               <Route path="/cashflow" element={<CashFlow />} />
               <Route path="/dues" element={<Dues />} />
+              <Route path="/property-finder" element={<PropertyFinder />} />
               <Route path="/import-data" element={<ImportData />} />
             </Route>
           </Route>
