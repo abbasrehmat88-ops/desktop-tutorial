@@ -374,7 +374,7 @@ function PropertyCard({ property: p }) {
 
 // ─── Reusable search agent block ──────────────────────────────────────────────
 
-function SearchAgent({ label, subtitle, criteria, steps, data, accentColor = 'from-charcoal-900 to-charcoal-800' }) {
+function SearchAgent({ label, subtitle, criteria, steps, data, variant = 'default' }) {
   const [status, setStatus]   = useState('idle')
   const [filter, setFilter]   = useState('All')
   const [sortBy, setSortBy]   = useState('price_asc')
@@ -407,10 +407,14 @@ function SearchAgent({ label, subtitle, criteria, steps, data, accentColor = 'fr
   const villaCount    = results.filter(p => p.type === 'Villa').length
   const buildingCount = results.filter(p => p.type === 'Building').length
 
+  const heroClass = variant === 'warm'
+    ? 'card !p-6 mb-5 bg-gradient-to-br from-primary-800 to-charcoal-900 border-0'
+    : 'card !p-6 mb-5 bg-gradient-to-br from-charcoal-900 to-charcoal-800 border-0'
+
   return (
     <div className="mb-10">
       {/* Hero search card */}
-      <div className={`card !p-6 mb-5 bg-gradient-to-br ${accentColor} border-0`}>
+      <div className={heroClass}>
         <div className="flex items-start gap-4 mb-5">
           <div className="w-12 h-12 bg-primary-400/20 border border-primary-400/30 rounded-2xl flex items-center justify-center flex-shrink-0">
             <Sparkles size={22} className="text-primary-400" />
@@ -568,7 +572,7 @@ export default function PropertyFinder() {
         criteria={['📍 Ajman', '🏠 Villa / Building', '🔑 For Rent', '📞 Contact details']}
         steps={AJMAN_STEPS}
         data={AJMAN_PROPERTIES}
-        accentColor="from-charcoal-900 to-charcoal-800"
+        variant="default"
       />
 
       {/* Divider */}
@@ -585,7 +589,7 @@ export default function PropertyFinder() {
         criteria={['📍 Al Nuaimia 2, Ajman', '🏠 Villa / Building', '🔑 For Rent', '📞 Contact details']}
         steps={NUAIMIA_STEPS}
         data={NUAIMIA2_PROPERTIES}
-        accentColor="from-[#1a1060] to-[#2a1880]"
+        variant="warm"
       />
     </div>
   )
