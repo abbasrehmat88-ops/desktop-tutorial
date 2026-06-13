@@ -108,6 +108,7 @@ export default function Dashboard() {
   const [owners, setOwners] = useState([])
   const [loadingTenants, setLoadingTenants] = useState(true)
   const [loadingReminders, setLoadingReminders] = useState(true)
+  const [showCharts, setShowCharts] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -148,10 +149,14 @@ export default function Dashboard() {
       (err) => console.error('Owners fetch error:', err)
     )
 
+    // Defer heavy chart rendering until after first paint
+    const chartTimer = setTimeout(() => setShowCharts(true), 400)
+
     return () => {
       unsubTenants()
       unsubReminders()
       unsubOwners()
+      clearTimeout(chartTimer)
     }
   }, [])
 
@@ -201,15 +206,14 @@ export default function Dashboard() {
   const monthlySeries = useMemo(() => buildMonthlySeries(), [])
   const topVillas = useMemo(() => buildTopVillas(), [])
 
-  const loading = loadingTenants || loadingReminders
+  const loading = loadingTenants
   const firstName = currentUser?.email?.split('@')[0] || 'there'
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
       {/* Hero banner */}
       <div className="relative overflow-hidden rounded-card bg-charcoal-900 mb-8 animate-fade-up">
-        <div className="absolute -top-24 -right-16 w-80 h-80 rounded-full bg-primary-500/20 blur-[100px] animate-drift" />
-        <div className="absolute -bottom-28 left-1/4 w-72 h-72 rounded-full bg-primary-600/10 blur-[90px] animate-drift-slow" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-900/30 via-transparent to-charcoal-800 pointer-events-none" />
         <div className="relative px-6 py-8 sm:px-10 sm:py-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
           <div>
             <p className="text-primary-400 text-[11px] uppercase tracking-[0.25em] mb-2">
@@ -477,7 +481,14 @@ export default function Dashboard() {
         <span className="gold-rule" />
         <p className="text-xs text-gray-400 mt-1 mb-5">Villa cash flow over the last 12 months</p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {!showCharts && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="card p-5 h-[300px] animate-pulse bg-gray-50" />
+            <div className="card p-5 h-[300px] animate-pulse bg-gray-50" />
+          </div>
+        )}
+
+        <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 ${!showCharts ? 'hidden' : ''}`}>
           {/* Chart A — Income vs Outgoing */}
           <div className="card p-5 sm:p-6">
             <h3 className="font-display text-lg text-charcoal-900">Income vs Outgoing</h3>
