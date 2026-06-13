@@ -156,10 +156,14 @@ export default function Dashboard() {
   }, [])
 
   const MONTH = monthKey()
-  const totalTenants = tenants.length
-  const paidCount    = tenants.filter(t =>  isPaid(t, MONTH)).length
-  const unpaidCount  = tenants.filter(t => !isPaid(t, MONTH)).length
-  const totalRevenue = tenants.filter(t =>  isPaid(t, MONTH)).reduce((sum, t) => sum + (Number(t.rentAmount) || 0), 0)
+  const totalTenants   = tenants.length
+  const paidCount      = tenants.filter(t => isPaid(t, MONTH)).length
+  const partialCount   = tenants.filter(t => !isPaid(t, MONTH) && Number(t.partialPayments?.[MONTH] || 0) > 0).length
+  const unpaidCount    = tenants.filter(t => !isPaid(t, MONTH) && !Number(t.partialPayments?.[MONTH])).length
+  const totalRevenue = tenants.reduce((sum, t) => {
+    if (isPaid(t, MONTH)) return sum + (Number(t.rentAmount) || 0)
+    return sum + Number(t.partialPayments?.[MONTH] || 0)
+  }, 0)
 
   const today = new Date()
   const sevenDaysLater = addDays(today, 7)
@@ -284,15 +288,15 @@ export default function Dashboard() {
             value={unpaidCount}
             animate
             color="bg-rust-50 text-rust-600"
-            subtext="Tenants with unpaid status"
-            to="/tenants?filter=unpaid"
+            subtext={partialCount > 0 ? `+${partialCount} partial payment${partialCount > 1 ? 's' : ''}` : 'Tenants with unpaid status'}
+            to="/dues"
           />
           <StatCard
             icon={TrendingUp}
             label="Monthly Revenue"
             value={`AED ${totalRevenue.toLocaleString()}`}
             color="bg-primary-100 text-primary-700"
-            subtext="From paid tenants"
+            subtext="Paid + partial amounts"
             to="/financial"
           />
         </div>
