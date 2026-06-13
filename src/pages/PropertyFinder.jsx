@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import {
   Search, Building2, Home, Phone, Mail, User, ExternalLink,
   MessageCircle, Sparkles, RefreshCw, MapPin, BedDouble,
-  ChevronDown, Check, AlertCircle, Shield, FileText, UserCheck,
+  ChevronDown, Check, AlertCircle, Shield, FileText, UserCheck, Image,
 } from 'lucide-react'
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -506,13 +506,23 @@ function PropertyCard({ property: p }) {
                   <p className="font-semibold text-charcoal-900">{p.permit.type}</p>
                 </div>
               </div>
-              <a
-                href="https://ard.ajman.ae"
-                target="_blank" rel="noopener noreferrer"
-                className="mt-3 flex items-center gap-1.5 text-[11px] text-primary-700 font-semibold hover:underline"
-              >
-                <ExternalLink size={11} /> Verify on ard.ajman.ae (Ajman Real Estate Dept)
-              </a>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <a
+                  href="https://ard.ajman.ae/en/public-inquiry"
+                  target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-[11px] text-primary-700 font-semibold hover:underline"
+                >
+                  <ExternalLink size={11} /> ard.ajman.ae — Verify Permit
+                </a>
+                <span className="text-gray-300 text-[11px]">·</span>
+                <a
+                  href="https://www.ajman.ae/en/eservice/property-information"
+                  target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-[11px] text-primary-700 font-semibold hover:underline"
+                >
+                  <ExternalLink size={11} /> Ajman Property Info Portal
+                </a>
+              </div>
             </div>
 
             {/* Registered Owner — DIRECT contact */}
@@ -544,9 +554,10 @@ function PropertyCard({ property: p }) {
             </div>
 
             <a href={p.url} target="_blank" rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-2.5 border border-gray-200 text-sm text-charcoal-700 hover:bg-gray-50 rounded-xl transition-colors font-medium">
-              <ExternalLink size={14} />
-              View Full Listing on {p.source}
+              className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-charcoal-800 to-charcoal-700 hover:from-charcoal-700 hover:to-charcoal-600 text-white rounded-xl transition-all font-semibold text-sm shadow-sm">
+              <Image size={15} className="text-primary-400" />
+              View Photos &amp; Full Details
+              <span className="text-[11px] text-charcoal-400 font-normal">via {p.source}</span>
             </a>
           </div>
         )}
@@ -772,7 +783,7 @@ export default function PropertyFinder() {
               <li>Tap a property card below — open the <strong>Trakheesi Permit</strong> tab</li>
               <li>Note the <strong>Permit No.</strong> and <strong>Land Registry Ref</strong></li>
               <li>Call or WhatsApp the <strong>Registered Owner</strong> directly using the gold button</li>
-              <li>To verify ownership, visit <strong>ard.ajman.ae</strong> and search by permit number</li>
+              <li>To verify ownership, visit <strong>ard.ajman.ae/en/public-inquiry</strong> and search by permit number</li>
             </ol>
           </div>
         </div>
