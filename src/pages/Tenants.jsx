@@ -330,7 +330,7 @@ export default function Tenants() {
     const dateStr = tenant.rentSchedule
       ? `the ${tenant.rentSchedule} of this month`
       : tenant.dueDate ? format(parseISO(tenant.dueDate), 'MMMM d, yyyy') : ''
-    const text = `Dear ${tenant.name}, your rent of AED ${amount} for room ${tenant.unit} is due${dateStr ? ' on ' + dateStr : ''}. Please arrange payment. Thank you, Ajman Rentals.`
+    const text = `Dear ${tenant.name}, your rent of AED ${amount} for room ${tenant.unit} is due${dateStr ? ' on ' + dateStr : ''}. Please arrange payment. Thank you, Rehmat Properties.`
     return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
   }
 

@@ -80,7 +80,7 @@ export default function Dues() {
 
   function duesWhatsApp(tenant, remaining) {
     const phone = (tenant.phone || '').replace(/\D/g, '')
-    const text = `Dear ${tenant.name}, your rent of AED ${remaining.toLocaleString()} for room ${tenant.unit} (${LABEL}) is still pending. Please arrange payment as soon as possible. Thank you, Ajman Rentals.`
+    const text = `Dear ${tenant.name}, your rent of AED ${remaining.toLocaleString()} for room ${tenant.unit} (${LABEL}) is still pending. Please arrange payment as soon as possible. Thank you, Rehmat Properties.`
     return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
   }
 

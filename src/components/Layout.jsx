@@ -24,7 +24,7 @@ export default function Layout() {
             <div className="w-7 h-7 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center">
               <Home size={14} className="text-charcoal-900" />
             </div>
-            <span className="font-display text-white text-sm tracking-wide">Ajman Rentals</span>
+            <span className="font-display text-white text-sm tracking-wide">Rehmat Properties</span>
           </div>
         </header>
 

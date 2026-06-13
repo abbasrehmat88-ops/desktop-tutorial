@@ -71,7 +71,7 @@ function buildReminderMailto(owner) {
     owner.phone ? `Phone      : ${owner.phone}` : '',
     owner.notes ? `Notes      : ${owner.notes}` : '',
     ``,
-    `Ajman Rental Management`,
+    `Rehmat Properties`,
   ].filter(l => l !== undefined).join('\n')
 
   return `mailto:abbasrehmat88@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`

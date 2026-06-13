@@ -159,7 +159,7 @@ export default function Login() {
               <Home size={28} className="text-charcoal-900" />
             </div>
             <p className="text-primary-400 text-[11px] uppercase tracking-[0.3em] mb-3">Estate Management</p>
-            <h1 className="font-display text-3xl text-white">Ajman Rentals</h1>
+            <h1 className="font-display text-3xl text-white">Rehmat Properties</h1>
             <p className="text-charcoal-300 text-sm mt-2">Private family property portal</p>
           </div>
 
@@ -266,7 +266,7 @@ export default function Login() {
         </div>
 
         <p className="text-center text-charcoal-400 text-xs mt-6">
-          &copy; {new Date().getFullYear()} Ajman Rental Management. All rights reserved.
+          &copy; {new Date().getFullYear()} Rehmat Properties. All rights reserved.
         </p>
       </div>
     </div>
