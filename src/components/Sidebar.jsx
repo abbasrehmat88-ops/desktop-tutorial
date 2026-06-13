@@ -12,12 +12,14 @@ import {
   Landmark,
   KeyRound,
   Wallet,
+  CalendarClock,
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 const navItems = [
   { to: '/dashboard',  icon: LayoutDashboard, label: 'Dashboard'  },
   { to: '/tenants',    icon: Users,           label: 'Tenants'    },
+  { to: '/dues',       icon: CalendarClock,   label: 'Pending Dues' },
   { to: '/financial',  icon: DollarSign,      label: 'Financial'  },
   { to: '/deposits',   icon: Landmark,        label: 'Deposits'   },
   { to: '/owners',     icon: KeyRound,        label: 'Owners'     },
