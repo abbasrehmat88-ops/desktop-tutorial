@@ -94,7 +94,7 @@ export function AuthProvider({ children }) {
       publicKey: {
         challenge,
         rp: {
-          name: 'Ajman Rentals',
+          name: 'Rehmat Properties',
           id: window.location.hostname,
         },
         user: {
