@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { watchCollection, updateItem } from '../data/db'
-import { Landmark, Edit2, Check, X, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import {
+  Landmark, Edit2, Check, X, AlertCircle, ChevronDown, ChevronUp,
+  Search, RotateCcw, Loader2, Wallet, ListPlus,
+} from 'lucide-react'
 
 export default function Deposits() {
   const [tenants, setTenants]     = useState([])
@@ -104,47 +107,47 @@ export default function Deposits() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto animate-fade-up">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
 
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="page-title">Deposits</h1>
         <span className="gold-rule" />
         <p className="text-gray-500 text-sm mt-2">Security deposits held from all tenants</p>
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex gap-2 items-center text-red-700 text-sm">
-          <AlertCircle size={16} />{error}
-          <button onClick={() => setError('')} className="ml-auto"><X size={14} /></button>
+        <div className="mb-4 p-4 bg-rust-50 border border-rust-200 rounded-xl flex gap-2 items-center text-rust-700 text-sm animate-scale-in">
+          <AlertCircle size={16} className="flex-shrink-0" />{error}
+          <button onClick={() => setError('')} aria-label="Dismiss error" className="ml-auto p-1 rounded-lg hover:bg-rust-100 transition-colors"><X size={14} /></button>
         </div>
       )}
 
       {/* Summary cards */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="stat-card animate-pulse">
+            <div key={i} className="stat-card">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-gray-200 rounded-2xl" />
+                <div className="skeleton w-12 h-12 rounded-2xl" />
                 <div className="flex-1 space-y-2 mt-1">
-                  <div className="h-3 bg-gray-200 rounded w-24" />
-                  <div className="h-7 bg-gray-200 rounded w-20" />
+                  <div className="skeleton h-3 w-24" />
+                  <div className="skeleton h-7 w-20" />
                 </div>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 stagger">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 stagger">
           <div className="stat-card">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-2xl bg-charcoal-900 flex items-center justify-center flex-shrink-0">
                 <Landmark size={22} className="text-primary-400" />
               </div>
-              <div>
-                <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Total Held</p>
-                <p className="text-2xl font-bold text-charcoal-900 mt-1">AED {totalDeposits.toLocaleString()}</p>
+              <div className="min-w-0">
+                <p className="section-label">Total Held</p>
+                <p className="font-display text-2xl font-bold text-charcoal-900 mt-1 tabular leading-tight">AED {totalDeposits.toLocaleString()}</p>
                 <p className="text-xs text-gray-400 mt-0.5">Security deposits in custody</p>
               </div>
             </div>
@@ -154,9 +157,9 @@ export default function Deposits() {
               <div className="w-12 h-12 rounded-2xl bg-emerald2-50 flex items-center justify-center flex-shrink-0">
                 <Check size={22} className="text-emerald2-600" />
               </div>
-              <div>
-                <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">With Deposit</p>
-                <p className="text-2xl font-bold text-charcoal-900 mt-1">{withDeposit}</p>
+              <div className="min-w-0">
+                <p className="section-label">With Deposit</p>
+                <p className="font-display text-2xl font-bold text-charcoal-900 mt-1 tabular leading-tight">{withDeposit}</p>
                 <p className="text-xs text-gray-400 mt-0.5">Tenants with deposit recorded</p>
               </div>
             </div>
@@ -166,9 +169,9 @@ export default function Deposits() {
               <div className="w-12 h-12 rounded-2xl bg-rust-50 flex items-center justify-center flex-shrink-0">
                 <AlertCircle size={22} className="text-rust-600" />
               </div>
-              <div>
-                <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">No Deposit</p>
-                <p className="text-2xl font-bold text-charcoal-900 mt-1">{withoutDeposit}</p>
+              <div className="min-w-0">
+                <p className="section-label">No Deposit</p>
+                <p className="font-display text-2xl font-bold text-charcoal-900 mt-1 tabular leading-tight">{withoutDeposit}</p>
                 <p className="text-xs text-gray-400 mt-0.5">Deposit not yet recorded</p>
               </div>
             </div>
@@ -177,20 +180,28 @@ export default function Deposits() {
       )}
 
       {/* ── Bulk import ── */}
-      <div className="card mb-6 overflow-hidden">
+      <div className="card mb-6 overflow-hidden !p-0">
         <button
           onClick={() => setBulkOpen(o => !o)}
-          className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
+          aria-expanded={bulkOpen}
+          className="w-full flex items-center justify-between px-6 py-5 hover:bg-gray-50 transition-colors text-left"
         >
-          <div className="text-left">
-            <h2 className="font-display text-lg text-charcoal-900">Bulk Set Deposits</h2>
-            <p className="text-sm text-gray-500 mt-0.5">Paste deposit amounts for multiple rooms at once</p>
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="w-11 h-11 rounded-2xl bg-primary-50 flex items-center justify-center flex-shrink-0">
+              <ListPlus size={20} className="text-primary-700" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="font-display text-lg text-charcoal-900 leading-tight">Bulk Set Deposits</h2>
+              <p className="text-sm text-gray-500 mt-0.5">Paste deposit amounts for multiple rooms at once</p>
+            </div>
           </div>
-          {bulkOpen ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
+          {bulkOpen
+            ? <ChevronUp size={18} className="text-gray-400 flex-shrink-0" />
+            : <ChevronDown size={18} className="text-gray-400 flex-shrink-0" />}
         </button>
 
         {bulkOpen && (
-          <div className="px-6 pb-6 border-t border-gray-100">
+          <div className="px-6 pb-6 border-t border-gray-100 animate-fade-up">
             <p className="text-sm text-gray-500 mt-4 mb-3">
               One room per line, format: <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs font-mono">Room 1: 1000</code> or simply <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs font-mono">1: 1000</code>
             </p>
@@ -206,10 +217,10 @@ export default function Deposits() {
             </button>
 
             {bulkPreview && (
-              <div className="mt-4 space-y-3">
+              <div className="mt-4 space-y-3 animate-fade-up">
                 {bulkPreview.notFound.length > 0 && (
-                  <div className="p-3 bg-rust-50 border border-rust-100 rounded-xl text-sm text-rust-700">
-                    <p className="font-semibold mb-1">Could not match:</p>
+                  <div className="p-4 bg-rust-50 border border-rust-100 rounded-xl text-sm text-rust-700">
+                    <p className="font-semibold mb-1 flex items-center gap-1.5"><AlertCircle size={14} /> Could not match:</p>
                     <ul className="list-disc list-inside space-y-0.5">
                       {bulkPreview.notFound.map((x, i) => <li key={i}>{x}</li>)}
                     </ul>
@@ -220,27 +231,27 @@ export default function Deposits() {
                     <table className="w-full text-sm">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Room</th>
-                          <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Tenant</th>
-                          <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Old Deposit</th>
-                          <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">New Deposit</th>
+                          <th className="px-4 py-2.5 text-left section-label">Room</th>
+                          <th className="px-4 py-2.5 text-left section-label">Tenant</th>
+                          <th className="px-4 py-2.5 text-left section-label">Old Deposit</th>
+                          <th className="px-4 py-2.5 text-left section-label">New Deposit</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {bulkPreview.results.map(({ tenant, newDeposit }) => (
                           <tr key={tenant.id}>
-                            <td className="px-4 py-2 font-mono text-xs text-gray-500">{tenant.unit}</td>
-                            <td className="px-4 py-2 font-medium text-charcoal-900">{tenant.name}</td>
-                            <td className="px-4 py-2 text-gray-500">{tenant.deposit ? `AED ${Number(tenant.deposit).toLocaleString()}` : '—'}</td>
-                            <td className="px-4 py-2 font-semibold text-emerald2-600">AED {newDeposit.toLocaleString()}</td>
+                            <td className="px-4 py-2.5 font-mono text-xs text-gray-500 tabular">{tenant.unit}</td>
+                            <td className="px-4 py-2.5 font-medium text-charcoal-900">{tenant.name}</td>
+                            <td className="px-4 py-2.5 text-gray-500 tabular">{tenant.deposit ? `AED ${Number(tenant.deposit).toLocaleString()}` : '—'}</td>
+                            <td className="px-4 py-2.5 font-semibold text-emerald2-600 tabular">AED {newDeposit.toLocaleString()}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                    <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between bg-gray-50">
+                    <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between gap-3 bg-gray-50">
                       <span className="text-sm text-gray-600">{bulkPreview.results.length} tenants will be updated</span>
-                      <button onClick={applyBulk} disabled={bulkSaving} className="btn-primary flex items-center gap-2">
-                        {bulkSaving ? <span className="animate-spin">⏳</span> : <Check size={15} />}
+                      <button onClick={applyBulk} disabled={bulkSaving} className="btn-primary flex items-center gap-2 min-h-[44px] disabled:opacity-60">
+                        {bulkSaving ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
                         Apply All
                       </button>
                     </div>
@@ -253,119 +264,131 @@ export default function Deposits() {
       </div>
 
       {/* ── Deposit list ── */}
-      <div className="card overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <div>
-            <h2 className="font-display text-xl text-charcoal-900">All Tenants — Deposits</h2>
-            <span className="gold-rule" />
-          </div>
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
+        <div>
+          <h2 className="font-display text-xl text-charcoal-900 leading-tight">All Tenants — Deposits</h2>
+          <span className="gold-rule" />
+        </div>
+        <div className="relative w-full sm:w-72">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search room, name…"
+            placeholder="Search room, name, villa…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="input-field w-44 py-2 text-sm"
+            aria-label="Search deposits"
+            className="input-field pl-10"
           />
         </div>
+      </div>
 
-        {loading ? (
-          <div className="p-6 space-y-3">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+      {loading ? (
+        <div className="space-y-3">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="card !p-4 h-20 skeleton" />
+          ))}
+        </div>
+      ) : displayed.length === 0 ? (
+        <div className="card p-12 text-center animate-scale-in">
+          <div className="w-16 h-16 rounded-2xl bg-charcoal-900 flex items-center justify-center mx-auto mb-4">
+            <Wallet size={30} className="text-primary-400" />
+          </div>
+          <h3 className="font-display text-lg text-charcoal-900">No tenants found</h3>
+          <p className="text-gray-400 text-sm mt-1">
+            {search ? 'No tenants match your search.' : 'No tenants are recorded yet.'}
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="space-y-3 stagger">
+            {displayed.map(tenant => (
+              <div key={tenant.id} className="card !p-4 transition-shadow duration-200 hover:shadow-lg">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  {/* Identity */}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-11 h-11 bg-gradient-to-br from-primary-50 to-primary-100 rounded-2xl flex items-center justify-center text-primary-700 font-display font-bold text-base flex-shrink-0 shadow-card">
+                      {tenant.name?.charAt(0).toUpperCase() || 'T'}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-display font-semibold text-charcoal-900 text-[15px] leading-tight truncate">{tenant.name}</h3>
+                      <p className="text-xs text-gray-500 mt-0.5 truncate">
+                        Room {tenant.unit || '—'}{tenant.property ? ` · ${tenant.property}` : ''}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Amount */}
+                  <div className="pl-14 sm:pl-0 sm:text-right sm:min-w-[140px]">
+                    {editId === tenant.id ? (
+                      <input
+                        type="number"
+                        min="0"
+                        value={editVal}
+                        onChange={e => setEditVal(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') saveDeposit(tenant); if (e.key === 'Escape') setEditId(null) }}
+                        aria-label={`Deposit amount for ${tenant.name}`}
+                        className="input-field py-2 w-32 text-sm tabular"
+                        autoFocus
+                      />
+                    ) : tenant.deposit > 0 ? (
+                      <p className="font-display font-bold text-charcoal-900 text-base tabular leading-tight">AED {Number(tenant.deposit).toLocaleString()}</p>
+                    ) : (
+                      <span className="badge-unpaid">Not set</span>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2 pl-14 sm:pl-0 flex-shrink-0">
+                    {editId === tenant.id ? (
+                      <>
+                        <button
+                          onClick={() => saveDeposit(tenant)}
+                          disabled={saving}
+                          aria-label="Save deposit"
+                          className="flex items-center justify-center gap-1.5 min-h-[44px] px-4 text-xs font-bold bg-gradient-to-r from-primary-500 to-primary-600 text-charcoal-900 rounded-xl shadow-glow-sm hover:from-primary-400 hover:to-primary-500 transition-all disabled:opacity-60"
+                        >
+                          {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Save
+                        </button>
+                        <button
+                          onClick={() => setEditId(null)}
+                          aria-label="Cancel edit"
+                          className="flex items-center justify-center min-h-[44px] w-11 bg-gray-100 text-gray-500 rounded-xl hover:bg-gray-200 transition-colors"
+                        >
+                          <X size={16} />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => { setEditId(tenant.id); setEditVal(tenant.deposit ? String(tenant.deposit) : '') }}
+                          className="flex items-center gap-1.5 min-h-[44px] px-4 text-xs font-bold text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-xl transition-colors"
+                        >
+                          <Edit2 size={13} /> Edit
+                        </button>
+                        {tenant.deposit > 0 && (
+                          <button
+                            onClick={() => returnDeposit(tenant)}
+                            disabled={saving}
+                            className="flex items-center gap-1.5 min-h-[44px] px-4 text-xs font-bold text-rust-600 bg-rust-50 hover:bg-rust-100 rounded-xl transition-colors disabled:opacity-50"
+                          >
+                            <RotateCcw size={13} /> Return
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50 text-left">
-                  <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Room</th>
-                  <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tenant</th>
-                  <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Villa</th>
-                  <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Deposit (AED)</th>
-                  <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {displayed.map(tenant => (
-                  <tr key={tenant.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-5 py-3 font-mono text-xs text-gray-500 font-semibold">{tenant.unit}</td>
-                    <td className="px-5 py-3 font-medium text-charcoal-900">{tenant.name}</td>
-                    <td className="px-5 py-3 text-gray-500 text-xs hidden sm:table-cell">{tenant.property || '—'}</td>
-                    <td className="px-5 py-3">
-                      {editId === tenant.id ? (
-                        <input
-                          type="number"
-                          min="0"
-                          value={editVal}
-                          onChange={e => setEditVal(e.target.value)}
-                          onKeyDown={e => { if (e.key === 'Enter') saveDeposit(tenant); if (e.key === 'Escape') setEditId(null) }}
-                          className="input-field py-1.5 w-28 text-sm"
-                          autoFocus
-                        />
-                      ) : (
-                        <span className={tenant.deposit > 0
-                          ? 'font-semibold text-charcoal-900'
-                          : 'text-gray-400 italic'}>
-                          {tenant.deposit > 0 ? Number(tenant.deposit).toLocaleString() : 'Not set'}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3">
-                      {editId === tenant.id ? (
-                        <div className="flex gap-1">
-                          <button
-                            onClick={() => saveDeposit(tenant)}
-                            disabled={saving}
-                            className="p-1.5 bg-emerald2-50 text-emerald2-600 rounded-lg hover:bg-emerald2-600 hover:text-white transition-colors"
-                          >
-                            <Check size={14} />
-                          </button>
-                          <button
-                            onClick={() => setEditId(null)}
-                            className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors"
-                          >
-                            <X size={14} />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => { setEditId(tenant.id); setEditVal(tenant.deposit ? String(tenant.deposit) : '') }}
-                            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors"
-                          >
-                            <Edit2 size={12} /> Edit
-                          </button>
-                          {tenant.deposit > 0 && (
-                            <button
-                              onClick={() => returnDeposit(tenant)}
-                              disabled={saving}
-                              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-rust-600 bg-rust-50 hover:bg-rust-100 rounded-lg transition-colors disabled:opacity-50"
-                            >
-                              <X size={12} /> Return
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="bg-gray-50 border-t border-gray-200">
-                  <td colSpan={3} className="px-5 py-3 text-sm font-semibold text-gray-700">
-                    Total ({tenants.length} tenants)
-                  </td>
-                  <td className="px-5 py-3 text-sm font-bold text-charcoal-900">
-                    {totalDeposits.toLocaleString()}
-                  </td>
-                  <td />
-                </tr>
-              </tfoot>
-            </table>
+
+          {/* Total footer */}
+          <div className="card !p-4 mt-3 flex items-center justify-between gap-3 bg-charcoal-900 text-cream">
+            <span className="text-sm font-semibold text-gray-300">Total ({tenants.length} tenants)</span>
+            <span className="font-display text-lg font-bold text-primary-400 tabular">AED {totalDeposits.toLocaleString()}</span>
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   )
 }
