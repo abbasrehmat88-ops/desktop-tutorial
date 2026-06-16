@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { addItem, removeItem, watchCollection } from '../data/db'
-import { CheckCircle, Loader2, AlertCircle, Upload, Trash2 } from 'lucide-react'
+import {
+  CheckCircle,
+  Loader2,
+  AlertCircle,
+  Upload,
+  Trash2,
+  FileUp,
+  Database,
+  Building2,
+  Wallet,
+  Users,
+  ArrowRight,
+} from 'lucide-react'
 
 // All tenants from the spreadsheet (verified against the clear photos).
 // rentSchedule = the "Rent date" column in the sheet (e.g. "1 To 5").
@@ -220,83 +232,113 @@ export default function ImportData() {
   }
 
   return (
-    <div className="p-4 sm:p-8 max-w-4xl mx-auto animate-fade-up">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="page-title">One-Time Data Import</h1>
         <span className="gold-rule" />
-        <p className="text-gray-500 text-sm mt-3">
-          Imports all <strong className="text-charcoal-900">{TOTAL} tenants</strong> from
-          your spreadsheet — with the corrected rents, names, and the Rent Date column —
-          directly into Firebase.
+        <p className="text-gray-500 text-sm mt-2">
+          Imports all <strong className="text-charcoal-900 tabular">{TOTAL}</strong> tenants from
+          your spreadsheet — corrected rents, names, and rent dates — straight into Firebase.
         </p>
       </div>
 
-      {/* Summary card */}
-      <div className="card p-6 mb-6 flex flex-col sm:flex-row gap-6">
-        <div className="flex-1">
-          <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Total Tenants</p>
-          <p className="text-4xl font-bold text-charcoal-900 mt-1">{TOTAL}</p>
+      {/* Summary stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 stagger">
+        <div className="stat-card">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-charcoal-900 text-primary-400">
+              <Users size={22} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Total Tenants</p>
+              <p className="text-2xl font-bold text-charcoal-900 mt-1 tabular">{TOTAL}</p>
+            </div>
+          </div>
         </div>
-        <div className="flex-1">
-          <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Total Monthly Rent</p>
-          <p className="text-4xl font-bold text-charcoal-900 mt-1">
-            AED {TOTAL_RENT.toLocaleString()}
-          </p>
+        <div className="stat-card">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-emerald2-50 text-emerald2-600">
+              <Wallet size={22} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Total Monthly Rent</p>
+              <p className="text-2xl font-bold text-charcoal-900 mt-1 tabular">AED {TOTAL_RENT.toLocaleString()}</p>
+            </div>
+          </div>
         </div>
-        <div className="flex-1">
-          <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Properties</p>
-          <p className="text-4xl font-bold text-charcoal-900 mt-1">{PROPERTY_COUNT}</p>
+        <div className="stat-card">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-primary-100 text-primary-700">
+              <Building2 size={22} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Properties</p>
+              <p className="text-2xl font-bold text-charcoal-900 mt-1 tabular">{PROPERTY_COUNT}</p>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Progress / Action */}
-      <div className="card p-6 mb-6">
+      <div className="card p-6 sm:p-8 mb-6">
         {status === 'idle' && (
-          <div className="text-center py-4">
+          <>
             {existing.length > 0 ? (
-              <>
+              <div className="text-center max-w-xl mx-auto">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 bg-rust-50 text-rust-600 ring-1 ring-rust-100">
+                  <AlertCircle size={30} />
+                </div>
                 <p className="text-gray-600 mb-2 text-sm">
-                  You already have <strong className="text-charcoal-900">{existing.length} tenants</strong> in
+                  You already have <strong className="text-charcoal-900 tabular">{existing.length}</strong> tenants in
                   the app (the old import with wrong amounts).
                 </p>
                 <p className="text-gray-600 mb-6 text-sm">
-                  Use the red button to <strong>delete the old data and import the corrected list</strong> in one step.
+                  Use the button below to <strong>delete the old data and import the corrected list</strong> in one step.
                 </p>
                 <button
                   onClick={runClearAndImport}
-                  className="btn-danger px-10 py-4 text-base flex items-center gap-2 mx-auto"
+                  className="btn-danger px-8 py-3.5 text-base min-h-[44px] mx-auto"
                 >
                   <Trash2 size={20} />
-                  Delete Old Data & Import {TOTAL} Corrected Tenants
+                  Delete Old Data &amp; Import {TOTAL} Corrected Tenants
                 </button>
+                <div>
+                  <button
+                    onClick={runImport}
+                    className="text-gray-400 text-xs underline mt-4 hover:text-gray-600 min-h-[44px] px-2"
+                  >
+                    or import without deleting (will create duplicates)
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-card border-2 border-dashed border-primary-200 bg-primary-50/30 px-6 py-10 text-center">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 bg-charcoal-900 text-primary-400 shadow-glow-sm">
+                  <FileUp size={30} />
+                </div>
+                <h2 className="font-display text-xl text-charcoal-900">Ready to import</h2>
+                <p className="text-gray-600 mt-2 mb-6 text-sm max-w-md mx-auto">
+                  All tenants are previewed in the table below. Each starts as <strong>Unpaid</strong> —
+                  mark them paid in the Tenants page as you collect.
+                </p>
                 <button
                   onClick={runImport}
-                  className="text-gray-400 text-xs underline mt-4 hover:text-gray-600"
+                  className="btn-primary px-8 py-3.5 text-base min-h-[44px] mx-auto"
                 >
-                  or import without deleting (will create duplicates)
-                </button>
-              </>
-            ) : (
-              <>
-                <p className="text-gray-600 mb-6 text-sm">
-                  All tenants are shown in the table below. Click the button to upload them to Firebase.
-                  Each tenant starts as <strong>Unpaid</strong> — mark them paid in the Tenants page as you collect.
-                </p>
-                <button onClick={runImport} className="btn-primary px-10 py-4 text-base flex items-center gap-2 mx-auto">
                   <Upload size={20} />
                   Import All {TOTAL} Tenants to Firebase
                 </button>
-              </>
+              </div>
             )}
-          </div>
+          </>
         )}
 
         {status === 'clearing' && (
           <div className="text-center py-4">
             <Loader2 size={40} className="animate-spin text-rust-600 mx-auto mb-4" />
             <p className="text-charcoal-900 font-semibold text-lg">Deleting old data…</p>
-            <p className="text-gray-500 text-sm mt-1">{cleared} removed</p>
+            <p className="text-gray-500 text-sm mt-1"><span className="tabular">{cleared}</span> removed</p>
           </div>
         )}
 
@@ -304,7 +346,9 @@ export default function ImportData() {
           <div className="text-center py-4">
             <Loader2 size={40} className="animate-spin text-primary-500 mx-auto mb-4" />
             <p className="text-charcoal-900 font-semibold text-lg">Importing…</p>
-            <p className="text-gray-500 text-sm mt-1">{done} of {TOTAL} tenants uploaded</p>
+            <p className="text-gray-500 text-sm mt-1">
+              <span className="tabular">{done}</span> of <span className="tabular">{TOTAL}</span> tenants uploaded
+            </p>
             <div className="w-full bg-gray-100 rounded-full h-3 mt-4 overflow-hidden">
               <div
                 className="h-3 bg-gradient-to-r from-primary-500 to-primary-400 rounded-full transition-all duration-300"
@@ -315,29 +359,30 @@ export default function ImportData() {
         )}
 
         {status === 'done' && (
-          <div className="text-center py-4">
+          <div className="rounded-card border border-emerald2-100 bg-emerald2-50 px-6 py-10 text-center animate-scale-in">
             <CheckCircle size={48} className="text-emerald2-600 mx-auto mb-4" />
-            <p className="text-charcoal-900 font-bold text-xl">Import Complete!</p>
-            <p className="text-gray-500 text-sm mt-2 mb-6">
-              All {TOTAL} tenants are now in Firebase with the corrected rents and rent dates,
-              syncing across every phone.
+            <p className="text-charcoal-900 font-bold text-xl font-display">Import Complete</p>
+            <p className="text-gray-600 text-sm mt-2 mb-6 max-w-md mx-auto">
+              All <span className="tabular">{TOTAL}</span> tenants are now in Firebase with the corrected rents
+              and rent dates, syncing across every phone.
             </p>
-            <button onClick={() => navigate('/tenants')} className="btn-primary px-8 py-3">
-              Go to Tenants →
+            <button onClick={() => navigate('/tenants')} className="btn-primary px-8 py-3 min-h-[44px] mx-auto">
+              Go to Tenants
+              <ArrowRight size={18} />
             </button>
           </div>
         )}
 
         {status === 'error' && (
-          <div className="text-center py-4">
+          <div className="rounded-card border border-rust-100 bg-rust-50 px-6 py-8 text-center animate-pop">
             <AlertCircle size={40} className="text-rust-600 mx-auto mb-3" />
             <p className="text-charcoal-900 font-semibold">Import Failed</p>
             <p className="text-rust-600 text-sm mt-1 mb-4">{errorMsg}</p>
-            <p className="text-gray-500 text-xs mb-4">
+            <p className="text-gray-500 text-xs mb-4 max-w-md mx-auto">
               Make sure you are signed in and connected to the internet, then try again.
             </p>
-            <button onClick={runClearAndImport} className="btn-primary px-8 py-3">
-              Retry (Delete All & Reimport)
+            <button onClick={runClearAndImport} className="btn-primary px-8 py-3 min-h-[44px] mx-auto">
+              Retry (Delete All &amp; Reimport)
             </button>
           </div>
         )}
@@ -346,38 +391,45 @@ export default function ImportData() {
       {/* Preview table */}
       {status !== 'done' && (
         <div className="card overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100">
-            <h2 className="font-display text-xl text-charcoal-900">Preview — All Tenants</h2>
-            <span className="gold-rule" />
+          <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary-50 text-primary-700">
+              <Database size={18} />
+            </div>
+            <div>
+              <h2 className="font-display text-xl text-charcoal-900">Preview — All Tenants</h2>
+              <span className="gold-rule" />
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 text-left">
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Room</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Property</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Rent (AED)</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Rent Date</th>
+                <tr className="bg-gray-50 border-b border-gray-200 text-left">
+                  <th className="px-4 py-3 text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Room</th>
+                  <th className="px-4 py-3 text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Name</th>
+                  <th className="px-4 py-3 text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Property</th>
+                  <th className="px-4 py-3 text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Rent (AED)</th>
+                  <th className="px-4 py-3 text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Rent Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {TENANTS.map((t, i) => (
-                  <tr key={i} className={`hover:bg-gray-50 transition-colors ${i < done && status === 'running' ? 'opacity-40' : ''}`}>
-                    <td className="px-4 py-3 font-mono text-xs text-gray-500">{t.unit}</td>
+                  <tr key={i} className={`transition-colors odd:bg-white even:bg-gray-50/40 hover:bg-primary-50/40 ${i < done && status === 'running' ? 'opacity-40' : ''}`}>
+                    <td className="px-4 py-3 font-mono text-xs text-gray-500 tabular">{t.unit}</td>
                     <td className="px-4 py-3 font-medium text-charcoal-900">{t.name}</td>
-                    <td className="px-4 py-3 text-gray-600 text-xs">{t.property}</td>
-                    <td className="px-4 py-3 font-semibold text-charcoal-900">{t.rentAmount.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">{t.rentSchedule || '—'}</td>
+                    <td className="px-4 py-3 text-gray-600 text-xs">
+                      <span className="chip">{t.property}</span>
+                    </td>
+                    <td className="px-4 py-3 font-semibold text-charcoal-900 tabular">{t.rentAmount.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-gray-500 text-xs tabular">{t.rentSchedule || '—'}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr className="bg-gray-50 border-t border-gray-200">
-                  <td colSpan={3} className="px-4 py-3 text-sm font-semibold text-gray-700">
-                    Total ({TOTAL} tenants)
+                <tr className="bg-charcoal-900 text-white">
+                  <td colSpan={3} className="px-4 py-3 text-sm font-semibold">
+                    Total (<span className="tabular">{TOTAL}</span> tenants)
                   </td>
-                  <td className="px-4 py-3 text-sm font-bold text-charcoal-900">
+                  <td className="px-4 py-3 text-sm font-bold text-primary-400 tabular">
                     {TOTAL_RENT.toLocaleString()}
                   </td>
                   <td />
