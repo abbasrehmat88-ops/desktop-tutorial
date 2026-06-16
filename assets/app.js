@@ -45,6 +45,15 @@ const seed = { owners: [], properties: [], clients: [], payments: [] };
     { id: id(), date: "2026-06-05", clientId: c[1].id, amount: 18000, method: "—",             status: "pending", note: "Jun rent" },
     { id: id(), date: "2026-06-05", clientId: c[5].id, amount: 25000, method: "—",             status: "pending", note: "Jun rent" },
     { id: id(), date: "2026-05-28", clientId: c[3].id, amount: 7500,  method: "—",             status: "overdue", note: "May rent" },
+    { id: id(), date: "2026-05-08", clientId: c[0].id, amount: 8500,  method: "Bank Transfer", status: "paid",    note: "May rent" },
+    { id: id(), date: "2026-05-07", clientId: c[2].id, amount: 12000, method: "Cash",          status: "paid",    note: "May rent" },
+    { id: id(), date: "2026-05-06", clientId: c[4].id, amount: 9500,  method: "Apple Pay",     status: "paid",    note: "May rent" },
+    { id: id(), date: "2026-05-05", clientId: c[1].id, amount: 18000, method: "Bank Transfer", status: "paid",    note: "May rent" },
+    { id: id(), date: "2026-04-08", clientId: c[0].id, amount: 8500,  method: "Cash",          status: "paid",    note: "Apr rent" },
+    { id: id(), date: "2026-04-06", clientId: c[4].id, amount: 9500,  method: "Apple Pay",     status: "paid",    note: "Apr rent" },
+    { id: id(), date: "2026-04-05", clientId: c[1].id, amount: 18000, method: "Bank Transfer", status: "paid",    note: "Apr rent" },
+    { id: id(), date: "2026-03-07", clientId: c[2].id, amount: 12000, method: "Cash",          status: "paid",    note: "Mar rent" },
+    { id: id(), date: "2026-03-05", clientId: c[1].id, amount: 18000, method: "Bank Transfer", status: "paid",    note: "Mar rent" },
   ];
 })();
 
@@ -73,15 +82,14 @@ const store = {
 
 // ---------- HELPERS ----------
 const fmt = (n) => "AED " + Number(n || 0).toLocaleString("en-AE");
-const fmtDate = (d) => {
-  if (!d) return "—";
-  return new Date(d).toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" });
-};
+const fmtK = (n) => n >= 1000 ? (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + "k" : String(n);
+const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" }) : "—";
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 function statusPill(s) {
   const label = { paid: "Paid", pending: "Pending", overdue: "Overdue" }[s] || s;
   return `<span class="status-pill ${s}">${label}</span>`;
 }
+function emptyRow(cols, msg) { return `<tr><td colspan="${cols}" class="empty">${esc(msg)}</td></tr>`; }
 
 // ---------- AUTH ----------
 const loginScreen = document.getElementById("login-screen");
@@ -102,13 +110,9 @@ document.getElementById("logout-btn").addEventListener("click", () => {
 const sidebar = document.querySelector(".sidebar");
 const overlay = document.getElementById("sidebar-overlay");
 document.getElementById("mobile-menu-btn").addEventListener("click", () => {
-  sidebar.classList.toggle("open");
-  overlay.classList.toggle("show");
+  sidebar.classList.toggle("open"); overlay.classList.toggle("show");
 });
-overlay.addEventListener("click", () => {
-  sidebar.classList.remove("open");
-  overlay.classList.remove("show");
-});
+overlay.addEventListener("click", () => { sidebar.classList.remove("open"); overlay.classList.remove("show"); });
 
 // ---------- NAV ----------
 const viewTitles = {
@@ -127,8 +131,7 @@ function setView(name) {
   document.getElementById("view-title").textContent = viewTitles[name][0];
   document.getElementById("view-sub").textContent = viewTitles[name][1];
   searchInput.value = ""; searchTerm = "";
-  sidebar.classList.remove("open");
-  overlay.classList.remove("show");
+  sidebar.classList.remove("open"); overlay.classList.remove("show");
   renderAll();
 }
 document.addEventListener("click", (e) => {
@@ -146,8 +149,7 @@ function matchesSearch(...fields) {
 }
 
 // ---------- TABS ----------
-let propertyTab = "All";
-let paymentTab = "All";
+let propertyTab = "All", paymentTab = "All";
 document.addEventListener("click", (e) => {
   const tab = e.target.closest(".tab");
   if (!tab) return;
@@ -159,21 +161,47 @@ document.addEventListener("click", (e) => {
   renderAll();
 });
 
+// ---------- SORTING ----------
+const sortState = {
+  owners:   { key: "name",   dir: 1 },
+  clients:  { key: "name",   dir: 1 },
+  payments: { key: "date",   dir: -1 },
+};
+document.addEventListener("click", (e) => {
+  const th = e.target.closest("th.sortable");
+  if (!th) return;
+  const table = th.closest("table").id.replace("table-", "");
+  const key = th.dataset.sort;
+  const st = sortState[table];
+  if (st.key === key) st.dir *= -1; else { st.key = key; st.dir = 1; }
+  renderAll();
+});
+function applyAriaSort(tableId, state) {
+  const table = document.getElementById(tableId);
+  if (!table) return;
+  table.querySelectorAll("th.sortable").forEach(th => {
+    if (th.dataset.sort === state.key) th.setAttribute("aria-sort", state.dir === 1 ? "ascending" : "descending");
+    else th.removeAttribute("aria-sort");
+  });
+}
+function sortRows(rows, state) {
+  const { key, dir } = state;
+  return [...rows].sort((a, b) => {
+    const va = a[key], vb = b[key];
+    if (typeof va === "number" && typeof vb === "number") return (va - vb) * dir;
+    return String(va).localeCompare(String(vb), undefined, { numeric: true }) * dir;
+  });
+}
+
 // ---------- MODAL ----------
 const modalRoot = document.getElementById("modal-root");
 function openModal(title, contentHtml, onSubmit) {
   modalRoot.innerHTML = `
     <div class="modal-backdrop">
-      <div class="modal">
-        <div class="modal-head">
-          <h3>${esc(title)}</h3>
-          <button class="modal-close" aria-label="Close">&times;</button>
-        </div>
+      <div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}">
+        <div class="modal-head"><h3>${esc(title)}</h3><button class="modal-close" aria-label="Close">&times;</button></div>
         <form class="modal-body">${contentHtml}
-          <div class="modal-actions">
-            <button type="button" class="btn-secondary" data-close>Cancel</button>
-            <button type="submit" class="btn-primary">Save</button>
-          </div>
+          <div class="modal-actions"><button type="button" class="btn-secondary" data-close>Cancel</button><button type="submit" class="btn-primary">Save</button></div>
         </form>
       </div>
     </div>`;
@@ -182,8 +210,11 @@ function openModal(title, contentHtml, onSubmit) {
   const close = () => { modalRoot.classList.add("hidden"); modalRoot.innerHTML = ""; };
   modalRoot.querySelector(".modal-close").onclick = close;
   modalRoot.querySelector("[data-close]").onclick = close;
-  modalRoot.querySelector(".modal-backdrop").addEventListener("click", (e) => {
-    if (e.target.classList.contains("modal-backdrop")) close();
+  modalRoot.querySelector(".modal-backdrop").addEventListener("click", (e) => { if (e.target.classList.contains("modal-backdrop")) close(); });
+  document.addEventListener("keydown", function esc(e){ if(e.key==="Escape"){ close(); document.removeEventListener("keydown", esc);} });
+  // inline validation on blur
+  form.querySelectorAll("[required]").forEach(inp => {
+    inp.addEventListener("blur", () => { inp.style.borderColor = inp.value.trim() ? "" : "var(--bad)"; });
   });
   form.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -195,14 +226,14 @@ function openModal(title, contentHtml, onSubmit) {
 function confirmDelete(label, onYes) { if (confirm(`Delete ${label}? This cannot be undone.`)) onYes(); }
 
 // ---------- FORM BUILDERS ----------
-function ownerOptions(sel) { return store.data.owners.map(o => `<option value="${o.id}" ${o.id===sel?"selected":""}>${esc(o.name)}</option>`).join(""); }
-function propertyOptions(sel) { return store.data.properties.map(p => `<option value="${p.id}" ${p.id===sel?"selected":""}>${esc(p.title)}</option>`).join(""); }
-function clientOptions(sel) { return store.data.clients.map(c => `<option value="${c.id}" ${c.id===sel?"selected":""}>${esc(c.name)} — ${esc(c.phone)}</option>`).join(""); }
+const ownerOptions = (sel) => store.data.owners.map(o => `<option value="${o.id}" ${o.id===sel?"selected":""}>${esc(o.name)}</option>`).join("");
+const propertyOptions = (sel) => store.data.properties.map(p => `<option value="${p.id}" ${p.id===sel?"selected":""}>${esc(p.title)}</option>`).join("");
+const clientOptions = (sel) => store.data.clients.map(c => `<option value="${c.id}" ${c.id===sel?"selected":""}>${esc(c.name)} — ${esc(c.phone)}</option>`).join("");
 
 function ownerForm(o = {}) {
   return `
     <label><span>Name *</span><input name="name" required value="${esc(o.name||"")}"></label>
-    <label><span>Phone *</span><input name="phone" required value="${esc(o.phone||"")}"></label>
+    <label><span>Phone *</span><input name="phone" type="tel" required value="${esc(o.phone||"")}"></label>
     <label><span>Emirates ID</span><input name="emiratesId" value="${esc(o.emiratesId||"")}" placeholder="784-YYYY-NNNNNNN-N"></label>
     <label><span>Notes</span><textarea name="notes" rows="2">${esc(o.notes||"")}</textarea></label>`;
 }
@@ -211,21 +242,19 @@ function propertyForm(p = {}) {
     <label><span>Title *</span><input name="title" required value="${esc(p.title||"")}"></label>
     <label><span>Address</span><input name="addr" value="${esc(p.addr||"")}"></label>
     <div class="form-row">
-      <label><span>Monthly Rent (AED) *</span><input name="rent" type="number" required value="${p.rent||""}"></label>
-      <label><span>Status</span>
-        <select name="status"><option ${p.status==="Occupied"?"selected":""}>Occupied</option><option ${p.status==="Vacant"?"selected":""}>Vacant</option></select>
-      </label>
+      <label><span>Monthly Rent (AED) *</span><input name="rent" type="number" inputmode="numeric" required value="${p.rent||""}"></label>
+      <label><span>Status</span><select name="status"><option ${p.status==="Occupied"?"selected":""}>Occupied</option><option ${p.status==="Vacant"?"selected":""}>Vacant</option></select></label>
     </div>
     <label><span>Owner *</span><select name="ownerId" required>${ownerOptions(p.ownerId)}</select></label>`;
 }
 function clientForm(c = {}) {
   return `
     <label><span>Name *</span><input name="name" required value="${esc(c.name||"")}"></label>
-    <label><span>Phone *</span><input name="phone" required value="${esc(c.phone||"")}"></label>
+    <label><span>Phone *</span><input name="phone" type="tel" required value="${esc(c.phone||"")}"></label>
     <label><span>Emirates ID</span><input name="emiratesId" value="${esc(c.emiratesId||"")}" placeholder="784-YYYY-NNNNNNN-N"></label>
     <label><span>Property *</span><select name="propertyId" required>${propertyOptions(c.propertyId)}</select></label>
     <div class="form-row">
-      <label><span>Monthly Rent (AED) *</span><input name="rent" type="number" required value="${c.rent||""}"></label>
+      <label><span>Monthly Rent (AED) *</span><input name="rent" type="number" inputmode="numeric" required value="${c.rent||""}"></label>
       <label><span>Join Date</span><input name="joinDate" type="date" value="${c.joinDate||""}"></label>
     </div>`;
 }
@@ -233,20 +262,15 @@ function paymentForm(p = {}) {
   return `
     <label><span>Client *</span><select name="clientId" required>${clientOptions(p.clientId)}</select></label>
     <div class="form-row">
-      <label><span>Amount (AED) *</span><input name="amount" type="number" required value="${p.amount||""}"></label>
+      <label><span>Amount (AED) *</span><input name="amount" type="number" inputmode="numeric" required value="${p.amount||""}"></label>
       <label><span>Date *</span><input name="date" type="date" required value="${p.date || new Date().toISOString().slice(0,10)}"></label>
     </div>
     <div class="form-row">
-      <label><span>Method</span>
-        <select name="method"><option>Cash</option><option>Bank Transfer</option><option>Apple Pay</option><option>Cheque</option></select>
-      </label>
-      <label><span>Status</span>
-        <select name="status">
-          <option value="paid" ${p.status==="paid"?"selected":""}>Paid</option>
-          <option value="pending" ${p.status==="pending"?"selected":""}>Pending</option>
-          <option value="overdue" ${p.status==="overdue"?"selected":""}>Overdue</option>
-        </select>
-      </label>
+      <label><span>Method</span><select name="method"><option>Cash</option><option>Bank Transfer</option><option>Apple Pay</option><option>Cheque</option></select></label>
+      <label><span>Status</span><select name="status">
+        <option value="paid" ${p.status==="paid"?"selected":""}>Paid</option>
+        <option value="pending" ${p.status==="pending"?"selected":""}>Pending</option>
+        <option value="overdue" ${p.status==="overdue"?"selected":""}>Overdue</option></select></label>
     </div>
     <label><span>Note</span><input name="note" value="${esc(p.note||"")}"></label>`;
 }
@@ -270,6 +294,73 @@ window.delPayment = (id_) => confirmDelete("this payment", () => { store.remove(
 
 window.resetData = () => { if (confirm("Reset all data back to demo? Your changes will be lost.")) { store.reset(); renderAll(); } };
 
+// ---------- MONTH HELPERS ----------
+function lastMonths(n) {
+  const now = new Date(), out = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const dt = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    out.push({ key: dt.toISOString().slice(0, 7), label: dt.toLocaleDateString("en-US", { month: "short" }) });
+  }
+  return out;
+}
+function paidInMonth(key) {
+  return store.data.payments.filter(p => p.status === "paid" && p.date.startsWith(key)).reduce((s, p) => s + p.amount, 0);
+}
+
+// ---------- SVG LINE/AREA CHART ----------
+function renderLineChart(containerId, series) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const W = 720, H = 240, padL = 46, padR = 16, padT = 18, padB = 30;
+  const max = Math.max(1, ...series.map(s => s.v));
+  const niceMax = Math.ceil(max / 5000) * 5000 || 5000;
+  const ix = (i) => padL + (i * (W - padL - padR)) / Math.max(1, series.length - 1);
+  const iy = (v) => padT + (1 - v / niceMax) * (H - padT - padB);
+
+  const linePts = series.map((s, i) => `${ix(i)},${iy(s.v)}`).join(" ");
+  const areaPts = `${padL},${H - padB} ${linePts} ${ix(series.length - 1)},${H - padB}`;
+
+  // y gridlines (4)
+  let grid = "", ylabels = "";
+  for (let g = 0; g <= 4; g++) {
+    const val = (niceMax / 4) * g;
+    const y = iy(val);
+    grid += `<line class="grid-line" x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}"/>`;
+    ylabels += `<text class="y-label" x="${padL - 8}" y="${y + 3}" text-anchor="end">${fmtK(val)}</text>`;
+  }
+  const xlabels = series.map((s, i) => `<text class="axis-label" x="${ix(i)}" y="${H - 8}" text-anchor="middle">${s.label}</text>`).join("");
+  const dots = series.map((s, i) => `<circle class="dot" cx="${ix(i)}" cy="${iy(s.v)}" r="3.5"/>`).join("");
+  const hits = series.map((s, i) => `<rect class="dot-hit" x="${ix(i) - 18}" y="${padT}" width="36" height="${H - padT - padB}" data-label="${esc(s.label)}" data-val="${s.v}"/>`).join("");
+
+  el.innerHTML = `
+    <div style="position:relative;">
+      <svg class="linechart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Revenue last 6 months">
+        <defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0f766e" stop-opacity="0.22"/><stop offset="100%" stop-color="#0f766e" stop-opacity="0"/>
+        </linearGradient></defs>
+        ${grid}${ylabels}
+        <polygon class="area" points="${areaPts}"/>
+        <polyline class="line" points="${linePts}"/>
+        ${dots}${hits}${xlabels}
+      </svg>
+      <div class="chart-tip" id="${containerId}-tip"></div>
+    </div>`;
+
+  const svg = el.querySelector("svg");
+  const tip = el.querySelector(".chart-tip");
+  el.querySelectorAll(".dot-hit").forEach(r => {
+    r.addEventListener("mouseenter", () => {
+      const rect = svg.getBoundingClientRect();
+      const cx = (parseFloat(r.getAttribute("x")) + 18) / W * rect.width;
+      const i = [...el.querySelectorAll(".dot-hit")].indexOf(r);
+      const cy = iy(series[i].v) / H * rect.height;
+      tip.style.left = cx + "px"; tip.style.top = cy + "px"; tip.style.opacity = "1";
+      tip.innerHTML = `${fmt(r.dataset.val)}<span class="tip-sub">${r.dataset.label}</span>`;
+    });
+    r.addEventListener("mouseleave", () => { tip.style.opacity = "0"; });
+  });
+}
+
 // ---------- RENDER ----------
 function renderAll() {
   renderDashboard(); renderProperties(); renderOwners();
@@ -279,11 +370,11 @@ function renderAll() {
 function renderDashboard() {
   const d = store.data;
   const now = new Date();
-  const mtdPaid = d.payments.filter(p => { const dt=new Date(p.date); return p.status==="paid" && dt.getMonth()===now.getMonth() && dt.getFullYear()===now.getFullYear(); });
-  const income = mtdPaid.reduce((s,p)=>s+p.amount,0);
-  const pending = d.payments.filter(p=>p.status!=="paid").reduce((s,p)=>s+p.amount,0);
-  const overdue = d.payments.filter(p=>p.status==="overdue").length;
-  const vacant = d.properties.filter(p=>p.status==="Vacant").length;
+  const thisKey = now.toISOString().slice(0, 7);
+  const income = paidInMonth(thisKey);
+  const pending = d.payments.filter(p => p.status !== "paid").reduce((s, p) => s + p.amount, 0);
+  const overdue = d.payments.filter(p => p.status === "overdue").length;
+  const vacant = d.properties.filter(p => p.status === "Vacant").length;
 
   document.getElementById("stat-income").textContent = fmt(income);
   document.getElementById("stat-pending").textContent = fmt(pending);
@@ -293,11 +384,11 @@ function renderDashboard() {
   document.getElementById("stat-clients").textContent = d.clients.length;
 
   const recent = [...d.payments].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
-  document.getElementById("recent-payments").innerHTML = recent.map(p => {
+  document.getElementById("recent-payments").innerHTML = recent.length ? recent.map(p => {
     const c = d.clients.find(x=>x.id===p.clientId);
     const pr = c ? d.properties.find(x=>x.id===c.propertyId) : null;
     return `<tr><td>${esc(c?.name||"—")}</td><td>${esc(pr?.title||"—")}</td><td><strong>${fmt(p.amount)}</strong></td><td>${statusPill(p.status)}</td></tr>`;
-  }).join("") || `<tr><td colspan="4" class="empty">No payments yet</td></tr>`;
+  }).join("") : emptyRow(4, "No payments yet");
 
   const waMessages = [
     { author: "Ahmed (Owner)", time: "10:42 AM", text: "Mohammed paid Shop 4 rent AED 8,500 today via bank transfer.", tag: "Matched: Mohammed Rashid — AED 8,500" },
@@ -305,98 +396,89 @@ function renderDashboard() {
     { author: "Bilal (Tenant)", time: "2 days ago", text: "Rent transferred, ref TXN-99210.", tag: "Matched: Bilal Khan — AED 12,000" },
     { author: "Zainab (Tenant)", time: "3 days ago", text: "Paid via Apple Pay, AED 9500.", tag: "Matched: Zainab Mirza — AED 9,500" },
   ];
-  document.getElementById("wa-feed").innerHTML = waMessages.map(m => waMsgHtml(m)).join("");
-  document.getElementById("wa-feed-2").innerHTML = waMessages.map(m => waMsgHtml(m)).join("");
+  const waHtml = waMessages.map(waMsgHtml).join("");
+  document.getElementById("wa-feed").innerHTML = waHtml;
+  document.getElementById("wa-feed-2").innerHTML = waHtml;
 
-  const months = [];
-  for (let i=5; i>=0; i--) {
-    const dt = new Date(now.getFullYear(), now.getMonth()-i, 1);
-    const key = dt.toISOString().slice(0,7);
-    const total = d.payments.filter(p=>p.status==="paid"&&p.date.startsWith(key)).reduce((s,p)=>s+p.amount,0);
-    months.push({ m: dt.toLocaleDateString("en-US",{month:"short"}), v: total });
-  }
-  const max = Math.max(1,...months.map(x=>x.v));
-  document.getElementById("chart").innerHTML = months.map(d => `
-    <div class="bar"><div class="bar-value">${d.v?(d.v/1000).toFixed(0)+"k":"—"}</div>
-    <div class="bar-fill" style="height:${(d.v/max)*170}px"></div>
-    <div class="bar-label">${d.m}</div></div>`).join("");
+  renderLineChart("chart", lastMonths(6).map(m => ({ label: m.label, v: paidInMonth(m.key) })));
 }
 
 function waMsgHtml(m) {
-  return `<div class="wa-msg"><span class="wa-author">${esc(m.author)}</span><span class="wa-time">${esc(m.time)}</span><div class="wa-text">${esc(m.text)}</div><span class="wa-tag">&#10003; ${esc(m.tag)}</span></div>`;
+  const check = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>`;
+  return `<div class="wa-msg"><span class="wa-author">${esc(m.author)}</span><span class="wa-time">${esc(m.time)}</span><div class="wa-text">${esc(m.text)}</div><span class="wa-tag">${check}${esc(m.tag)}</span></div>`;
 }
 
 function renderProperties() {
   let list = store.data.properties.filter(p => matchesSearch(p.title, p.addr, store.ownerName(p.ownerId)));
   if (propertyTab==="Occupied") list = list.filter(p=>p.status==="Occupied");
   if (propertyTab==="Vacant")   list = list.filter(p=>p.status==="Vacant");
-  const svg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12L12 3l9 9"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>`;
-  document.getElementById("property-cards").innerHTML = list.length ? list.map(p => `
+  const house = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>`;
+  const pin = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+  const grid = document.getElementById("property-cards");
+  grid.innerHTML = list.length ? list.map(p => `
     <div class="property-card">
-      <div class="property-img">${svg}<span class="status-tag">${esc(p.status)}</span></div>
+      <div class="property-img">${house}<span class="status-tag">${esc(p.status)}</span></div>
       <div class="property-body">
         <h4 class="property-title">${esc(p.title)}</h4>
-        <p class="property-addr">${esc(p.addr||"—")}</p>
+        <p class="property-addr">${pin}${esc(p.addr||"—")}</p>
         <div class="property-meta">
-          <span>Owner: <strong>${esc(store.ownerName(p.ownerId))}</strong></span>
-          <span><strong>${fmt(p.rent)}</strong>/mo</span>
+          <span>Owner · <strong>${esc(store.ownerName(p.ownerId))}</strong></span>
+          <span class="property-rent"><strong>${fmt(p.rent)}</strong></span>
         </div>
-        <div class="property-meta" style="border:none;padding-top:8px;">
-          <span class="row-actions">
-            <button class="link-btn" onclick="editProperty('${p.id}')">Edit</button>
-            <button class="link-btn danger" onclick="delProperty('${p.id}')">Delete</button>
-          </span>
+        <div class="property-meta" style="border:none;padding-top:10px;justify-content:flex-end;">
+          <span class="row-actions"><button class="link-btn" onclick="editProperty('${p.id}')">Edit</button><button class="link-btn danger" onclick="delProperty('${p.id}')">Delete</button></span>
         </div>
       </div>
-    </div>`).join("") : `<div class="empty-state">No properties match.</div>`;
+    </div>`).join("") : `<div class="empty-state" style="grid-column:1/-1;"><strong>No properties found</strong>Try a different search or add a property.</div>`;
 }
 
 function renderOwners() {
-  const now = new Date();
-  const list = store.data.owners.filter(o => matchesSearch(o.name, o.phone));
-  document.getElementById("owners-rows").innerHTML = list.length ? list.map(o => {
+  const now = new Date(), thisKey = now.toISOString().slice(0, 7);
+  let rows = store.data.owners.filter(o => matchesSearch(o.name, o.phone)).map(o => {
     const props = store.data.properties.filter(p=>p.ownerId===o.id);
-    const mtd = store.data.payments.filter(p => {
-      if (p.status!=="paid") return false;
-      const c = store.data.clients.find(x=>x.id===p.clientId);
-      if (!c) return false;
-      const pr = store.data.properties.find(x=>x.id===c.propertyId);
-      const dt = new Date(p.date);
-      return pr?.ownerId===o.id && dt.getMonth()===now.getMonth() && dt.getFullYear()===now.getFullYear();
+    const ownerPays = (cond) => store.data.payments.filter(p => {
+      const c = store.data.clients.find(x=>x.id===p.clientId); if (!c) return false;
+      return store.data.properties.find(x=>x.id===c.propertyId)?.ownerId===o.id && cond(p);
     }).reduce((s,p)=>s+p.amount,0);
-    const pend = store.data.payments.filter(p => {
-      if (p.status==="paid") return false;
-      const c = store.data.clients.find(x=>x.id===p.clientId);
-      if (!c) return false;
-      return store.data.properties.find(x=>x.id===c.propertyId)?.ownerId===o.id;
-    }).reduce((s,p)=>s+p.amount,0);
-    return `<tr><td><strong>${esc(o.name)}</strong></td><td>${esc(o.phone)}</td><td>${props.length}</td><td>${fmt(mtd)}</td><td>${fmt(pend)}</td>
-    <td class="row-actions"><button class="link-btn" onclick="editOwner('${o.id}')">Edit</button><button class="link-btn danger" onclick="delOwner('${o.id}')">Delete</button></td></tr>`;
-  }).join("") : `<tr><td colspan="6" class="empty">No owners yet</td></tr>`;
+    const mtd = ownerPays(p => p.status==="paid" && p.date.startsWith(thisKey));
+    const pending = ownerPays(p => p.status!=="paid");
+    return { id:o.id, name:o.name, phone:o.phone, props:props.length, mtd, pending };
+  });
+  rows = sortRows(rows, sortState.owners);
+  applyAriaSort("table-owners", sortState.owners);
+  document.getElementById("owners-rows").innerHTML = rows.length ? rows.map(o =>
+    `<tr><td><strong>${esc(o.name)}</strong></td><td>${esc(o.phone)}</td><td>${o.props}</td><td><strong>${fmt(o.mtd)}</strong></td><td>${fmt(o.pending)}</td>
+    <td class="row-actions"><button class="link-btn" onclick="editOwner('${o.id}')">Edit</button><button class="link-btn danger" onclick="delOwner('${o.id}')">Delete</button></td></tr>`
+  ).join("") : emptyRow(6, "No owners yet");
 }
 
 function renderClients() {
-  const list = store.data.clients.filter(c => matchesSearch(c.name, c.phone, store.propertyTitle(c.propertyId)));
-  document.getElementById("clients-rows").innerHTML = list.length ? list.map(c => {
+  let rows = store.data.clients.filter(c => matchesSearch(c.name, c.phone, store.propertyTitle(c.propertyId))).map(c => {
     const last = [...store.data.payments].filter(p=>p.clientId===c.id).sort((a,b)=>b.date.localeCompare(a.date))[0];
-    return `<tr><td><strong>${esc(c.name)}</strong></td><td>${esc(store.propertyTitle(c.propertyId))}</td><td>${esc(c.phone)}</td><td>${fmt(c.rent)}</td>
-    <td>${statusPill(last?.status||"pending")}</td>
-    <td class="row-actions"><button class="link-btn" onclick="addPayment('${c.id}')">+ Payment</button><button class="link-btn" onclick="editClient('${c.id}')">Edit</button><button class="link-btn danger" onclick="delClient('${c.id}')">Delete</button></td></tr>`;
-  }).join("") : `<tr><td colspan="6" class="empty">No clients yet</td></tr>`;
+    return { ...c, status: last?.status || "pending", property: store.propertyTitle(c.propertyId) };
+  });
+  rows = sortRows(rows, sortState.clients);
+  applyAriaSort("table-clients", sortState.clients);
+  document.getElementById("clients-rows").innerHTML = rows.length ? rows.map(c =>
+    `<tr><td><strong>${esc(c.name)}</strong></td><td>${esc(c.property)}</td><td>${esc(c.phone)}</td><td><strong>${fmt(c.rent)}</strong></td><td>${statusPill(c.status)}</td>
+    <td class="row-actions"><button class="link-btn" onclick="addPayment('${c.id}')">+ Pay</button><button class="link-btn" onclick="editClient('${c.id}')">Edit</button><button class="link-btn danger" onclick="delClient('${c.id}')">Delete</button></td></tr>`
+  ).join("") : emptyRow(6, "No clients yet");
 }
 
 function renderPayments() {
-  let list = [...store.data.payments].sort((a,b)=>b.date.localeCompare(a.date));
-  if (paymentTab==="Paid")    list = list.filter(p=>p.status==="paid");
-  if (paymentTab==="Pending") list = list.filter(p=>p.status==="pending");
-  if (paymentTab==="Overdue") list = list.filter(p=>p.status==="overdue");
-  list = list.filter(p => matchesSearch(store.clientName(p.clientId), p.method, p.note));
-  document.getElementById("payments-rows").innerHTML = list.length ? list.map(p => {
+  let rows = store.data.payments.map(p => {
     const c = store.data.clients.find(x=>x.id===p.clientId);
     const pr = c ? store.data.properties.find(x=>x.id===c.propertyId) : null;
-    return `<tr><td>${fmtDate(p.date)}</td><td><strong>${esc(c?.name||"—")}</strong></td><td>${esc(pr?.title||"—")}</td><td>${fmt(p.amount)}</td><td>${esc(p.method||"—")}</td><td>${statusPill(p.status)}</td>
-    <td class="row-actions"><button class="link-btn" onclick="editPayment('${p.id}')">Edit</button><button class="link-btn danger" onclick="delPayment('${p.id}')">Delete</button></td></tr>`;
-  }).join("") : `<tr><td colspan="7" class="empty">No payments match</td></tr>`;
+    return { ...p, client: c?.name || "—", property: pr?.title || "—" };
+  });
+  if (paymentTab!=="All") rows = rows.filter(p => p.status === paymentTab.toLowerCase());
+  rows = rows.filter(p => matchesSearch(p.client, p.method, p.note));
+  rows = sortRows(rows, sortState.payments);
+  applyAriaSort("table-payments", sortState.payments);
+  document.getElementById("payments-rows").innerHTML = rows.length ? rows.map(p =>
+    `<tr><td>${fmtDate(p.date)}</td><td><strong>${esc(p.client)}</strong></td><td>${esc(p.property)}</td><td><strong>${fmt(p.amount)}</strong></td><td>${esc(p.method||"—")}</td><td>${statusPill(p.status)}</td>
+    <td class="row-actions"><button class="link-btn" onclick="editPayment('${p.id}')">Edit</button><button class="link-btn danger" onclick="delPayment('${p.id}')">Delete</button></td></tr>`
+  ).join("") : emptyRow(7, "No payments match");
 }
 
 function renderWhatsapp() {
@@ -404,30 +486,25 @@ function renderWhatsapp() {
 }
 
 function renderReports() {
-  const d = store.data;
-  const now = new Date();
-  const months = [];
-  for (let i=5; i>=0; i--) {
-    const dt = new Date(now.getFullYear(), now.getMonth()-i, 1);
-    const key = dt.toISOString().slice(0,7);
-    const inc = d.payments.filter(p=>p.status==="paid"&&p.date.startsWith(key)).reduce((s,p)=>s+p.amount,0);
-    months.push({ m: dt.toLocaleDateString("en-US",{month:"short"}), inc, exp: Math.floor(inc*0.2) });
-  }
-  const max = Math.max(1,...months.map(x=>x.inc));
-  document.getElementById("chart-2").innerHTML = months.map(m => `
-    <div class="bar"><div class="bar-value">${(m.inc/1000).toFixed(0)}k / ${(m.exp/1000).toFixed(0)}k</div>
-    <div style="display:flex;gap:3px;align-items:flex-end;width:100%;max-width:48px;">
-      <div class="bar-fill" style="height:${(m.inc/max)*155}px;flex:1;"></div>
-      <div class="bar-fill" style="height:${(m.exp/max)*155}px;flex:1;background:linear-gradient(180deg,#c8963e,#a67530);"></div>
-    </div><div class="bar-label">${m.m}</div></div>`).join("");
+  const months = lastMonths(6).map(m => { const inc = paidInMonth(m.key); return { label: m.label, inc, exp: Math.round(inc * 0.2) }; });
+  const max = Math.max(1, ...months.map(m => m.inc));
+  document.getElementById("chart-2").innerHTML = `<div class="barchart">` + months.map(m => `
+    <div class="bar">
+      <div class="bar-value">${fmtK(m.inc)}</div>
+      <div class="bar-cluster">
+        <div class="bar-fill inc" style="height:${Math.max(2,(m.inc/max)*100)}%" title="Income ${fmt(m.inc)}"></div>
+        <div class="bar-fill exp" style="height:${Math.max(2,(m.exp/max)*100)}%" title="Expenses ${fmt(m.exp)}"></div>
+      </div>
+      <div class="bar-label">${m.label}</div>
+    </div>`).join("") + `</div>`;
 
-  const yearStart = `${now.getFullYear()}-01`;
-  const totals = d.properties.map(p => {
-    const clients = d.clients.filter(c=>c.propertyId===p.id);
-    const total = d.payments.filter(pay => pay.status==="paid"&&pay.date>=yearStart&&clients.some(c=>c.id===pay.clientId)).reduce((s,x)=>s+x.amount,0);
+  const now = new Date(), yearStart = `${now.getFullYear()}-01`;
+  const totals = store.data.properties.map(p => {
+    const clients = store.data.clients.filter(c=>c.propertyId===p.id);
+    const total = store.data.payments.filter(pay => pay.status==="paid" && pay.date>=yearStart && clients.some(c=>c.id===pay.clientId)).reduce((s,x)=>s+x.amount,0);
     return { title: p.title, owner: store.ownerName(p.ownerId), total };
-  }).sort((a,b)=>b.total-a.total).slice(0,5);
+  }).filter(t => t.total > 0).sort((a,b)=>b.total-a.total).slice(0,5);
   document.getElementById("top-properties").innerHTML = totals.length ? totals.map(t =>
-    `<tr><td><strong>${esc(t.title)}</strong></td><td>${esc(t.owner)}</td><td>${fmt(t.total)}</td></tr>`
-  ).join("") : `<tr><td colspan="3" class="empty">No data yet</td></tr>`;
+    `<tr><td><strong>${esc(t.title)}</strong></td><td>${esc(t.owner)}</td><td><strong>${fmt(t.total)}</strong></td></tr>`
+  ).join("") : emptyRow(3, "No collections yet this year");
 }
