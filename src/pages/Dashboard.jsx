@@ -69,15 +69,15 @@ function buildTopVillas() {
 function StatCard({ icon: Icon, label, value, color, subtext, animate, to }) {
   const inner = (
     <>
-      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${color}`}>
+      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-glow-sm ${color}`}>
         <Icon size={22} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">{label}</p>
-        <p className="text-2xl font-bold text-charcoal-900 mt-1">
+        <p className="section-label text-gray-500">{label}</p>
+        <p className="text-2xl font-bold text-charcoal-900 mt-1.5 tabular leading-none">
           {animate ? <CountUp value={value} /> : value}
         </p>
-        {subtext && <p className="text-xs text-gray-400 mt-0.5">{subtext}</p>}
+        {subtext && <p className="text-xs text-gray-400 mt-1.5">{subtext}</p>}
       </div>
       <ArrowRight size={16} className="text-primary-500 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-0.5 self-center flex-shrink-0" />
     </>
@@ -211,25 +211,28 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-      {/* Hero banner */}
-      <div className="relative overflow-hidden rounded-card bg-charcoal-900 mb-8 animate-fade-up">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-900/30 via-transparent to-charcoal-800 pointer-events-none" />
-        <div className="relative px-6 py-8 sm:px-10 sm:py-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
-          <div>
-            <p className="text-primary-400 text-[11px] uppercase tracking-[0.25em] mb-2">
+      {/* Hero banner — private bank statement header */}
+      <div className="relative overflow-hidden rounded-card bg-charcoal-900 mb-8 shadow-premium animate-fade-up">
+        <div className="absolute inset-0 bg-gradient-to-br from-charcoal-800 via-charcoal-900 to-charcoal-950 pointer-events-none" />
+        <div className="absolute -top-24 -right-16 w-72 h-72 rounded-full bg-primary-500/10 blur-3xl pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-400/40 to-transparent pointer-events-none" />
+        <div className="relative px-6 py-8 sm:px-10 sm:py-11 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-8">
+          <div className="min-w-0">
+            <p className="text-primary-400/90 text-[11px] uppercase tracking-[0.3em] mb-3">
               {format(today, 'EEEE, MMMM d, yyyy')}
             </p>
-            <h1 className="font-display text-3xl sm:text-4xl text-white">
+            <h1 className="font-display text-3xl sm:text-4xl text-white leading-tight">
               Welcome back, <span className="italic text-primary-300 capitalize">{firstName}</span>
             </h1>
-            <p className="text-charcoal-300 text-sm mt-2">Here's how your properties are performing today.</p>
+            <p className="text-charcoal-300 text-sm mt-3">Here's how your properties are performing today.</p>
           </div>
-          <div className="sm:text-right">
-            <p className="text-charcoal-300 text-xs uppercase tracking-wider mb-1">Collected this month</p>
-            <p className="font-display text-4xl sm:text-5xl text-white">
-              <span className="text-primary-400 text-2xl align-top mr-1">AED</span>
-              {loading ? '—' : <CountUp value={totalRevenue} duration={1600} />}
+          <div className="sm:text-right shrink-0">
+            <p className="text-charcoal-400 text-[11px] uppercase tracking-[0.2em] mb-2">Collected this month</p>
+            <p className="font-display text-4xl sm:text-5xl text-white tabular leading-none">
+              <span className="text-primary-400 text-xl sm:text-2xl align-top mr-1.5 tracking-normal">AED</span>
+              {loading ? <span className="text-charcoal-500">—</span> : <CountUp value={totalRevenue} duration={1600} />}
             </p>
+            <span className="hidden sm:block gold-rule ml-auto mt-3" />
           </div>
         </div>
       </div>
@@ -255,12 +258,12 @@ export default function Dashboard() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="stat-card animate-pulse">
+            <div key={i} className="stat-card">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-gray-200 rounded-2xl" />
+                <div className="w-12 h-12 skeleton rounded-2xl" />
                 <div className="flex-1">
-                  <div className="h-4 bg-gray-200 rounded w-24 mb-2" />
-                  <div className="h-7 bg-gray-200 rounded w-16" />
+                  <div className="h-3.5 skeleton rounded w-24 mb-2.5" />
+                  <div className="h-7 skeleton rounded w-16" />
                 </div>
               </div>
             </div>
@@ -334,24 +337,31 @@ export default function Dashboard() {
                 ))}
               </div>
             ) : recentTenants.length === 0 ? (
-              <div className="p-6 text-center text-gray-400 text-sm">
-                No tenants yet. Add your first tenant!
+              <div className="px-6 py-12 flex flex-col items-center text-center">
+                <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400 mb-3">
+                  <Users size={22} />
+                </div>
+                <p className="text-sm font-semibold text-charcoal-900">No tenants yet</p>
+                <p className="text-xs text-gray-400 mt-1">Add your first tenant to see them here.</p>
               </div>
             ) : (
-              recentTenants.map((tenant) => (
-                <Link key={tenant.id} to="/tenants" className="flex items-center gap-3 px-6 py-4 transition-colors duration-300 hover:bg-gray-50 cursor-pointer">
-                  <div className="w-10 h-10 bg-charcoal-900 rounded-full flex items-center justify-center text-primary-400 font-bold text-sm flex-shrink-0">
-                    {tenant.name?.charAt(0).toUpperCase() || 'T'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-charcoal-900 text-sm truncate">{tenant.name}</p>
-                    <p className="text-xs text-gray-500">Unit {tenant.unit} · AED {Number(tenant.rentAmount || 0).toLocaleString()}</p>
-                  </div>
-                  <span className={isPaid(tenant, MONTH) ? 'badge-paid' : 'badge-unpaid'}>
-                    {isPaid(tenant, MONTH) ? 'Paid' : 'Unpaid'}
-                  </span>
-                </Link>
-              ))
+              <div className="stagger">
+                {recentTenants.map((tenant) => (
+                  <Link key={tenant.id} to="/tenants" className="group flex items-center gap-3.5 px-6 py-4 transition-colors duration-200 hover:bg-gray-50 cursor-pointer">
+                    <div className="w-10 h-10 bg-charcoal-900 rounded-full flex items-center justify-center text-primary-400 font-bold text-sm flex-shrink-0 shadow-glow-sm">
+                      {tenant.name?.charAt(0).toUpperCase() || 'T'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-charcoal-900 text-sm truncate">{tenant.name}</p>
+                      <p className="text-xs text-gray-500 tabular">Unit {tenant.unit} · AED {Number(tenant.rentAmount || 0).toLocaleString()}</p>
+                    </div>
+                    <span className={isPaid(tenant, MONTH) ? 'badge-paid' : 'badge-unpaid'}>
+                      {isPaid(tenant, MONTH) ? 'Paid' : 'Unpaid'}
+                    </span>
+                    <ArrowRight size={15} className="text-primary-500 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-0.5 flex-shrink-0 -ml-1" />
+                  </Link>
+                ))}
+              </div>
             )}
           </div>
         </div>
@@ -383,35 +393,41 @@ export default function Dashboard() {
                 ))}
               </div>
             ) : upcomingReminders.length === 0 ? (
-              <div className="p-6 text-center text-gray-400 text-sm">
-                No upcoming reminders in the next 7 days.
+              <div className="px-6 py-12 flex flex-col items-center text-center">
+                <div className="w-12 h-12 rounded-2xl bg-primary-100 flex items-center justify-center text-primary-700 mb-3">
+                  <Bell size={20} />
+                </div>
+                <p className="text-sm font-semibold text-charcoal-900">All clear</p>
+                <p className="text-xs text-gray-400 mt-1">No upcoming reminders in the next 7 days.</p>
               </div>
             ) : (
-              upcomingReminders.map((reminder) => {
-                let daysLeft = 0
-                try {
-                  const due = parseISO(reminder.dueDate)
-                  daysLeft = Math.ceil((due - today) / (1000 * 60 * 60 * 24))
-                } catch {}
-                return (
-                  <div key={reminder.id} className="flex items-center gap-3 px-6 py-4 transition-colors duration-300 hover:bg-gray-50">
-                    <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Clock size={16} className="text-primary-700" />
+              <div className="stagger">
+                {upcomingReminders.map((reminder) => {
+                  let daysLeft = 0
+                  try {
+                    const due = parseISO(reminder.dueDate)
+                    daysLeft = Math.ceil((due - today) / (1000 * 60 * 60 * 24))
+                  } catch {}
+                  return (
+                    <div key={reminder.id} className="flex items-center gap-3.5 px-6 py-4 transition-colors duration-200 hover:bg-gray-50">
+                      <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Clock size={16} className="text-primary-700" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-charcoal-900 text-sm truncate">{reminder.title}</p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {reminder.type} · Due {reminder.dueDate ? format(parseISO(reminder.dueDate), 'MMM d, yyyy') : 'N/A'}
+                        </p>
+                      </div>
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-full tabular flex-shrink-0 ${
+                        daysLeft <= 2 ? 'bg-rust-50 text-rust-600' : 'bg-primary-100 text-primary-700'
+                      }`}>
+                        {daysLeft === 0 ? 'Today' : daysLeft === 1 ? '1 day' : `${daysLeft} days`}
+                      </span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-charcoal-900 text-sm truncate">{reminder.title}</p>
-                      <p className="text-xs text-gray-500">
-                        {reminder.type} · Due {reminder.dueDate ? format(parseISO(reminder.dueDate), 'MMM d, yyyy') : 'N/A'}
-                      </p>
-                    </div>
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-                      daysLeft <= 2 ? 'bg-rust-50 text-rust-600' : 'bg-primary-100 text-primary-700'
-                    }`}>
-                      {daysLeft === 0 ? 'Today' : daysLeft === 1 ? '1 day' : `${daysLeft} days`}
-                    </span>
-                  </div>
-                )
-              })
+                  )
+                })}
+              </div>
             )}
           </div>
         </div>
@@ -430,69 +446,77 @@ export default function Dashboard() {
         </div>
         <div className="divide-y divide-gray-100">
           {upcomingOwnerPayments.length === 0 ? (
-            <div className="px-6 py-5 flex items-center gap-2 text-sm text-emerald2-600">
+            <div className="px-6 py-5 flex items-center gap-3 text-sm text-emerald2-600">
+              <span className="w-9 h-9 rounded-full bg-emerald2-50 flex items-center justify-center flex-shrink-0">
+                <Bell size={16} />
+              </span>
               <span className="font-semibold">No payments due in the next 7 days ✓</span>
             </div>
           ) : (
-            upcomingOwnerPayments.map((owner) => (
-              <Link
-                key={owner.id}
-                to="/owners"
-                className="flex items-center gap-3 px-6 py-4 transition-colors duration-300 hover:bg-gray-50 cursor-pointer"
-              >
-                <span
-                  className={`text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wider flex-shrink-0 ${
-                    owner.daysUntil === 0
-                      ? 'bg-red-50 text-red-600'
-                      : owner.daysUntil === 1
-                      ? 'bg-rust-50 text-rust-600'
-                      : 'bg-amber-50 text-amber-700'
-                  }`}
+            <div className="stagger">
+              {upcomingOwnerPayments.map((owner) => (
+                <Link
+                  key={owner.id}
+                  to="/owners"
+                  className="group flex items-center gap-3 px-6 py-4 transition-colors duration-200 hover:bg-gray-50 cursor-pointer"
                 >
-                  {owner.daysUntil === 0
-                    ? 'TODAY'
-                    : owner.daysUntil === 1
-                    ? 'TOMORROW'
-                    : `${owner.daysUntil} DAYS`}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-charcoal-900 text-sm truncate">{owner.name}</p>
-                  <p className="text-xs text-gray-500 truncate">{owner.property}</p>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="font-bold text-charcoal-900 text-sm">
-                    AED {Number(owner.rentAmount || 0).toLocaleString()}
-                  </p>
-                  <p className="text-[11px] text-gray-400 capitalize">
-                    {owner.paymentMethod === 'check'
-                      ? `Check${owner.bankName ? ` · ${owner.bankName}` : ''}`
-                      : owner.paymentMethod || ''}
-                  </p>
-                </div>
-              </Link>
-            ))
+                  <span
+                    className={`text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wider flex-shrink-0 tabular ${
+                      owner.daysUntil === 0
+                        ? 'bg-red-50 text-red-600'
+                        : owner.daysUntil === 1
+                        ? 'bg-rust-50 text-rust-600'
+                        : 'bg-amber-50 text-amber-700'
+                    }`}
+                  >
+                    {owner.daysUntil === 0
+                      ? 'TODAY'
+                      : owner.daysUntil === 1
+                      ? 'TOMORROW'
+                      : `${owner.daysUntil} DAYS`}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-charcoal-900 text-sm truncate">{owner.name}</p>
+                    <p className="text-xs text-gray-500 truncate">{owner.property}</p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="font-bold text-charcoal-900 text-sm tabular">
+                      AED {Number(owner.rentAmount || 0).toLocaleString()}
+                    </p>
+                    <p className="text-[11px] text-gray-400 capitalize truncate">
+                      {owner.paymentMethod === 'check'
+                        ? `Check${owner.bankName ? ` · ${owner.bankName}` : ''}`
+                        : owner.paymentMethod || ''}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           )}
         </div>
       </div>
 
       {/* Business Analytics */}
       <div className="mt-10">
-        <h2 className="font-display text-xl text-charcoal-900">Business Analytics</h2>
+        <p className="section-label text-primary-700">Insights</p>
+        <h2 className="font-display text-xl text-charcoal-900 mt-1">Business Analytics</h2>
         <span className="gold-rule" />
-        <p className="text-xs text-gray-400 mt-1 mb-5">Villa cash flow over the last 12 months</p>
+        <p className="text-xs text-gray-400 mt-2 mb-5">Villa cash flow over the last 12 months</p>
 
         {!showCharts && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="card p-5 h-[300px] animate-pulse bg-gray-50" />
-            <div className="card p-5 h-[300px] animate-pulse bg-gray-50" />
+            <div className="card p-5 sm:p-6 h-[300px] skeleton" />
+            <div className="card p-5 sm:p-6 h-[300px] skeleton" />
           </div>
         )}
 
         <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 ${!showCharts ? 'hidden' : ''}`}>
           {/* Chart A — Income vs Outgoing */}
           <div className="card p-5 sm:p-6">
-            <h3 className="font-display text-lg text-charcoal-900">Income vs Outgoing</h3>
-            <p className="text-xs text-gray-400 mb-4">Last 12 months · AED</p>
+            <p className="section-label text-gray-400">Cash flow</p>
+            <h3 className="font-display text-lg text-charcoal-900 mt-1">Income vs Outgoing</h3>
+            <span className="gold-rule" />
+            <p className="text-xs text-gray-400 mt-2 mb-4">Last 12 months · AED</p>
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={monthlySeries} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e7e5dd" vertical={false} />
@@ -508,8 +532,10 @@ export default function Dashboard() {
 
           {/* Chart B — Net Kept per Month */}
           <div className="card p-5 sm:p-6">
-            <h3 className="font-display text-lg text-charcoal-900">Net Kept per Month</h3>
-            <p className="text-xs text-gray-400 mb-4">Incoming minus outgoing · AED</p>
+            <p className="section-label text-gray-400">Retained</p>
+            <h3 className="font-display text-lg text-charcoal-900 mt-1">Net Kept per Month</h3>
+            <span className="gold-rule" />
+            <p className="text-xs text-gray-400 mt-2 mb-4">Incoming minus outgoing · AED</p>
             <ResponsiveContainer width="100%" height={240}>
               <AreaChart data={monthlySeries} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
                 <defs>
@@ -547,33 +573,44 @@ export default function Dashboard() {
         </div>
         <div className="divide-y divide-gray-100">
           {topVillas.length === 0 ? (
-            <div className="p-6 text-center text-gray-400 text-sm">
-              No cash flow data for this year yet.
+            <div className="px-6 py-12 flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-2xl bg-primary-100 flex items-center justify-center text-primary-700 mb-3">
+                <Trophy size={22} />
+              </div>
+              <p className="text-sm font-semibold text-charcoal-900">Nothing to rank yet</p>
+              <p className="text-xs text-gray-400 mt-1">No cash flow data for this year yet.</p>
             </div>
           ) : (
-            topVillas.map((villa, i) => (
-              <div key={villa.villa} className="flex items-center gap-3 px-6 py-4">
+            <div className="stagger">
+              {topVillas.map((villa, i) => (
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
-                    i === 0
-                      ? 'bg-primary-500 text-white'
-                      : 'bg-gray-100 text-gray-500'
+                  key={villa.villa}
+                  className={`flex items-center gap-3.5 px-6 py-4 transition-colors duration-200 hover:bg-gray-50 ${
+                    i === 0 ? 'bg-primary-50/40' : ''
                   }`}
                 >
-                  {i + 1}
+                  <div
+                    className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 tabular ${
+                      i === 0
+                        ? 'bg-gradient-to-br from-primary-400 to-primary-600 text-white shadow-glow-sm'
+                        : 'bg-gray-100 text-gray-500'
+                    }`}
+                  >
+                    {i === 0 ? <Trophy size={16} /> : i + 1}
+                  </div>
+                  <p className={`flex-1 min-w-0 text-sm truncate ${i === 0 ? 'font-bold text-charcoal-900' : 'font-semibold text-charcoal-900'}`}>
+                    {villa.villa}
+                  </p>
+                  <p
+                    className={`text-sm font-bold text-right flex-shrink-0 tabular ${
+                      villa.net >= 0 ? 'text-emerald2-600' : 'text-rust-600'
+                    }`}
+                  >
+                    {villa.net < 0 ? '−' : ''}AED {Math.abs(villa.net).toLocaleString()}
+                  </p>
                 </div>
-                <p className="flex-1 min-w-0 font-semibold text-charcoal-900 text-sm truncate">
-                  {villa.villa}
-                </p>
-                <p
-                  className={`text-sm font-bold text-right flex-shrink-0 ${
-                    villa.net >= 0 ? 'text-emerald2-600' : 'text-rust-600'
-                  }`}
-                >
-                  {villa.net < 0 ? '−' : ''}AED {Math.abs(villa.net).toLocaleString()}
-                </p>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
       </div>

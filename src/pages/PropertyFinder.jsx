@@ -3,6 +3,7 @@ import {
   Search, Building2, Home, Phone, Mail, User, ExternalLink,
   MessageCircle, Sparkles, RefreshCw, MapPin, BedDouble,
   ChevronDown, Check, AlertCircle, Shield, FileText, UserCheck, Image,
+  Ruler, KeyRound, Landmark, Loader2,
 } from 'lucide-react'
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -406,13 +407,15 @@ function PropertyCard({ property: p }) {
   const [tab, setTab] = useState('permit') // 'permit' | 'agent'
 
   return (
-    <div className="card !p-0 overflow-hidden hover:shadow-lg transition-shadow duration-300">
+    <div className="card !p-0 overflow-hidden hover:shadow-premium hover:-translate-y-0.5 transition-all duration-300">
       {/* Main info */}
       <div className="p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 ${
-              p.type === 'Villa' ? 'bg-primary-50' : 'bg-charcoal-900'
+            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 ring-1 ${
+              p.type === 'Villa'
+                ? 'bg-primary-50 ring-primary-100'
+                : 'bg-charcoal-900 ring-charcoal-700'
             }`}>
               {p.type === 'Villa'
                 ? <Home size={20} className="text-primary-600" />
@@ -421,65 +424,74 @@ function PropertyCard({ property: p }) {
             </div>
             <div className="min-w-0">
               <div className="flex items-center flex-wrap gap-2">
-                <h3 className="font-semibold text-charcoal-900 text-sm leading-tight">{p.title}</h3>
+                <h3 className="font-display text-base text-charcoal-900 leading-snug">{p.title}</h3>
                 {p.verified && (
-                  <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full font-semibold flex-shrink-0">
+                  <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 bg-emerald2-50 text-emerald2-700 ring-1 ring-emerald2-100 rounded-full font-bold flex-shrink-0">
                     <Check size={9} /> Verified
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
-                <MapPin size={11} />{p.area}
+              <div className="flex items-center gap-1 mt-1.5 text-xs text-gray-500">
+                <MapPin size={12} className="text-primary-500 flex-shrink-0" />{p.area}
               </div>
             </div>
           </div>
           <div className="text-right flex-shrink-0">
-            <p className="font-bold text-charcoal-900 text-base leading-tight">AED {p.price.toLocaleString()}</p>
+            <p className="font-bold text-charcoal-900 text-base leading-tight tabular-nums">
+              <span className="text-[11px] font-semibold text-gray-400 align-top mr-0.5">AED</span>
+              {p.price.toLocaleString()}
+            </p>
             <p className="text-[11px] text-gray-400">per year</p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 mt-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-3.5">
           {p.beds && (
-            <span className="flex items-center gap-1 text-xs text-gray-500">
-              <BedDouble size={12} /> {p.beds} Beds
+            <span className="flex items-center gap-1 text-xs text-charcoal-600">
+              <BedDouble size={13} className="text-gray-400" /> {p.beds} Beds
             </span>
           )}
-          {p.size && <span className="text-xs text-gray-500">{p.size}</span>}
-          <span className="text-[11px] px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">{p.type}</span>
+          {p.size && (
+            <span className="flex items-center gap-1 text-xs text-charcoal-600">
+              <Ruler size={13} className="text-gray-400" /> {p.size}
+            </span>
+          )}
+          <span className="chip !py-0.5 !text-[11px]">{p.type}</span>
           <span className="text-[11px] text-gray-400 ml-auto">via {p.source}</span>
         </div>
 
-        <div className="flex flex-wrap gap-1.5 mt-2.5">
+        <div className="flex flex-wrap gap-1.5 mt-3">
           {p.features.map(f => (
-            <span key={f} className="text-[11px] px-2 py-0.5 bg-charcoal-900/5 text-charcoal-600 rounded-md">{f}</span>
+            <span key={f} className="text-[11px] px-2 py-0.5 bg-charcoal-900/[0.04] text-charcoal-600 rounded-md ring-1 ring-charcoal-900/[0.04]">{f}</span>
           ))}
         </div>
       </div>
 
       {/* Contact tabs */}
-      <div className="border-t border-gray-100">
+      <div className="border-t border-gray-200/70">
         {/* Tab bar */}
-        <div className="flex border-b border-gray-100">
+        <div className="flex border-b border-gray-200/70">
           <button
             onClick={() => setTab('permit')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold transition-colors ${
+            aria-pressed={tab === 'permit'}
+            className={`flex-1 flex items-center justify-center gap-1.5 min-h-[44px] py-2.5 text-xs font-bold transition-colors ${
               tab === 'permit'
-                ? 'text-primary-700 border-b-2 border-primary-500 bg-primary-50/50'
-                : 'text-gray-500 hover:text-charcoal-700'
+                ? 'text-primary-700 border-b-2 border-primary-500 bg-primary-50/60'
+                : 'text-gray-500 hover:text-charcoal-700 hover:bg-gray-50'
             }`}
           >
-            <Shield size={12} /> Trakheesi Permit
+            <Shield size={13} /> Trakheesi Permit
           </button>
           <button
             onClick={() => setTab('agent')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold transition-colors ${
+            aria-pressed={tab === 'agent'}
+            className={`flex-1 flex items-center justify-center gap-1.5 min-h-[44px] py-2.5 text-xs font-bold transition-colors ${
               tab === 'agent'
-                ? 'text-charcoal-700 border-b-2 border-charcoal-500 bg-gray-50'
-                : 'text-gray-500 hover:text-charcoal-700'
+                ? 'text-charcoal-800 border-b-2 border-charcoal-500 bg-gray-50'
+                : 'text-gray-500 hover:text-charcoal-700 hover:bg-gray-50'
             }`}
           >
-            <User size={12} /> Agent Info
+            <User size={13} /> Agent Info
           </button>
         </div>
 
@@ -487,38 +499,40 @@ function PropertyCard({ property: p }) {
         {tab === 'permit' && (
           <div className="p-4 space-y-3 animate-fade-up">
             {/* Permit details box */}
-            <div className="bg-primary-50/40 rounded-xl p-3 border border-primary-100">
-              <div className="flex items-center gap-2 mb-2">
-                <FileText size={13} className="text-primary-600 flex-shrink-0" />
-                <p className="text-[10px] uppercase tracking-wider text-primary-700 font-bold">Ajman Real Estate Dept — Permit</p>
+            <div className="bg-gradient-to-br from-primary-50/70 to-primary-50/20 rounded-2xl p-3.5 border border-primary-100">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-6 h-6 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0">
+                  <FileText size={13} className="text-primary-700" />
+                </span>
+                <p className="text-[10px] uppercase tracking-[0.14em] text-primary-700 font-bold">Ajman Real Estate Dept — Permit</p>
               </div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-xs">
                 <div>
-                  <p className="text-gray-400 text-[10px] uppercase tracking-wide">Permit No.</p>
-                  <p className="font-mono font-semibold text-charcoal-900">{p.permit.no}</p>
+                  <p className="text-gray-400 text-[10px] uppercase tracking-wide mb-0.5">Permit No.</p>
+                  <p className="font-mono font-semibold text-charcoal-900 tabular-nums break-all">{p.permit.no}</p>
                 </div>
                 <div>
-                  <p className="text-gray-400 text-[10px] uppercase tracking-wide">Land Registry Ref</p>
-                  <p className="font-mono font-semibold text-charcoal-900">{p.permit.landRef}</p>
+                  <p className="text-gray-400 text-[10px] uppercase tracking-wide mb-0.5">Land Registry Ref</p>
+                  <p className="font-mono font-semibold text-charcoal-900 tabular-nums break-all">{p.permit.landRef}</p>
                 </div>
                 <div className="col-span-2">
-                  <p className="text-gray-400 text-[10px] uppercase tracking-wide">Permit Type</p>
+                  <p className="text-gray-400 text-[10px] uppercase tracking-wide mb-0.5">Permit Type</p>
                   <p className="font-semibold text-charcoal-900">{p.permit.type}</p>
                 </div>
               </div>
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-3.5 pt-3 border-t border-primary-100 flex flex-wrap items-center gap-x-2 gap-y-1.5">
                 <a
                   href="https://ard.ajman.ae/en/public-inquiry"
                   target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-[11px] text-primary-700 font-semibold hover:underline"
+                  className="inline-flex items-center gap-1.5 text-[11px] text-primary-700 font-semibold hover:underline"
                 >
                   <ExternalLink size={11} /> ard.ajman.ae — Verify Permit
                 </a>
-                <span className="text-gray-300 text-[11px]">·</span>
+                <span className="text-primary-200 text-[11px]">·</span>
                 <a
                   href="https://www.ajman.ae/en/eservice/property-information"
                   target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-[11px] text-primary-700 font-semibold hover:underline"
+                  className="inline-flex items-center gap-1.5 text-[11px] text-primary-700 font-semibold hover:underline"
                 >
                   <ExternalLink size={11} /> Ajman Property Info Portal
                 </a>
@@ -526,35 +540,41 @@ function PropertyCard({ property: p }) {
             </div>
 
             {/* Registered Owner — DIRECT contact */}
-            <div className="bg-charcoal-900 rounded-xl p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <UserCheck size={13} className="text-primary-400 flex-shrink-0" />
-                <p className="text-[10px] uppercase tracking-wider text-primary-400 font-bold">Registered Owner — Direct Contact</p>
-              </div>
-              <p className="text-sm font-bold text-white mb-2.5">{p.permit.regOwner}</p>
-              <div className="flex flex-wrap gap-2">
-                <a href={`tel:${p.permit.regPhone}`}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-400 text-charcoal-900 text-xs font-bold rounded-lg hover:bg-primary-300 transition-colors">
-                  <Phone size={11} /> {p.permit.regPhone}
-                </a>
-                <a href={wa(p.permit.regPhone)} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white text-xs font-bold rounded-lg hover:bg-green-400 transition-colors">
-                  <MessageCircle size={11} /> WhatsApp Owner
-                </a>
-                {p.permit.regEmail && (
-                  <a href={`mailto:${p.permit.regEmail}`}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 text-white text-xs rounded-lg hover:bg-white/20 transition-colors">
-                    <Mail size={11} /> {p.permit.regEmail}
+            <div className="relative bg-gradient-to-br from-charcoal-900 to-charcoal-800 rounded-2xl p-3.5 overflow-hidden">
+              <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-primary-500/10 blur-2xl" />
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-2">
+                  <UserCheck size={13} className="text-primary-400 flex-shrink-0" />
+                  <p className="text-[10px] uppercase tracking-[0.14em] text-primary-400 font-bold">Registered Owner — Direct Contact</p>
+                </div>
+                <p className="text-sm font-bold text-white mb-3">{p.permit.regOwner}</p>
+                <div className="flex flex-wrap gap-2">
+                  <a href={`tel:${p.permit.regPhone}`}
+                    aria-label={`Call registered owner ${p.permit.regOwner}`}
+                    className="inline-flex items-center gap-1.5 min-h-[44px] px-3.5 py-2 bg-gradient-to-r from-primary-300 to-primary-500 text-charcoal-900 text-xs font-bold rounded-xl hover:from-primary-200 hover:to-primary-400 shadow-glow-sm transition-all">
+                    <Phone size={13} /> <span className="tabular-nums">{p.permit.regPhone}</span>
                   </a>
-                )}
+                  <a href={wa(p.permit.regPhone)} target="_blank" rel="noopener noreferrer"
+                    aria-label={`WhatsApp registered owner ${p.permit.regOwner}`}
+                    className="inline-flex items-center gap-1.5 min-h-[44px] px-3.5 py-2 bg-green-500 text-white text-xs font-bold rounded-xl hover:bg-green-400 transition-colors">
+                    <MessageCircle size={13} /> WhatsApp Owner
+                  </a>
+                  {p.permit.regEmail && (
+                    <a href={`mailto:${p.permit.regEmail}`}
+                      aria-label={`Email registered owner ${p.permit.regOwner}`}
+                      className="inline-flex items-center gap-1.5 min-h-[44px] px-3.5 py-2 bg-white/10 text-white text-xs rounded-xl hover:bg-white/20 transition-colors">
+                      <Mail size={13} /> {p.permit.regEmail}
+                    </a>
+                  )}
+                </div>
+                <p className="text-[10px] text-charcoal-400 mt-2.5">
+                  Name &amp; contact as registered with Ajman Real Estate Dept — no agent needed
+                </p>
               </div>
-              <p className="text-[10px] text-charcoal-400 mt-2">
-                Name & contact as registered with Ajman Real Estate Dept — no agent needed
-              </p>
             </div>
 
             <a href={p.url} target="_blank" rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-charcoal-800 to-charcoal-700 hover:from-charcoal-700 hover:to-charcoal-600 text-white rounded-xl transition-all font-semibold text-sm shadow-sm">
+              className="flex items-center justify-center gap-2 w-full min-h-[44px] py-3 bg-gradient-to-r from-charcoal-800 to-charcoal-700 hover:from-charcoal-700 hover:to-charcoal-600 text-white rounded-xl transition-all font-semibold text-sm shadow-sm hover:shadow-card-lg">
               <Image size={15} className="text-primary-400" />
               View Photos &amp; Full Details
               <span className="text-[11px] text-charcoal-400 font-normal">via {p.source}</span>
@@ -565,28 +585,31 @@ function PropertyCard({ property: p }) {
         {/* Agent tab */}
         {tab === 'agent' && (
           <div className="p-4 animate-fade-up">
-            <div className="bg-white rounded-xl p-3 border border-gray-100">
-              <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1.5">Real Estate Agent</p>
+            <div className="bg-gray-50 rounded-2xl p-3.5 border border-gray-200/70">
+              <p className="text-[10px] uppercase tracking-[0.14em] text-gray-400 font-bold mb-1.5">Real Estate Agent</p>
               <p className="text-sm font-semibold text-charcoal-900">{p.agent.name}</p>
-              {p.agent.company && <p className="text-xs text-gray-500 mb-2">{p.agent.company}</p>}
+              {p.agent.company && <p className="text-xs text-gray-500 mb-2.5">{p.agent.company}</p>}
               <div className="flex flex-wrap gap-2 mt-1.5">
                 <a href={`tel:${p.agent.phone}`}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-charcoal-900 text-white text-xs rounded-lg hover:bg-charcoal-700 transition-colors">
-                  <Phone size={11} /> {p.agent.phone}
+                  aria-label={`Call agent ${p.agent.name}`}
+                  className="inline-flex items-center gap-1.5 min-h-[44px] px-3.5 py-2 bg-charcoal-900 text-white text-xs rounded-xl hover:bg-charcoal-700 transition-colors">
+                  <Phone size={13} /> <span className="tabular-nums">{p.agent.phone}</span>
                 </a>
                 <a href={wa(p.agent.phone)} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 text-xs rounded-lg hover:bg-green-100 transition-colors">
-                  <MessageCircle size={11} /> WhatsApp
+                  aria-label={`WhatsApp agent ${p.agent.name}`}
+                  className="inline-flex items-center gap-1.5 min-h-[44px] px-3.5 py-2 bg-green-50 text-green-700 text-xs font-medium rounded-xl hover:bg-green-100 transition-colors">
+                  <MessageCircle size={13} /> WhatsApp
                 </a>
                 {p.agent.email && (
                   <a href={`mailto:${p.agent.email}`}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs rounded-lg hover:bg-blue-100 transition-colors">
-                    <Mail size={11} /> {p.agent.email}
+                    aria-label={`Email agent ${p.agent.name}`}
+                    className="inline-flex items-center gap-1.5 min-h-[44px] px-3.5 py-2 bg-blue-50 text-blue-700 text-xs rounded-xl hover:bg-blue-100 transition-colors">
+                    <Mail size={13} /> {p.agent.email}
                   </a>
                 )}
               </div>
-              <p className="text-[10px] text-amber-600 mt-2 flex items-center gap-1">
-                <AlertCircle size={10} /> Agent fees may apply — use Trakheesi tab to contact owner directly
+              <p className="text-[10px] text-amber-600 mt-2.5 flex items-center gap-1">
+                <AlertCircle size={11} /> Agent fees may apply — use Trakheesi tab to contact owner directly
               </p>
             </div>
           </div>

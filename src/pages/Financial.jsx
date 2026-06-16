@@ -37,7 +37,7 @@ function StatCard({ icon: Icon, label, value, subtext, color }) {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">{label}</p>
-          <p className="text-2xl font-bold text-charcoal-900 mt-1">{value}</p>
+          <p className="text-2xl font-bold text-charcoal-900 mt-1 tabular">{value}</p>
           {subtext && <p className="text-xs text-gray-400 mt-0.5">{subtext}</p>}
         </div>
       </div>
@@ -181,16 +181,22 @@ export default function Financial() {
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-6">
+      {/* Tabs — segmented control */}
+      <div
+        role="tablist"
+        aria-label="Financial view"
+        className="inline-flex items-center gap-1 mb-6 p-1 bg-white border border-gray-200/80 rounded-2xl shadow-card max-w-full overflow-x-auto"
+      >
         {['monthly', 'yearly', 'revenue'].map((t) => (
           <button
             key={t}
+            role="tab"
+            aria-selected={tab === t}
             onClick={() => setTab(t)}
-            className={`px-6 py-2.5 rounded-full text-sm font-semibold capitalize transition-all duration-300 ${
+            className={`min-h-[44px] px-5 sm:px-6 py-2 rounded-xl text-sm font-semibold capitalize whitespace-nowrap transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
               tab === t
                 ? 'bg-charcoal-900 text-primary-400 shadow-card'
-                : 'bg-white text-gray-600 border border-gray-300 hover:border-primary-500 hover:text-primary-700'
+                : 'text-gray-600 hover:text-primary-700 hover:bg-primary-50/60'
             }`}
           >
             {t}
@@ -202,17 +208,19 @@ export default function Financial() {
       {tab === 'revenue' && (
         <div>
           {/* Year selector */}
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-3 mb-6">
             <button
               onClick={() => setRevenueYear(y => y - 1)}
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-white border border-gray-300 hover:border-primary-500 hover:text-primary-700 transition-colors"
+              aria-label="Previous year"
+              className="w-11 h-11 flex items-center justify-center rounded-full bg-white border border-gray-300 text-gray-600 hover:border-primary-500 hover:text-primary-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
               <ChevronLeft size={18} />
             </button>
-            <span className="text-xl font-bold text-charcoal-900 min-w-[4rem] text-center">{revenueYear}</span>
+            <span className="font-display text-2xl font-bold text-charcoal-900 min-w-[4.5rem] text-center tabular">{revenueYear}</span>
             <button
               onClick={() => setRevenueYear(y => y + 1)}
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-white border border-gray-300 hover:border-primary-500 hover:text-primary-700 transition-colors"
+              aria-label="Next year"
+              className="w-11 h-11 flex items-center justify-center rounded-full bg-white border border-gray-300 text-gray-600 hover:border-primary-500 hover:text-primary-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
               <ChevronRight size={18} />
             </button>
@@ -261,8 +269,12 @@ export default function Financial() {
 
           {/* 12-month table */}
           <div className="card overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
               <h2 className="font-display text-xl text-charcoal-900">Monthly Revenue Breakdown — {revenueYear}</h2>
+              <span className="hidden sm:inline-flex items-center gap-1.5 text-2xs uppercase tracking-[0.18em] text-gray-400 font-bold whitespace-nowrap">
+                <TrendingUp size={13} className="text-emerald2-500" /> Income
+                <TrendingDown size={13} className="text-rust-500 ml-2" /> Cost
+              </span>
             </div>
             {revenueLoading ? (
               <div className="p-6 space-y-3">
@@ -274,11 +286,11 @@ export default function Financial() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-gray-50 text-left">
-                      <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Month</th>
-                      <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tenant Income</th>
-                      <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Owner Cost</th>
-                      <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Net Profit</th>
+                    <tr className="bg-gray-50 border-b border-gray-200">
+                      <th className="px-6 py-3 text-left text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Month</th>
+                      <th className="px-6 py-3 text-right text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Tenant Income</th>
+                      <th className="px-6 py-3 text-right text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Owner Cost</th>
+                      <th className="px-6 py-3 text-right text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Net Profit</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -289,27 +301,27 @@ export default function Financial() {
                           key={row.key}
                           className={`transition-colors ${
                             isCurrentMonth
-                              ? 'bg-primary-50 border-l-4 border-l-primary-400'
-                              : 'hover:bg-gray-50'
+                              ? 'bg-primary-50/70 shadow-[inset_3px_0_0_0_theme(colors.primary.400)]'
+                              : 'odd:bg-white even:bg-gray-50/40 hover:bg-primary-50/40'
                           }`}
                         >
-                          <td className="px-6 py-3.5 font-medium text-gray-900">
+                          <td className="px-6 py-3.5 font-medium text-gray-900 whitespace-nowrap">
                             {row.name}
                             {isCurrentMonth && (
-                              <span className="ml-2 text-[10px] font-bold uppercase bg-primary-400 text-charcoal-900 px-1.5 py-0.5 rounded-full">
+                              <span className="ml-2 text-[10px] font-bold uppercase bg-primary-400 text-charcoal-900 px-1.5 py-0.5 rounded-full align-middle">
                                 Current
                               </span>
                             )}
                           </td>
-                          <td className="px-6 py-3.5 font-medium text-gray-800">
-                            {row.tenantIncome > 0 ? formatAED(row.tenantIncome) : <span className="text-gray-400">—</span>}
+                          <td className="px-6 py-3.5 text-right font-medium text-emerald2-700 tabular whitespace-nowrap">
+                            {row.tenantIncome > 0 ? formatAED(row.tenantIncome) : <span className="text-gray-300">—</span>}
                           </td>
-                          <td className="px-6 py-3.5 font-medium text-gray-800">
-                            {row.ownerCost > 0 ? formatAED(row.ownerCost) : <span className="text-gray-400">—</span>}
+                          <td className="px-6 py-3.5 text-right font-medium text-rust-600 tabular whitespace-nowrap">
+                            {row.ownerCost > 0 ? formatAED(row.ownerCost) : <span className="text-gray-300">—</span>}
                           </td>
-                          <td className="px-6 py-3.5 font-bold">
+                          <td className="px-6 py-3.5 text-right font-bold tabular whitespace-nowrap">
                             {row.tenantIncome === 0 && row.ownerCost === 0 ? (
-                              <span className="text-gray-400">—</span>
+                              <span className="text-gray-300">—</span>
                             ) : (
                               <span className={row.netProfit >= 0 ? 'text-emerald2-600' : 'text-rust-600'}>
                                 {row.netProfit >= 0 ? '+' : ''}{formatAED(row.netProfit)}
@@ -321,11 +333,11 @@ export default function Financial() {
                     })}
                   </tbody>
                   <tfoot>
-                    <tr className="bg-gray-50 border-t-2 border-gray-200">
-                      <td className="px-6 py-3.5 text-sm font-bold text-gray-700">Yearly Total</td>
-                      <td className="px-6 py-3.5 text-sm font-bold text-gray-900">{formatAED(totalTenantIncome)}</td>
-                      <td className="px-6 py-3.5 text-sm font-bold text-gray-900">{formatAED(totalOwnerCost)}</td>
-                      <td className={`px-6 py-3.5 text-sm font-bold ${totalNetProfit >= 0 ? 'text-emerald2-600' : 'text-rust-600'}`}>
+                    <tr className="bg-charcoal-900 text-white">
+                      <td className="px-6 py-3.5 text-sm font-bold text-primary-400 whitespace-nowrap">Yearly Total</td>
+                      <td className="px-6 py-3.5 text-right text-sm font-bold text-white tabular whitespace-nowrap">{formatAED(totalTenantIncome)}</td>
+                      <td className="px-6 py-3.5 text-right text-sm font-bold text-white tabular whitespace-nowrap">{formatAED(totalOwnerCost)}</td>
+                      <td className={`px-6 py-3.5 text-right text-sm font-bold tabular whitespace-nowrap ${totalNetProfit >= 0 ? 'text-emerald2-400' : 'text-rust-400'}`}>
                         {totalNetProfit >= 0 ? '+' : ''}{formatAED(totalNetProfit)}
                       </td>
                     </tr>
@@ -473,20 +485,24 @@ export default function Financial() {
                 ))}
               </div>
             ) : tenants.length === 0 ? (
-              <div className="p-10 text-center text-gray-400 text-sm">
-                No tenant data. Add tenants to see the financial summary.
+              <div className="p-12 text-center">
+                <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-gray-100 flex items-center justify-center">
+                  <Users size={22} className="text-gray-400" />
+                </div>
+                <p className="text-sm font-medium text-gray-500">No tenant data yet</p>
+                <p className="text-xs text-gray-400 mt-1">Add tenants to see the financial summary.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-gray-50 text-left">
-                      <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tenant</th>
-                      <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Unit</th>
-                      <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Rent (AED)</th>
-                      <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Deposit (AED)</th>
-                      <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Rent Date</th>
-                      <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                    <tr className="bg-gray-50 border-b border-gray-200">
+                      <th className="px-6 py-3 text-left text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Tenant</th>
+                      <th className="px-6 py-3 text-left text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Unit</th>
+                      <th className="px-6 py-3 text-right text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Rent (AED)</th>
+                      <th className="px-6 py-3 text-right text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Deposit (AED)</th>
+                      <th className="px-6 py-3 text-left text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Rent Date</th>
+                      <th className="px-6 py-3 text-left text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -496,7 +512,7 @@ export default function Financial() {
                         if (t.dueDate) dueDateDisplay = format(parseISO(t.dueDate), 'MMM d, yyyy')
                       } catch {}
                       return (
-                        <tr key={t.id} className="hover:bg-gray-50 transition-colors">
+                        <tr key={t.id} className="odd:bg-white even:bg-gray-50/40 hover:bg-primary-50/40 transition-colors">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 font-semibold text-xs flex-shrink-0">
@@ -506,13 +522,13 @@ export default function Financial() {
                             </div>
                           </td>
                           <td className="px-6 py-4 text-gray-600">{t.unit || '—'}</td>
-                          <td className="px-6 py-4 font-medium text-gray-900">
+                          <td className="px-6 py-4 text-right font-semibold text-gray-900 tabular whitespace-nowrap">
                             {Number(t.rentAmount || 0).toLocaleString()}
                           </td>
-                          <td className="px-6 py-4 text-gray-600">
+                          <td className="px-6 py-4 text-right text-gray-600 tabular whitespace-nowrap">
                             {t.deposit ? Number(t.deposit).toLocaleString() : '—'}
                           </td>
-                          <td className="px-6 py-4 text-gray-600">{t.rentSchedule || dueDateDisplay}</td>
+                          <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{t.rentSchedule || dueDateDisplay}</td>
                           <td className="px-6 py-4">
                             <span className={isPaid(t, MONTH) ? 'badge-paid' : 'badge-unpaid'}>
                               {isPaid(t, MONTH) ? 'Paid' : 'Unpaid'}
@@ -523,12 +539,12 @@ export default function Financial() {
                     })}
                   </tbody>
                   <tfoot>
-                    <tr className="bg-gray-50 border-t border-gray-200">
-                      <td colSpan={2} className="px-6 py-3 text-sm font-semibold text-gray-700">Total</td>
-                      <td className="px-6 py-3 text-sm font-bold text-gray-900">
+                    <tr className="bg-gray-50 border-t-2 border-gray-200">
+                      <td colSpan={2} className="px-6 py-3 text-sm font-bold text-gray-700">Total</td>
+                      <td className="px-6 py-3 text-right text-sm font-bold text-gray-900 tabular whitespace-nowrap">
                         {(totalCollected + totalPending).toLocaleString()}
                       </td>
-                      <td className="px-6 py-3 text-sm font-bold text-gray-900">
+                      <td className="px-6 py-3 text-right text-sm font-bold text-gray-900 tabular whitespace-nowrap">
                         {totalDeposits.toLocaleString()}
                       </td>
                       <td />

@@ -57,28 +57,43 @@ function ReminderModal({ open, onClose, onSave, initial, loading }) {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">
-            {initial ? 'Edit Reminder' : 'Add Reminder'}
-          </h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(15,17,24,0.55)' }}
+      role="dialog"
+      aria-modal="true"
+      aria-label={initial ? 'Edit reminder' : 'Add reminder'}
+    >
+      <div className="bg-white rounded-3xl shadow-premium w-full max-w-md max-h-[92vh] flex flex-col animate-scale-in">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+          <div>
+            <p className="section-label">Reminders</p>
+            <h2 className="font-display text-xl text-charcoal-900 leading-tight">
+              {initial ? 'Edit Reminder' : 'Add Reminder'}
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close dialog"
+            className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+          >
             <X size={18} className="text-gray-500" />
           </button>
         </div>
 
+        <div className="overflow-y-auto flex-1">
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex gap-2 items-center text-red-700 text-sm">
+            <div className="p-3 bg-rust-50 border border-rust-100 rounded-xl flex gap-2 items-center text-rust-700 text-sm">
               <AlertCircle size={15} className="flex-shrink-0" />
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+            <label htmlFor="rem-title" className="field-label">Title *</label>
             <input
+              id="rem-title"
               name="title"
               value={form.title}
               onChange={handleChange}
@@ -90,8 +105,9 @@ function ReminderModal({ open, onClose, onSave, initial, loading }) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Type *</label>
+              <label htmlFor="rem-type" className="field-label">Type *</label>
               <select
+                id="rem-type"
                 name="type"
                 value={form.type}
                 onChange={handleChange}
@@ -103,13 +119,14 @@ function ReminderModal({ open, onClose, onSave, initial, loading }) {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Due Date *</label>
+              <label htmlFor="rem-due" className="field-label">Due Date *</label>
               <input
+                id="rem-due"
                 name="dueDate"
                 type="date"
                 value={form.dueDate}
                 onChange={handleChange}
-                className="input-field"
+                className="input-field tabular-nums"
                 required
               />
             </div>
@@ -117,20 +134,22 @@ function ReminderModal({ open, onClose, onSave, initial, loading }) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Amount (AED)</label>
+              <label htmlFor="rem-amount" className="field-label">Amount (AED)</label>
               <input
+                id="rem-amount"
                 name="amount"
                 type="number"
                 min="0"
                 value={form.amount}
                 onChange={handleChange}
-                className="input-field"
+                className="input-field tabular-nums"
                 placeholder="e.g. 500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tenant Name</label>
+              <label htmlFor="rem-tenant" className="field-label">Tenant Name</label>
               <input
+                id="rem-tenant"
                 name="tenantName"
                 value={form.tenantName}
                 onChange={handleChange}
@@ -141,8 +160,9 @@ function ReminderModal({ open, onClose, onSave, initial, loading }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+            <label htmlFor="rem-notes" className="field-label">Notes</label>
             <textarea
+              id="rem-notes"
               name="notes"
               value={form.notes}
               onChange={handleChange}
@@ -156,12 +176,13 @@ function ReminderModal({ open, onClose, onSave, initial, loading }) {
             <button type="button" onClick={onClose} className="btn-secondary flex-1">
               Cancel
             </button>
-            <button type="submit" disabled={loading} className="btn-primary flex-1 flex items-center justify-center gap-2">
+            <button type="submit" disabled={loading} className="btn-primary flex-1">
               {loading && <Loader2 size={16} className="animate-spin" />}
               {initial ? 'Update Reminder' : 'Add Reminder'}
             </button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   )
@@ -180,26 +201,30 @@ function getDaysRemaining(dueDate) {
 
 function DaysBadge({ days }) {
   if (days === null) return null
+  const base = 'inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ring-1 tabular-nums'
   if (days < 0) {
-    return <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">Overdue</span>
+    return <span className={`${base} bg-gray-100 text-gray-500 ring-gray-200`}>Overdue</span>
   }
   if (days === 0) {
-    return <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-red-100 text-red-700">Due Today</span>
+    return <span className={`${base} bg-rust-50 text-rust-600 ring-rust-100`}>Due Today</span>
+  }
+  if (days <= 2) {
+    return <span className={`${base} bg-rust-50 text-rust-600 ring-rust-100`}>{days}d left</span>
   }
   if (days <= 7) {
-    return <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-red-100 text-red-700">{days}d left</span>
+    return <span className={`${base} bg-primary-50 text-primary-700 ring-primary-100`}>{days}d left</span>
   }
   if (days <= 14) {
-    return <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-700">{days}d left</span>
+    return <span className={`${base} bg-primary-50 text-primary-700 ring-primary-100`}>{days}d left</span>
   }
-  return <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-700">{days}d left</span>
+  return <span className={`${base} bg-emerald2-50 text-emerald2-600 ring-emerald2-100`}>{days}d left</span>
 }
 
 const TYPE_COLORS = {
-  Bill: 'bg-gray-100 text-gray-900',
-  Loan: 'bg-primary-50 text-primary-700',
-  Renewal: 'bg-orange-100 text-orange-700',
-  Other: 'bg-gray-100 text-gray-700',
+  Bill: 'bg-charcoal-900 text-primary-300',
+  Loan: 'bg-primary-50 text-primary-700 ring-1 ring-primary-100',
+  Renewal: 'bg-rust-50 text-rust-600 ring-1 ring-rust-100',
+  Other: 'bg-gray-100 text-charcoal-600',
 }
 
 export default function Reminders() {
@@ -288,52 +313,56 @@ export default function Reminders() {
 
       {/* Alert banner */}
       {dueWithin7.length > 0 && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex gap-3">
-          <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="font-semibold text-red-800 text-sm">
-              {dueWithin7.length} reminder{dueWithin7.length > 1 ? 's' : ''} due within 7 days!
+        <div className="mb-6 card border-l-4 border-l-rust-500 p-4 bg-rust-50/50 flex gap-3 items-start">
+          <span className="w-9 h-9 rounded-xl bg-rust-100 flex items-center justify-center flex-shrink-0">
+            <Bell size={18} className="text-rust-600" />
+          </span>
+          <div className="min-w-0">
+            <p className="font-display text-base text-rust-700 leading-tight">
+              {dueWithin7.length} reminder{dueWithin7.length > 1 ? 's' : ''} due within 7 days
             </p>
-            <p className="text-xs text-red-600 mt-0.5">
-              {dueWithin7.map((r) => r.title).join(', ')}
+            <p className="text-xs text-rust-600/90 mt-1 leading-relaxed">
+              {dueWithin7.map((r) => r.title).join(' · ')}
             </p>
           </div>
         </div>
       )}
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-2 items-center text-red-700 text-sm">
+        <div className="mb-4 p-4 bg-rust-50 border border-rust-100 rounded-xl flex gap-2 items-center text-rust-700 text-sm">
           <AlertCircle size={16} />
           {error}
-          <button onClick={() => setError('')} className="ml-auto"><X size={14} /></button>
+          <button onClick={() => setError('')} aria-label="Dismiss error" className="ml-auto p-1 hover:bg-rust-100 rounded-lg"><X size={14} /></button>
         </div>
       )}
 
       {isDemoMode && (
-        <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg flex gap-3">
-          <AlertCircle size={18} className="text-primary-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-gray-700">Demo Mode — reminders are saved on this device only.</p>
+        <div className="mb-6 p-4 bg-primary-50/60 border border-primary-100 rounded-xl flex gap-3 items-center">
+          <AlertCircle size={18} className="text-primary-600 flex-shrink-0" />
+          <p className="text-sm text-charcoal-700">Demo Mode — reminders are saved on this device only.</p>
         </div>
       )}
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="card p-5 animate-pulse">
-              <div className="h-5 bg-gray-200 rounded w-3/4 mb-3" />
-              <div className="h-4 bg-gray-200 rounded w-1/2 mb-2" />
-              <div className="h-4 bg-gray-200 rounded w-full" />
+            <div key={i} className="card p-5">
+              <div className="skeleton h-5 w-3/4 mb-3" />
+              <div className="skeleton h-4 w-1/2 mb-2" />
+              <div className="skeleton h-4 w-full" />
             </div>
           ))}
         </div>
       ) : reminders.length === 0 ? (
-        <div className="card p-12 text-center">
-          <Bell size={48} className="text-gray-300 mx-auto mb-3" />
-          <h3 className="text-gray-500 font-medium">No reminders yet</h3>
-          <p className="text-gray-400 text-sm mt-1">Add reminders for bills, loans, or lease renewals.</p>
+        <div className="card p-12 text-center animate-fade-up">
+          <div className="w-16 h-16 rounded-2xl bg-primary-50 ring-1 ring-primary-100 flex items-center justify-center mx-auto mb-4">
+            <Bell size={30} className="text-primary-500" />
+          </div>
+          <h3 className="font-display text-xl text-charcoal-900">No reminders yet</h3>
+          <p className="text-gray-500 text-sm mt-1.5 max-w-xs mx-auto">Add reminders for bills, loans, or lease renewals to stay ahead of every deadline.</p>
           <button
             onClick={() => { setEditReminder(null); setModalOpen(true) }}
-            className="btn-primary mt-4 inline-flex items-center gap-2"
+            className="btn-primary mt-5 inline-flex"
           >
             <Plus size={16} />
             Add First Reminder
@@ -343,78 +372,82 @@ export default function Reminders() {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 stagger">
           {reminders.map((r) => {
             const days = getDaysRemaining(r.dueDate)
+            const isUrgent = days !== null && days >= 0 && days <= 2
             let dueDateDisplay = '—'
             try {
               if (r.dueDate) dueDateDisplay = format(parseISO(r.dueDate), 'MMM d, yyyy')
             } catch {}
 
             return (
-              <div key={r.id} className="card p-5 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1 min-w-0 pr-2">
-                    <h3 className="font-semibold text-gray-900 text-sm leading-snug">{r.title}</h3>
+              <div key={r.id} className={`card p-5 flex flex-col hover:-translate-y-1 ${isUrgent ? 'ring-1 ring-rust-200' : ''}`}>
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-display text-base text-charcoal-900 leading-snug truncate">{r.title}</h3>
                     {r.tenantName && (
-                      <p className="text-xs text-gray-500 mt-0.5">Tenant: {r.tenantName}</p>
+                      <p className="text-xs text-gray-500 mt-0.5 truncate">Tenant: {r.tenantName}</p>
                     )}
                   </div>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${TYPE_COLORS[r.type] || TYPE_COLORS.Other}`}>
+                  <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full flex-shrink-0 ${TYPE_COLORS[r.type] || TYPE_COLORS.Other}`}>
                     {r.type}
                   </span>
                 </div>
 
-                <div className="space-y-1.5 mb-3 text-sm">
+                <div className="space-y-2 mb-3 text-sm">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-500 flex items-center gap-1.5">
-                      <Clock size={12} />
+                      <Clock size={13} className="text-primary-600" />
                       Due Date
                     </span>
-                    <span className="font-medium text-gray-900">{dueDateDisplay}</span>
+                    <span className="font-semibold text-charcoal-900 tabular-nums">{dueDateDisplay}</span>
                   </div>
                   {r.amount && (
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-500">Amount</span>
-                      <span className="font-medium text-gray-900">AED {Number(r.amount).toLocaleString()}</span>
+                      <span className="font-semibold text-charcoal-900 tabular-nums">AED {Number(r.amount).toLocaleString()}</span>
                     </div>
                   )}
-                </div>
-
-                <div className="flex justify-between items-center mb-3">
-                  <DaysBadge days={days} />
+                  <div className="flex items-center pt-0.5">
+                    <DaysBadge days={days} />
+                  </div>
                 </div>
 
                 {r.notes && (
-                  <p className="text-xs text-gray-500 bg-gray-50 rounded-lg p-2.5 mb-3 line-clamp-2">{r.notes}</p>
+                  <p className="text-xs text-charcoal-600 bg-gray-50 ring-1 ring-gray-100 rounded-xl p-2.5 mb-3 line-clamp-2">{r.notes}</p>
                 )}
 
-                <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-100">
+                <div className="flex flex-wrap gap-2 pt-3 mt-auto border-t border-gray-100">
                   <button
                     onClick={() => { setEditReminder(r); setModalOpen(true) }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors"
+                    aria-label={`Edit reminder ${r.title}`}
+                    className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors"
                   >
-                    <Edit2 size={12} />
+                    <Edit2 size={13} />
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(r)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                    aria-label={`Delete reminder ${r.title}`}
+                    className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-rust-600 bg-rust-50 hover:bg-rust-100 rounded-lg transition-colors"
                   >
-                    <Trash2 size={12} />
+                    <Trash2 size={13} />
                     Delete
                   </button>
                   <a
                     href={buildWhatsAppUrl(r)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+                    aria-label={`Send WhatsApp for ${r.title}`}
+                    className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald2-700 bg-emerald2-50 hover:bg-emerald2-100 rounded-lg transition-colors"
                   >
-                    <MessageCircle size={12} />
+                    <MessageCircle size={13} />
                     WhatsApp Us
                   </a>
                   <a
                     href={buildEmailUrl(r)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                    aria-label={`Send email for ${r.title}`}
+                    className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-charcoal-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                   >
-                    <Mail size={12} />
+                    <Mail size={13} />
                     Email Us
                   </a>
                 </div>

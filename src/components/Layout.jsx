@@ -13,18 +13,20 @@ export default function Layout() {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile topbar */}
-        <header className="lg:hidden flex items-center gap-3 px-4 py-3 bg-charcoal-900 border-b border-white/[0.08]">
+        <header className="lg:hidden sticky top-0 z-30 flex items-center gap-3 px-4 py-2.5 bg-charcoal-900/95 backdrop-blur-md border-b border-white/[0.08] shadow-card">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-lg text-charcoal-300 hover:text-white hover:bg-white/[0.06] transition-colors"
+            aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={sidebarOpen}
+            className="grid place-items-center w-11 h-11 -ml-1 rounded-xl text-charcoal-300 hover:text-white hover:bg-white/[0.08] active:scale-95 transition-all duration-200"
           >
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center">
-              <Home size={14} className="text-charcoal-900" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center shadow-glow-sm">
+              <Home size={15} className="text-charcoal-900" />
             </div>
-            <span className="font-display text-white text-sm tracking-wide">Rehmat Properties</span>
+            <span className="font-display text-white text-base tracking-wide leading-none">Rehmat Properties</span>
           </div>
         </header>
 

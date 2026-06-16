@@ -31,7 +31,7 @@ function Pill({ active, disabled, onClick, children }) {
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
+      className={`min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
         active
           ? 'bg-charcoal-900 text-primary-400 shadow-card'
           : disabled
@@ -64,7 +64,7 @@ function MiniStat({ icon: Icon, label, value, tone = 'plain' }) {
       </div>
       <div className="min-w-0">
         <p className="text-[10px] uppercase tracking-wide font-semibold text-gray-500">{label}</p>
-        <p className={`text-lg font-bold leading-tight truncate ${valueTones[tone]}`}>{value}</p>
+        <p className={`text-lg font-bold leading-tight truncate tabular ${valueTones[tone]}`}>{value}</p>
       </div>
     </div>
   );
@@ -167,7 +167,12 @@ function MonthlyCashFlow({ cashflow }) {
           </h3>
         </div>
         {entries.length === 0 ? (
-          <p className="p-6 text-sm text-gray-400 text-center">No data for this month.</p>
+          <div className="p-10 text-center">
+            <div className="w-11 h-11 mx-auto mb-3 rounded-2xl bg-gray-100 flex items-center justify-center">
+              <Banknote size={20} className="text-gray-400" />
+            </div>
+            <p className="text-sm font-medium text-gray-500">No data for this month</p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
@@ -184,26 +189,26 @@ function MonthlyCashFlow({ cashflow }) {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {entries.map((e, i) => (
-                  <tr key={i} className="hover:bg-gray-50/60">
-                    <td className="px-2 py-1.5 font-medium text-charcoal-900 whitespace-nowrap">{e.villa}</td>
-                    <td className="px-2 py-1.5 text-right font-semibold text-primary-700 bg-primary-50/40 whitespace-nowrap">
+                  <tr key={i} className="odd:bg-white even:bg-gray-50/40 hover:bg-primary-50/40 transition-colors">
+                    <td className="px-2 py-2 font-medium text-charcoal-900 whitespace-nowrap">{e.villa}</td>
+                    <td className="px-2 py-2 text-right font-semibold text-primary-700 bg-primary-50/40 tabular whitespace-nowrap">
                       {fmt(e.incoming)}
                     </td>
-                    <td className="px-2 py-1.5 text-right text-gray-700 whitespace-nowrap">{fmt(e.fewa)}</td>
-                    <td className="px-2 py-1.5 text-right text-gray-700 whitespace-nowrap">{fmt(e.ejaar)}</td>
-                    <td className="px-2 py-1.5 text-gray-500 whitespace-nowrap">{e.ejaarDate || '–'}</td>
-                    <td className="px-2 py-1.5 text-right text-gray-700 whitespace-nowrap">{fmt(e.others)}</td>
-                    <td className="px-2 py-1.5 text-gray-500">{e.details || '–'}</td>
+                    <td className="px-2 py-2 text-right text-gray-700 tabular whitespace-nowrap">{fmt(e.fewa)}</td>
+                    <td className="px-2 py-2 text-right text-gray-700 tabular whitespace-nowrap">{fmt(e.ejaar)}</td>
+                    <td className="px-2 py-2 text-gray-500 tabular whitespace-nowrap">{e.ejaarDate || '–'}</td>
+                    <td className="px-2 py-2 text-right text-gray-700 tabular whitespace-nowrap">{fmt(e.others)}</td>
+                    <td className="px-2 py-2 text-gray-500">{e.details || '–'}</td>
                   </tr>
                 ))}
-                <tr className="bg-gray-50 font-bold text-charcoal-900">
-                  <td className="px-2 py-1.5">Total</td>
-                  <td className="px-2 py-1.5 text-right text-primary-700">{fmtAlways(totals.incoming)}</td>
-                  <td className="px-2 py-1.5 text-right">{fmtAlways(totals.fewa)}</td>
-                  <td className="px-2 py-1.5 text-right">{fmtAlways(totals.ejaar)}</td>
-                  <td className="px-2 py-1.5" />
-                  <td className="px-2 py-1.5 text-right">{fmtAlways(totals.others)}</td>
-                  <td className={`px-2 py-1.5 whitespace-nowrap ${net >= 0 ? 'text-emerald2-600' : 'text-rust-600'}`}>
+                <tr className="bg-charcoal-900 font-bold text-white">
+                  <td className="px-2 py-2 text-primary-400">Total</td>
+                  <td className="px-2 py-2 text-right text-primary-400 tabular">{fmtAlways(totals.incoming)}</td>
+                  <td className="px-2 py-2 text-right tabular">{fmtAlways(totals.fewa)}</td>
+                  <td className="px-2 py-2 text-right tabular">{fmtAlways(totals.ejaar)}</td>
+                  <td className="px-2 py-2" />
+                  <td className="px-2 py-2 text-right tabular">{fmtAlways(totals.others)}</td>
+                  <td className={`px-2 py-2 tabular whitespace-nowrap ${net >= 0 ? 'text-emerald2-400' : 'text-rust-400'}`}>
                     Net {fmtAlways(net)}
                   </td>
                 </tr>
@@ -244,7 +249,7 @@ function MonthlyCashFlow({ cashflow }) {
                   <span className="text-[10px] text-gray-300">no data</span>
                 ) : (
                   <span
-                    className={`text-[11px] font-bold ${m.net >= 0 ? 'text-emerald2-600' : 'text-rust-600'}`}
+                    className={`text-[11px] font-bold tabular ${m.net >= 0 ? 'text-emerald2-600' : 'text-rust-600'}`}
                   >
                     {m.net >= 0 ? '+' : ''}
                     {m.net.toLocaleString()}
@@ -326,24 +331,41 @@ function AddFewaBillModal({ open, onClose, villas, defaultYear }) {
   return createPortal(
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
+      style={{ backgroundColor: 'rgba(19,21,28,0.6)' }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Add FEWA Bill"
+      onClick={onClose}
     >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm max-h-[92vh] flex flex-col animate-scale-in">
+      <div
+        className="bg-white rounded-2xl shadow-premium w-full max-w-sm max-h-[92vh] flex flex-col animate-scale-in overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <Zap size={18} className="text-amber-500" /> Add FEWA Bill
-          </h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <div>
+            <h2 className="font-display text-xl text-charcoal-900 flex items-center gap-2">
+              <span className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <Zap size={16} />
+              </span>
+              Add FEWA Bill
+            </h2>
+            <span className="gold-rule" />
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+          >
             <X size={18} className="text-gray-500" />
           </button>
         </div>
         <form onSubmit={handleSave} className="px-6 py-5 space-y-4 overflow-y-auto">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error}</div>
+            <div className="p-3 bg-rust-50 border border-rust-100 rounded-xl text-rust-700 text-sm">{error}</div>
           )}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Villa *</label>
-            <select value={villaId} onChange={(e) => setVillaId(e.target.value)} className="input-field">
+            <label htmlFor="fewa-villa" className="field-label">Villa *</label>
+            <select id="fewa-villa" value={villaId} onChange={(e) => setVillaId(e.target.value)} className="input-field">
               {villas.map((v) => (
                 <option key={v.id} value={v.id}>{v.name}</option>
               ))}
@@ -351,29 +373,30 @@ function AddFewaBillModal({ open, onClose, villas, defaultYear }) {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
-              <select value={year} onChange={(e) => setYear(e.target.value)} className="input-field">
+              <label htmlFor="fewa-year" className="field-label">Year</label>
+              <select id="fewa-year" value={year} onChange={(e) => setYear(e.target.value)} className="input-field">
                 {yearOptions.map((y) => <option key={y} value={y}>{y}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Month</label>
-              <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className="input-field">
+              <label htmlFor="fewa-month" className="field-label">Month</label>
+              <select id="fewa-month" value={month} onChange={(e) => setMonth(Number(e.target.value))} className="input-field">
                 {MONTHS.map((m, i) => <option key={m} value={i}>{m}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Bill Amount (AED) *</label>
+            <label htmlFor="fewa-amount" className="field-label">Bill Amount (AED) *</label>
             <input
+              id="fewa-amount"
               type="number" min="0" step="0.01" value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="input-field" placeholder="e.g. 2450" autoFocus
+              className="input-field tabular" placeholder="e.g. 2450" autoFocus
             />
           </div>
-          <div className="flex gap-3 pt-1">
+          <div className="flex gap-3 pt-2 border-t border-gray-100 -mx-6 px-6 -mb-5 py-4 mt-5 bg-gray-50/50">
             <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
-            <button type="submit" disabled={saving} className="btn-primary flex-1 flex items-center justify-center gap-2">
+            <button type="submit" disabled={saving} className="btn-primary flex-1">
               {saving ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
               Save Bill
             </button>
@@ -472,11 +495,17 @@ function FewaBills({ villas }) {
 
       <div className="card overflow-hidden">
         {rows.length === 0 ? (
-          <p className="p-6 text-sm text-gray-400 text-center">No FEWA data for {year}.</p>
+          <div className="p-10 text-center">
+            <div className="w-11 h-11 mx-auto mb-3 rounded-2xl bg-gray-100 flex items-center justify-center">
+              <Zap size={20} className="text-gray-400" />
+            </div>
+            <p className="text-sm font-medium text-gray-500">No FEWA data for {year}</p>
+            <p className="text-xs text-gray-400 mt-1">Add a bill to start tracking.</p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
-              <thead className="bg-gray-50 text-gray-500 uppercase text-[10px] font-semibold">
+              <thead className="bg-gray-50 text-gray-500 uppercase text-[10px] font-bold tracking-[0.08em] border-b border-gray-200">
                 <tr>
                   <TH>Villa</TH>
                   {MONTHS.map((m) => (
@@ -489,12 +518,12 @@ function FewaBills({ villas }) {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {rows.map((r) => (
-                  <tr key={r.villa.id} className="hover:bg-gray-50/60">
-                    <td className="px-2 py-1.5 font-medium text-charcoal-900 whitespace-nowrap">{r.villa.name}</td>
+                  <tr key={r.villa.id} className="odd:bg-white even:bg-gray-50/40 hover:bg-primary-50/40 transition-colors">
+                    <td className="px-2 py-2 font-medium text-charcoal-900 whitespace-nowrap">{r.villa.name}</td>
                     {r.arr.map((val, i) => (
                       <td
                         key={i}
-                        className={`px-2 py-1.5 text-right whitespace-nowrap ${
+                        className={`px-2 py-2 text-right tabular whitespace-nowrap ${
                           val != null && val !== 0 && val === r.max
                             ? 'bg-amber-50 text-amber-700 font-semibold'
                             : 'text-gray-700'
@@ -503,19 +532,19 @@ function FewaBills({ villas }) {
                         {val != null && val !== 0 ? val.toLocaleString() : '–'}
                       </td>
                     ))}
-                    <td className="px-2 py-1.5 text-right font-bold text-charcoal-900 whitespace-nowrap">
+                    <td className="px-2 py-2 text-right font-bold text-charcoal-900 tabular whitespace-nowrap">
                       {fmtAlways(r.total)}
                     </td>
                   </tr>
                 ))}
-                <tr className="bg-gray-50 font-bold text-charcoal-900">
-                  <td className="px-2 py-1.5">Total</td>
+                <tr className="bg-charcoal-900 font-bold text-white">
+                  <td className="px-2 py-2 text-primary-400">Total</td>
                   {colTotals.map((t, i) => (
-                    <td key={i} className="px-2 py-1.5 text-right whitespace-nowrap">
+                    <td key={i} className="px-2 py-2 text-right tabular whitespace-nowrap">
                       {t ? t.toLocaleString() : '–'}
                     </td>
                   ))}
-                  <td className="px-2 py-1.5 text-right text-primary-700 whitespace-nowrap">
+                  <td className="px-2 py-2 text-right text-primary-400 tabular whitespace-nowrap">
                     {fmtAlways(grandTotal)}
                   </td>
                 </tr>
@@ -535,15 +564,19 @@ function FewaBills({ villas }) {
           </div>
           <ul className="divide-y divide-gray-100">
             {liveBills.slice(0, 15).map((b) => (
-              <li key={b.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
+              <li key={b.id} className="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50/60 transition-colors">
+                <span className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                  <Zap size={13} />
+                </span>
                 <span className="font-medium text-charcoal-900 flex-1 min-w-0 truncate">{b.villaName}</span>
                 <span className="text-xs text-gray-500 whitespace-nowrap">{MONTHS[b.month]} {b.year}</span>
-                <span className="font-semibold text-charcoal-900 whitespace-nowrap">AED {Number(b.amount).toLocaleString()}</span>
+                <span className="font-semibold text-charcoal-900 tabular whitespace-nowrap">AED {Number(b.amount).toLocaleString()}</span>
                 <button
                   onClick={() => deleteBill(b)}
-                  className="p-1.5 text-gray-400 hover:text-rust-600 hover:bg-rust-50 rounded-lg transition-colors"
+                  aria-label={`Delete FEWA bill for ${b.villaName} (${MONTHS[b.month]} ${b.year})`}
+                  className="w-9 h-9 flex items-center justify-center shrink-0 text-gray-400 hover:text-rust-600 hover:bg-rust-50 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rust-600"
                 >
-                  <Trash2 size={13} />
+                  <Trash2 size={15} />
                 </button>
               </li>
             ))}
@@ -645,17 +678,23 @@ export default function CashFlow() {
         <p className="text-sm text-gray-500 mt-3">Incoming, outgoing &amp; bills — complete money trail</p>
       </div>
 
-      {/* tabs */}
-      <div className="flex gap-1.5 mb-6 overflow-x-auto pb-1">
+      {/* tabs — segmented control */}
+      <div
+        role="tablist"
+        aria-label="Cash flow view"
+        className="inline-flex items-center gap-1 mb-6 p-1 bg-white border border-gray-200/80 rounded-2xl shadow-card max-w-full overflow-x-auto"
+      >
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             type="button"
+            role="tab"
+            aria-selected={tab === id}
             onClick={() => setTab(id)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
+            className={`flex items-center gap-1.5 min-h-[44px] px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
               tab === id
                 ? 'bg-charcoal-900 text-primary-400 shadow-card'
-                : 'bg-white text-gray-600 border border-gray-200 hover:border-primary-500 hover:text-primary-700'
+                : 'text-gray-600 hover:text-primary-700 hover:bg-primary-50/60'
             }`}
           >
             <Icon size={14} />
