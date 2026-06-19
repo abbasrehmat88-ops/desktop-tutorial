@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useSearchParams } from 'react-router-dom'
 import { watchCollection, addItem, updateItem, removeItem, isDemoMode } from '../data/db'
 import { format, parseISO } from 'date-fns'
 import {
   Plus, Search, Edit2, Trash2, MessageCircle, X, Loader2, AlertCircle, Users, Check,
+  Building2, LayoutGrid,
 } from 'lucide-react'
 
 // ── Per-month helpers ───────────────────────────────────────────────────────
@@ -217,6 +218,7 @@ export default function Tenants() {
     const f = searchParams.get('filter')
     return (f === 'paid' || f === 'unpaid') ? f : 'all'
   })
+  const [villa, setVilla] = useState(() => searchParams.get('villa') || 'all')
   const [modalOpen, setModalOpen] = useState(false)
   const [editTenant, setEditTenant] = useState(null)
   const [partialId,  setPartialId]  = useState(null)  // tenant.id currently editing partial
@@ -233,6 +235,14 @@ export default function Tenants() {
     setSearchParams(next, { replace: true })
   }
 
+  function setVillaAndUrl(v) {
+    setVilla(v)
+    const next = new URLSearchParams(searchParams)
+    if (v === 'all') next.delete('villa')
+    else next.set('villa', v)
+    setSearchParams(next, { replace: true })
+  }
+
   const MONTH = monthKey()
   const MONTH_LABEL = monthLabel()
 
@@ -242,6 +252,24 @@ export default function Tenants() {
       err  => { console.error(err); setError('Failed to load tenants.'); setLoading(false) }
     )
   }, [])
+
+  // Group tenants by villa (the `property` field). Tenants with no villa are
+  // collected under "Unassigned" so they are still reachable.
+  const villaGroups = useMemo(() => {
+    const map = new Map()
+    for (const t of tenants) {
+      const key = (t.property || '').trim() || 'Unassigned'
+      if (!map.has(key)) map.set(key, { name: key, count: 0, rent: 0 })
+      const g = map.get(key)
+      g.count++
+      g.rent += Number(t.rentAmount || 0)
+    }
+    return [...map.values()].sort((a, b) => {
+      if (a.name === 'Unassigned') return 1
+      if (b.name === 'Unassigned') return -1
+      return a.name.localeCompare(b.name)
+    })
+  }, [tenants])
 
   const filtered = tenants.filter(t => {
     const q = search.toLowerCase()
@@ -254,7 +282,9 @@ export default function Tenants() {
     const matchFilter =
       filter === 'paid'   ?  paidNow :
       filter === 'unpaid' ? !paidNow : true
-    return matchSearch && matchFilter
+    const villaKey = (t.property || '').trim() || 'Unassigned'
+    const matchVilla = villa === 'all' || villaKey === villa
+    return matchSearch && matchFilter && matchVilla
   })
 
   async function handleSave(form) {
@@ -418,7 +448,55 @@ export default function Tenants() {
         </div>
       </div>
 
-      <p className="section-label mb-4">
+      {/* Villas — tap a villa to see every tenant inside it */}
+      {!loading && villaGroups.length > 0 && (
+        <div className="mb-5">
+          <p className="section-label mb-2.5 flex items-center gap-1.5">
+            <Building2 size={13} className="text-primary-600" /> Browse by villa
+          </p>
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 snap-x">
+            <button
+              onClick={() => setVillaAndUrl('all')}
+              aria-pressed={villa === 'all'}
+              className={`snap-start flex items-center gap-2 min-h-[44px] px-4 rounded-2xl text-sm font-semibold whitespace-nowrap transition-all flex-shrink-0 border ${
+                villa === 'all'
+                  ? 'bg-charcoal-900 text-primary-400 border-charcoal-900 shadow-card'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300 hover:text-primary-700'
+              }`}
+            >
+              <LayoutGrid size={15} /> All Villas
+              <span className={`text-2xs tabular px-1.5 py-0.5 rounded-full ${villa === 'all' ? 'bg-primary-500/20 text-primary-300' : 'bg-gray-100 text-gray-500'}`}>{tenants.length}</span>
+            </button>
+            {villaGroups.map(g => (
+              <button
+                key={g.name}
+                onClick={() => setVillaAndUrl(g.name)}
+                aria-pressed={villa === g.name}
+                className={`snap-start flex items-center gap-2 min-h-[44px] px-4 rounded-2xl text-sm font-semibold whitespace-nowrap transition-all flex-shrink-0 border ${
+                  villa === g.name
+                    ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-charcoal-900 border-primary-500 shadow-glow-sm'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300 hover:text-primary-700'
+                }`}
+              >
+                <Building2 size={15} className={villa === g.name ? 'text-charcoal-800' : 'text-primary-600'} />
+                {g.name}
+                <span className={`text-2xs tabular px-1.5 py-0.5 rounded-full ${villa === g.name ? 'bg-charcoal-900/15 text-charcoal-800' : 'bg-gray-100 text-gray-500'}`}>{g.count}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <p className="section-label mb-4 flex items-center gap-2">
+        {villa !== 'all' && (
+          <span className="inline-flex items-center gap-1.5 text-primary-700 normal-case tracking-normal font-bold">
+            <Building2 size={13} /> {villa}
+            <button onClick={() => setVillaAndUrl('all')} aria-label="Clear villa filter" className="ml-0.5 p-0.5 rounded-full hover:bg-primary-100 text-gray-400 hover:text-rust-600 transition-colors">
+              <X size={12} />
+            </button>
+            <span className="text-gray-300">·</span>
+          </span>
+        )}
         Showing {filtered.length} of {tenants.length} tenants
       </p>
 
@@ -448,11 +526,18 @@ export default function Tenants() {
           </div>
           <h3 className="font-display text-lg text-charcoal-900">No tenants found</h3>
           <p className="text-gray-400 text-sm mt-1">
-            {search || filter !== 'all'
+            {villa !== 'all'
+              ? `No tenants in ${villa}${search || filter !== 'all' ? ' match your search/filter.' : ' yet.'}`
+              : search || filter !== 'all'
               ? 'Try adjusting your search or filter.'
               : 'Add your first tenant to get started.'}
           </p>
-          {!search && filter === 'all' && (
+          {villa !== 'all' && (
+            <button onClick={() => setVillaAndUrl('all')} className="btn-secondary mt-5 inline-flex items-center gap-2">
+              <LayoutGrid size={16} /> Show all villas
+            </button>
+          )}
+          {!search && filter === 'all' && villa === 'all' && (
             <button onClick={openAdd} className="btn-primary mt-5 inline-flex items-center gap-2">
               <Plus size={16} /> Add First Tenant
             </button>
