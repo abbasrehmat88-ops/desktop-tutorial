@@ -32,6 +32,30 @@ export default function CashFlow() {
     { label: 'Other (wifi / bus)',     value: t.other, icon: Receipt,  accent: 'text-charcoal-700',bg: 'bg-gray-100' },
   ]
 
+  // No data imported yet — show a clean empty state.
+  if (YEARS.length === 0) {
+    return (
+      <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
+        <div className="mb-6">
+          <h1 className="page-title">Cash Flow</h1>
+          <span className="gold-rule" />
+          <p className="text-sm text-gray-500 mt-3">
+            Money going out — ejaar paid to villa owners, FEWA utilities &amp; other costs
+          </p>
+        </div>
+        <div className="card p-12 text-center animate-scale-in">
+          <div className="w-16 h-16 rounded-2xl bg-charcoal-900 flex items-center justify-center mx-auto mb-4">
+            <Wallet size={30} className="text-primary-400" />
+          </div>
+          <h3 className="font-display text-lg text-charcoal-900">No cash flow data yet</h3>
+          <p className="text-gray-400 text-sm mt-1 max-w-sm mx-auto">
+            The cash flow data has been cleared. Send the new file and it will appear here.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
       {/* Header */}
