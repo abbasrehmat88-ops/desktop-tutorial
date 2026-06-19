@@ -27,28 +27,54 @@ const CANONICAL_VILLAS = (() => {
 })()
 
 // Map a tenant's free-text property value to the closest canonical villa name.
-// Tenants added before the dropdown was introduced have names like "Adil Villa"
-// or "Park" that don't exactly match "v1 Adil" / "v7 Park" — this bridges the gap.
-const _VILLA_ENTRIES = CANONICAL_VILLAS
-  .map(v => ({ canonical: v, name: v.toLowerCase().replace(/^v\d+\s+/i, '').replace(/_/g, ' ').trim() }))
-  .filter(x => x.name.length >= 3)
-  .sort((a, b) => b.name.length - a.name.length)  // longest (most specific) first
+// Tenants/deposits were typed with many spellings ("khalid villa" vs the
+// canonical "v14 khlid mus", "villa 10" vs "v10 munir", "flate 06" vs
+// "v12 flat 06"). Name-fragment matching alone can't bridge these, so we use
+// an explicit alias table (longest alias wins) plus a villa-number fallback.
+const VILLA_ALIASES = {
+  'v1 Adil':       ['adil'],
+  'v2 Rauf':       ['rauf'],
+  'v3 Dawood':     ['dawood', 'dawud', 'dawd'],
+  'v4 Zam Zam':    ['zam zam', 'zamzam', 'zam'],
+  'v5 Arif':       ['arif'],
+  'v6 Al_sarooj':  ['al sarooj', 'al_sarooj', 'sarooj', 'tekadar'],
+  'v7 Park':       ['park'],
+  'v8 AbraR':      ['abrar', 'abra'],
+  'v9 Flat':       ['flate 01', 'flat 01', 'flat1'],
+  'v10 munir':     ['munir', 'villa no 10', 'villa 10', 'villa10', 'v-10', 'v10'],
+  'v11 munir 2':   ['munir 2', 'munir2'],
+  'v12 flat 06':   ['flate 06', 'flat 06', 'flat6', 'flat 6'],
+  'v13 abumaryam': ['abumaryam', 'abu maryam', 'maryam'],
+  'v14 khlid mus': ['khalid villa', 'khlid mus', 'khalid', 'khlid'],
+}
+
+// Flatten to {canonical, alias} and sort by alias length (longest/most-specific
+// first) so "flate 06" wins over the generic "flat", "munir 2" over "munir".
+const _ALIAS_ENTRIES = Object.entries(VILLA_ALIASES)
+  .flatMap(([canonical, aliases]) => aliases.map(a => ({ canonical, alias: a, aliasNS: a.replace(/\s+/g, '') })))
+  .sort((a, b) => b.alias.length - a.alias.length)
 
 function normalizeToCanonical(property) {
   if (!property) return ''
   const raw = property.trim()
   if (!raw) return ''
   if (CANONICAL_VILLAS.includes(raw)) return raw
-  const lower = raw.toLowerCase()
-  const lowerNS = lower.replace(/\s+/g, '')           // no-space version for "abu maryam" ↔ "abumaryam"
-  // Pass 1: full name-part match
-  for (const { canonical, name } of _VILLA_ENTRIES) {
-    if (lower.includes(name) || lowerNS.includes(name.replace(/\s+/g, ''))) return canonical
+
+  const lower   = raw.toLowerCase()
+  const lowerNS = lower.replace(/\s+/g, '')   // no-space form for "abu maryam" ↔ "abumaryam"
+
+  // Pass 1: alias match (name aliases take priority over bare numbers)
+  for (const { canonical, alias, aliasNS } of _ALIAS_ENTRIES) {
+    if (lower.includes(alias) || lowerNS.includes(aliasNS)) return canonical
   }
-  // Pass 2: individual word match (≥ 4 chars) for partial names like "Adil"
-  for (const { canonical, name } of _VILLA_ENTRIES) {
-    if (name.split(/\s+/).filter(w => w.length >= 4).some(w => lower.includes(w))) return canonical
+
+  // Pass 2: bare "villa N" / "v-N" with no recognised name → canonical villa N
+  const numMatch = lower.match(/(?:^|\b)(?:villa\s*(?:no\.?\s*)?|v[-\s]?)(\d{1,2})\b/)
+  if (numMatch) {
+    const hit = CANONICAL_VILLAS.find(v => v.match(/^v(\d+)/i)?.[1] === numMatch[1])
+    if (hit) return hit
   }
+
   return raw
 }
 
