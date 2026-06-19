@@ -2,25 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react'
 import ReactDOM from 'react-dom'
 import { watchCollection, addItem, updateItem, removeItem } from '../data/db'
 import depositsSeed from '../data/depositsSeed.json'
-import businessData from '../data/businessData.json'
+import { CANONICAL_VILLAS } from '../data/villas'
 import { format, parseISO } from 'date-fns'
 import {
   Landmark, Edit2, Check, X, AlertCircle, Search, RotateCcw, Loader2,
   Wallet, Plus, Trash2, Undo2, Download, Home, User, CalendarDays,
 } from 'lucide-react'
-
-const CANONICAL_VILLAS = (() => {
-  const seen = new Map()
-  for (const block of businessData.cashflow || []) {
-    for (const e of block.entries || []) {
-      const label = (e.villa || '').trim()
-      const m = label.match(/^v(\d+)/i)
-      if (!m) continue
-      if (!seen.has(m[1])) seen.set(m[1], label)
-    }
-  }
-  return [...seen.entries()].sort((a, b) => Number(a[0]) - Number(b[0])).map(e => e[1])
-})()
 
 const BLANK = { room: '', villa: '', client: '', amount: '', date: '', status: 'held', note: '' }
 
