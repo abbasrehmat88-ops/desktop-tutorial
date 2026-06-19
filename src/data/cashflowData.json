@@ -1,0 +1,489 @@
+{
+  "note": "Expense side: ejaar (rent paid to villa owners) + FEWA utilities + wifi/bus. Source: Book2 (2024-2026).",
+  "villas": [
+    "v1 Adil",
+    "v2 Rauf",
+    "v3 Dawood",
+    "v4 Zam Zam",
+    "v5 Arif",
+    "v6 Al_sarooj",
+    "v7 Park",
+    "v8 AbraR",
+    "v9 Flat",
+    "v10 munir",
+    "v11 munir 2",
+    "v12 flat 06",
+    "v13 abumaryam",
+    "v14 khlid mus"
+  ],
+  "years": {
+    "2024": {
+      "months": [
+        {
+          "month": 1,
+          "ejaar": 28850,
+          "fewa": 9428,
+          "other": 6540,
+          "total": 44818
+        },
+        {
+          "month": 2,
+          "ejaar": 4600,
+          "fewa": 7989,
+          "other": 4586,
+          "total": 17175
+        },
+        {
+          "month": 3,
+          "ejaar": 24100,
+          "fewa": 9014,
+          "other": 10413,
+          "total": 43527
+        },
+        {
+          "month": 4,
+          "ejaar": 25100,
+          "fewa": 10697,
+          "other": 7195,
+          "total": 42992
+        },
+        {
+          "month": 5,
+          "ejaar": 4600,
+          "fewa": 14762,
+          "other": 9162,
+          "total": 28524
+        },
+        {
+          "month": 6,
+          "ejaar": 31600,
+          "fewa": 15683,
+          "other": 8750,
+          "total": 56033
+        },
+        {
+          "month": 7,
+          "ejaar": 17600,
+          "fewa": 22597,
+          "other": 3500,
+          "total": 43697
+        },
+        {
+          "month": 8,
+          "ejaar": 21533,
+          "fewa": 21035,
+          "other": 2500,
+          "total": 45068
+        },
+        {
+          "month": 9,
+          "ejaar": 34200,
+          "fewa": 24764,
+          "other": 12300,
+          "total": 71264
+        },
+        {
+          "month": 10,
+          "ejaar": 26200,
+          "fewa": 30746,
+          "other": 15000,
+          "total": 71946
+        },
+        {
+          "month": 11,
+          "ejaar": 10400,
+          "fewa": 31433,
+          "other": 12800,
+          "total": 54633
+        },
+        {
+          "month": 12,
+          "ejaar": 48983,
+          "fewa": 27861,
+          "other": 8500,
+          "total": 85344
+        }
+      ],
+      "perVilla": [
+        {
+          "villa": "v1 Adil",
+          "ejaar": 37000,
+          "fewa": 38485
+        },
+        {
+          "villa": "v2 Rauf",
+          "ejaar": 28000,
+          "fewa": 28488
+        },
+        {
+          "villa": "v3 Dawood",
+          "ejaar": 52000,
+          "fewa": 37499
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "ejaar": 24100,
+          "fewa": 22004
+        },
+        {
+          "villa": "v5 Arif",
+          "ejaar": 50000,
+          "fewa": 41823
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "ejaar": 45000,
+          "fewa": 35642
+        },
+        {
+          "villa": "v7 Park",
+          "ejaar": 16666,
+          "fewa": 15687
+        },
+        {
+          "villa": "v8 AbraR",
+          "ejaar": 18000,
+          "fewa": 5367
+        },
+        {
+          "villa": "v9 Flat",
+          "ejaar": 4500,
+          "fewa": 973
+        },
+        {
+          "villa": "v10 munir",
+          "ejaar": 2500,
+          "fewa": 41
+        }
+      ],
+      "totals": {
+        "ejaar": 277766,
+        "fewa": 226009,
+        "other": 101246,
+        "total": 605021
+      }
+    },
+    "2025": {
+      "months": [
+        {
+          "month": 1,
+          "ejaar": 32000,
+          "fewa": 20053,
+          "other": 11500,
+          "total": 63553
+        },
+        {
+          "month": 2,
+          "ejaar": 33576,
+          "fewa": 16731,
+          "other": 9800,
+          "total": 60107
+        },
+        {
+          "month": 3,
+          "ejaar": 44500,
+          "fewa": 18564,
+          "other": 9700,
+          "total": 72764
+        },
+        {
+          "month": 4,
+          "ejaar": 53533,
+          "fewa": 21952,
+          "other": 7600,
+          "total": 83085
+        },
+        {
+          "month": 5,
+          "ejaar": 25000,
+          "fewa": 28282,
+          "other": 9000,
+          "total": 62282
+        },
+        {
+          "month": 6,
+          "ejaar": 63033,
+          "fewa": 32382,
+          "other": 9500,
+          "total": 104915
+        },
+        {
+          "month": 7,
+          "ejaar": 38500,
+          "fewa": 40198,
+          "other": 3000,
+          "total": 81698
+        },
+        {
+          "month": 8,
+          "ejaar": 43475,
+          "fewa": 51507,
+          "other": 3000,
+          "total": 97982
+        },
+        {
+          "month": 9,
+          "ejaar": 32000,
+          "fewa": 50681,
+          "other": 3000,
+          "total": 85681
+        },
+        {
+          "month": 10,
+          "ejaar": 73533,
+          "fewa": 48582,
+          "other": 3500,
+          "total": 125615
+        },
+        {
+          "month": 11,
+          "ejaar": 25200,
+          "fewa": 41900,
+          "other": 3500,
+          "total": 70600
+        },
+        {
+          "month": 12,
+          "ejaar": 49035,
+          "fewa": 35822,
+          "other": 3516,
+          "total": 88373
+        }
+      ],
+      "perVilla": [
+        {
+          "villa": "v1 Adil",
+          "ejaar": 48000,
+          "fewa": 34066
+        },
+        {
+          "villa": "v2 Rauf",
+          "ejaar": 28000,
+          "fewa": 23693
+        },
+        {
+          "villa": "v3 Dawood",
+          "ejaar": 54000,
+          "fewa": 39857
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "ejaar": 32400,
+          "fewa": 15640
+        },
+        {
+          "villa": "v5 Arif",
+          "ejaar": 49500,
+          "fewa": 27327
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "ejaar": 45000,
+          "fewa": 34726
+        },
+        {
+          "villa": "v7 Park",
+          "ejaar": 50000,
+          "fewa": 34003
+        },
+        {
+          "villa": "v8 AbraR",
+          "ejaar": 60000,
+          "fewa": 31656
+        },
+        {
+          "villa": "v9 Flat",
+          "ejaar": 26000,
+          "fewa": 14003
+        },
+        {
+          "villa": "v10 munir",
+          "ejaar": 34500,
+          "fewa": 32967
+        },
+        {
+          "villa": "v11 munir 2",
+          "ejaar": 63000,
+          "fewa": 33303
+        },
+        {
+          "villa": "v12 flat 06",
+          "ejaar": 15000,
+          "fewa": 7207
+        }
+      ],
+      "totals": {
+        "ejaar": 513385,
+        "fewa": 406654,
+        "other": 76616,
+        "total": 996655
+      }
+    },
+    "2026": {
+      "months": [
+        {
+          "month": 1,
+          "ejaar": 47950,
+          "fewa": 24007,
+          "other": 4000,
+          "total": 75957
+        },
+        {
+          "month": 2,
+          "ejaar": 88533,
+          "fewa": 28593,
+          "other": 4000,
+          "total": 121126
+        },
+        {
+          "month": 3,
+          "ejaar": 54783,
+          "fewa": 27235,
+          "other": 4000,
+          "total": 86018
+        },
+        {
+          "month": 4,
+          "ejaar": 58616,
+          "fewa": 29927,
+          "other": 3500,
+          "total": 92043
+        },
+        {
+          "month": 5,
+          "ejaar": 46333,
+          "fewa": 17808,
+          "other": 3500,
+          "total": 67641
+        },
+        {
+          "month": 6,
+          "ejaar": 89616,
+          "fewa": 0,
+          "other": 3500,
+          "total": 93116
+        },
+        {
+          "month": 7,
+          "ejaar": 60583,
+          "fewa": 0,
+          "other": 0,
+          "total": 60583
+        },
+        {
+          "month": 8,
+          "ejaar": 47366,
+          "fewa": 0,
+          "other": 0,
+          "total": 47366
+        },
+        {
+          "month": 9,
+          "ejaar": 69583,
+          "fewa": 0,
+          "other": 0,
+          "total": 69583
+        },
+        {
+          "month": 10,
+          "ejaar": 79616,
+          "fewa": 0,
+          "other": 0,
+          "total": 79616
+        },
+        {
+          "month": 11,
+          "ejaar": 46533,
+          "fewa": 0,
+          "other": 0,
+          "total": 46533
+        },
+        {
+          "month": 12,
+          "ejaar": 87116,
+          "fewa": 0,
+          "other": 0,
+          "total": 87116
+        }
+      ],
+      "perVilla": [
+        {
+          "villa": "v1 Adil",
+          "ejaar": 92330,
+          "fewa": 11661
+        },
+        {
+          "villa": "v2 Rauf",
+          "ejaar": 28000,
+          "fewa": 7841
+        },
+        {
+          "villa": "v3 Dawood",
+          "ejaar": 57000,
+          "fewa": 14516
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "ejaar": 32400,
+          "fewa": 7151
+        },
+        {
+          "villa": "v5 Arif",
+          "ejaar": 55000,
+          "fewa": 9374
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "ejaar": 43200,
+          "fewa": 11908
+        },
+        {
+          "villa": "v7 Park",
+          "ejaar": 53498,
+          "fewa": 12288
+        },
+        {
+          "villa": "v8 AbraR",
+          "ejaar": 60000,
+          "fewa": 9426
+        },
+        {
+          "villa": "v9 Flat",
+          "ejaar": 26000,
+          "fewa": 5110
+        },
+        {
+          "villa": "v10 munir",
+          "ejaar": 45000,
+          "fewa": 8718
+        },
+        {
+          "villa": "v11 munir 2",
+          "ejaar": 74000,
+          "fewa": 14425
+        },
+        {
+          "villa": "v12 flat 06",
+          "ejaar": 30000,
+          "fewa": 7055
+        },
+        {
+          "villa": "v13 abumaryam",
+          "ejaar": 110000,
+          "fewa": 5759
+        },
+        {
+          "villa": "v14 khlid mus",
+          "ejaar": 65000,
+          "fewa": 2338
+        }
+      ],
+      "totals": {
+        "ejaar": 776628,
+        "fewa": 127570,
+        "other": 22500,
+        "total": 926698
+      }
+    }
+  }
+}
