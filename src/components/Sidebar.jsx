@@ -15,6 +15,8 @@ import {
   CalendarClock,
   Sparkles,
   Trash2,
+  History,
+  Zap,
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -27,9 +29,10 @@ const navGroups = [
   {
     label: 'Tenants',
     items: [
-      { to: '/tenants',    icon: Users,           label: 'Tenants'    },
-      { to: '/dues',       icon: CalendarClock,   label: 'Pending Dues' },
-      { to: '/deposits',   icon: Landmark,        label: 'Deposits'   },
+      { to: '/tenants',         icon: Users,           label: 'Tenants'    },
+      { to: '/tenant-history',  icon: History,         label: 'Tenant History' },
+      { to: '/dues',            icon: CalendarClock,   label: 'Pending Dues' },
+      { to: '/deposits',        icon: Landmark,        label: 'Deposits'   },
     ]
   },
   {
@@ -38,6 +41,7 @@ const navGroups = [
       { to: '/financial',  icon: DollarSign,      label: 'Financial'  },
       { to: '/owners',     icon: KeyRound,        label: 'Owners'     },
       { to: '/cashflow',   icon: Wallet,          label: 'Cash Flow'  },
+      { to: '/fewa-bills', icon: Zap,             label: 'FEWA Bills' },
     ]
   },
   {
