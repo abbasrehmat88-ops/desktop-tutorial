@@ -33,17 +33,17 @@ const CANONICAL_VILLAS = (() => {
 // an explicit alias table (longest alias wins) plus a villa-number fallback.
 const VILLA_ALIASES = {
   'v1 Adil':       ['adil'],
-  'v2 Rauf':       ['rauf'],
+  'v2 Rauf':       ['mustafa arbab', 'arbab', 'rauf'],
   'v3 Dawood':     ['dawood', 'dawud', 'dawd'],
   'v4 Zam Zam':    ['zam zam', 'zamzam', 'zam'],
-  'v5 Arif':       ['arif'],
-  'v6 Al_sarooj':  ['al sarooj', 'al_sarooj', 'sarooj', 'tekadar'],
+  'v5 Arif':       ['arif masool', 'arif'],
+  'v6 Al_sarooj':  ['al sarooj real estate', 'al sarooj', 'al_sarooj', 'sarooj', 'tekadar'],
   'v7 Park':       ['park'],
   'v8 AbraR':      ['abrar', 'abra'],
   'v9 Flat':       ['flate 01', 'flat 01', 'flat1'],
-  'v10 munir':     ['munir', 'villa no 10', 'villa 10', 'villa10', 'v-10', 'v10'],
-  'v11 munir 2':   ['munir 2', 'munir2'],
-  'v12 flat 06':   ['flate 06', 'flat 06', 'flat6', 'flat 6'],
+  'v10 munir':     ['muneer', 'munir', 'villa no 10', 'villa 10', 'villa10', 'v-10', 'v10'],
+  'v11 munir 2':   ['muneer 2', 'munir 2', 'muneer2', 'munir2'],
+  'v12 flat 06':   ['building flat 06', 'flate 06', 'flat 06', 'flat6', 'flat 6'],
   'v13 abumaryam': ['abumaryam', 'abu maryam', 'maryam'],
   'v14 khlid mus': ['khalid villa', 'khlid mus', 'khalid', 'khlid'],
 }
