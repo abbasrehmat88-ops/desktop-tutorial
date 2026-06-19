@@ -189,11 +189,11 @@
         },
         {
           "month": 3,
-          "ejaar": 0,
-          "fewa": 0,
-          "other": 0,
-          "incoming": 0,
-          "total": 0
+          "ejaar": 54783,
+          "fewa": 27000,
+          "other": 6750,
+          "incoming": 134160,
+          "total": 88533
         },
         {
           "month": 4,
@@ -213,11 +213,11 @@
         },
         {
           "month": 6,
-          "ejaar": 0,
-          "fewa": 0,
-          "other": 0,
-          "incoming": 0,
-          "total": 0
+          "ejaar": 89616,
+          "fewa": 36000,
+          "other": 6750,
+          "incoming": 147610,
+          "total": 132366
         },
         {
           "month": 7,
@@ -237,11 +237,11 @@
         },
         {
           "month": 9,
-          "ejaar": 0,
-          "fewa": 0,
-          "other": 0,
-          "incoming": 0,
-          "total": 0
+          "ejaar": 69583,
+          "fewa": 36000,
+          "other": 6750,
+          "incoming": 142660,
+          "total": 112333
         },
         {
           "month": 10,
@@ -261,18 +261,23 @@
         },
         {
           "month": 12,
-          "ejaar": 0,
-          "fewa": 0,
-          "other": 0,
-          "incoming": 0,
-          "total": 0
+          "ejaar": 87116,
+          "fewa": 36000,
+          "other": 6750,
+          "incoming": 142660,
+          "total": 129866
         }
       ],
       "perVilla": [
         {
           "villa": "v1 Adil",
-          "ejaar": 58998,
-          "fewa": 256000
+          "ejaar": 92330,
+          "fewa": 391000
+        },
+        {
+          "villa": "v2 Rauf",
+          "ejaar": 28000,
+          "fewa": 0
         },
         {
           "villa": "v3 Dawood",
@@ -281,61 +286,66 @@
         },
         {
           "villa": "v4 Zam Zam",
-          "ejaar": 21600,
+          "ejaar": 32400,
           "fewa": 0
         },
         {
           "villa": "v5 Arif",
-          "ejaar": 36000,
+          "ejaar": 55000,
           "fewa": 0
         },
         {
           "villa": "v6 Al_sarooj",
-          "ejaar": 30000,
+          "ejaar": 43200,
           "fewa": 0
         },
         {
           "villa": "v7 Park",
-          "ejaar": 33332,
+          "ejaar": 53498,
           "fewa": 0
         },
         {
           "villa": "v8 AbraR",
-          "ejaar": 40000,
+          "ejaar": 60000,
           "fewa": 0
         },
         {
-          "villa": "v9 Flat",
-          "ejaar": 17400,
+          "villa": "v9 Flat 01",
+          "ejaar": 26000,
           "fewa": 0
         },
         {
           "villa": "v10 munir",
-          "ejaar": 31000,
+          "ejaar": 45000,
           "fewa": 0
         },
         {
           "villa": "v11 munir 2",
-          "ejaar": 48000,
+          "ejaar": 74000,
           "fewa": 0
         },
         {
           "villa": "v12 flat 06",
-          "ejaar": 20000,
+          "ejaar": 30000,
           "fewa": 0
         },
         {
           "villa": "v13 abumaryam",
-          "ejaar": 77000,
+          "ejaar": 110000,
+          "fewa": 0
+        },
+        {
+          "villa": "v14 khlid mus",
+          "ejaar": 65000,
           "fewa": 0
         }
       ],
       "totals": {
-        "ejaar": 475530,
-        "fewa": 256000,
-        "other": 60500,
-        "incoming": 1194750,
-        "total": 792030
+        "ejaar": 776628,
+        "fewa": 391000,
+        "other": 87500,
+        "incoming": 1761840,
+        "total": 1255128
       }
     }
   }
