@@ -10,9 +10,22 @@
     @apply bg-cream text-gray-900 font-sans antialiased;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    /* Kill the grey flash on tap (iOS/Android) for a native-app feel */
+    -webkit-tap-highlight-color: transparent;
   }
   html {
     scroll-behavior: smooth;
+  }
+  /* Buttons/links feel instant on touch (removes the 300ms tap delay) */
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+  /* On-brand text selection */
+  ::selection {
+    background: rgba(201, 161, 84, 0.25);
+    color: #1a1c23;
   }
   /* Consistent, visible keyboard focus across the whole app (a11y) */
   :focus-visible {

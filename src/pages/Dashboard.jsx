@@ -10,6 +10,7 @@ import {
 } from 'recharts'
 import CountUp from '../components/CountUp'
 import businessData from '../data/businessData.json'
+import cashflowData from '../data/cashflowData.json'
 
 function monthKey(d = new Date()) { return format(d, 'yyyy-MM') }
 function isPaid(tenant, key = monthKey()) {
@@ -20,23 +21,19 @@ function isPaid(tenant, key = monthKey()) {
 
 const fmtAED = (v) => `AED ${Number(v || 0).toLocaleString()}`
 
-/** Last 12 months (ending at the current month) of cash flow totals. */
+/** Last 12 months (ending at the current month) of cash flow totals.
+ *  Sourced from cashflowData.json — incoming = rent collected, outgoing =
+ *  ejaar + FEWA + other paid out that month. */
 function buildMonthlySeries() {
   const now = new Date()
   const series = []
   for (let i = 11; i >= 0; i--) {
     const d = subMonths(now, i)
-    const block = (businessData.cashflow || []).find(
-      (b) => b.year === d.getFullYear() && b.month === d.getMonth() + 1
-    )
-    let incoming = 0
-    let outgoing = 0
-    if (block) {
-      for (const e of block.entries || []) {
-        incoming += Number(e.incoming) || 0
-        outgoing += (Number(e.fewa) || 0) + (Number(e.ejaar) || 0) + (Number(e.others) || 0)
-      }
-    }
+    const y = String(d.getFullYear())
+    const mo = d.getMonth() + 1
+    const m = cashflowData.years?.[y]?.months?.find((x) => x.month === mo)
+    const incoming = m ? Number(m.incoming) || 0 : 0
+    const outgoing = m ? Number(m.total) || 0 : 0
     series.push({
       label: format(d, 'MMM yy'),
       incoming,
@@ -47,23 +44,36 @@ function buildMonthlySeries() {
   return series
 }
 
-/** Top 5 villas by net (incoming − outgoing) for the current year. */
+/** Top 5 villas by net profit (income − expenses) for the latest year that
+ *  has data. Sourced from the per-villa records in businessData.json. */
 function buildTopVillas() {
-  const year = new Date().getFullYear()
-  const byVilla = {}
-  for (const block of businessData.cashflow || []) {
-    if (block.year !== year) continue
-    for (const e of block.entries || []) {
-      const name = e.villa || 'Unknown'
-      if (!byVilla[name]) byVilla[name] = { villa: name, incoming: 0, outgoing: 0 }
-      byVilla[name].incoming += Number(e.incoming) || 0
-      byVilla[name].outgoing += (Number(e.fewa) || 0) + (Number(e.ejaar) || 0) + (Number(e.others) || 0)
-    }
+  const thisYear = String(new Date().getFullYear())
+  const villas = businessData.villas || []
+
+  const rowsFor = (year) =>
+    villas
+      .map((v) => {
+        const yd = v.years?.[year]
+        if (!yd) return null
+        const net =
+          yd.profitTotal != null
+            ? yd.profitTotal
+            : yd.incomeTotal != null && yd.expenseTotal != null
+            ? yd.incomeTotal - yd.expenseTotal
+            : null
+        if (net === null) return null
+        return { villa: v.name, net }
+      })
+      .filter(Boolean)
+
+  // Prefer the current year; if it has thin data, fall back to the previous year.
+  let rows = rowsFor(thisYear)
+  if (rows.filter((r) => r.net !== 0).length < 3) {
+    const prev = rowsFor(String(new Date().getFullYear() - 1))
+    if (prev.length) rows = prev
   }
-  return Object.values(byVilla)
-    .map((v) => ({ ...v, net: v.incoming - v.outgoing }))
-    .sort((a, b) => b.net - a.net)
-    .slice(0, 5)
+
+  return rows.sort((a, b) => b.net - a.net).slice(0, 5)
 }
 
 function StatCard({ icon: Icon, label, value, color, subtext, animate, to }) {
@@ -598,7 +608,7 @@ export default function Dashboard() {
             <Trophy size={18} className="text-primary-600" />
             Top Villas This Year
           </h2>
-          <p className="text-xs text-gray-400 mt-1">Based on {new Date().getFullYear()} cash flow</p>
+          <p className="text-xs text-gray-400 mt-1">Ranked by net profit · latest yearly records</p>
         </div>
         <div className="divide-y divide-gray-100">
           {topVillas.length === 0 ? (
