@@ -69,9 +69,12 @@ export default function Dues() {
   async function markPaid(tenant) {
     const currentPayments = (tenant.payments && typeof tenant.payments === 'object')
       ? tenant.payments : {}
+    const paidAt = (tenant.paidAt && typeof tenant.paidAt === 'object') ? { ...tenant.paidAt } : {}
+    paidAt[KEY] = format(new Date(), 'yyyy-MM-dd') // stamp collection date for Dashboard daily revenue
     try {
       await updateItem('tenants', tenant.id, {
         payments: { ...currentPayments, [KEY]: true },
+        paidAt,
       })
     } catch (err) {
       setError('Could not update: ' + err.message)
