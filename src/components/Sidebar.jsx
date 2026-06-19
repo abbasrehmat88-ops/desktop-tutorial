@@ -14,6 +14,7 @@ import {
   Wallet,
   CalendarClock,
   Sparkles,
+  Trash2,
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -174,6 +175,20 @@ export default function Sidebar({ open, onClose }) {
           >
             <Upload size={14} />
             <span className="font-medium text-xs">Import Tenant Data</span>
+          </NavLink>
+          <NavLink
+            to="/reset-data"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 mt-1.5 rounded-xl text-sm transition-all duration-200 ${
+                isActive
+                  ? 'bg-rust-500/20 text-rust-300 ring-1 ring-rust-500/30'
+                  : 'text-rust-400/70 border border-rust-500/20 hover:bg-rust-500/10 hover:text-rust-300 hover:border-rust-500/40'
+              }`
+            }
+          >
+            <Trash2 size={14} />
+            <span className="font-medium text-xs">Reset Data</span>
           </NavLink>
         </div>
 

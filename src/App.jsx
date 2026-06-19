@@ -9,6 +9,7 @@ import Financial from './pages/Financial';
 import Reminders from './pages/Reminders';
 import Properties from './pages/Properties';
 import ImportData from './pages/ImportData';
+import ResetData from './pages/ResetData';
 import Deposits from './pages/Deposits';
 import Owners from './pages/Owners';
 import CashFlow from './pages/CashFlow';
@@ -35,6 +36,7 @@ function App() {
               <Route path="/dues" element={<Dues />} />
               <Route path="/property-finder" element={<PropertyFinder />} />
               <Route path="/import-data" element={<ImportData />} />
+              <Route path="/reset-data" element={<ResetData />} />
             </Route>
           </Route>
         </Routes>
