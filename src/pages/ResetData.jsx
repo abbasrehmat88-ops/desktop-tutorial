@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { watchCollection, removeItem } from '../data/db'
 import {
-  AlertTriangle, Loader2, CheckCircle, Trash2, ShieldCheck,
+  AlertTriangle, Loader2, CheckCircle, Trash2, ShieldCheck, Check,
   Users, KeyRound, Bell, Zap, Building2, Landmark, ArrowRight,
 } from 'lucide-react'
 
@@ -22,6 +22,8 @@ export default function ResetData() {
   const [deleted, setDeleted] = useState(0)
   const [errorMsg, setErrorMsg] = useState('')
   const [confirmText, setConfirmText] = useState('')
+  // Which sections the user has ticked for deletion (start with none selected).
+  const [selected, setSelected] = useState(() => new Set())
   const navigate = useNavigate()
 
   // Live-watch every target collection so we always show the real current count.
@@ -35,9 +37,25 @@ export default function ResetData() {
     return () => unsubs.forEach(u => u && u())
   }, [])
 
+  function toggle(name) {
+    setSelected(prev => {
+      const next = new Set(prev)
+      next.has(name) ? next.delete(name) : next.add(name)
+      return next
+    })
+  }
+
   const counts = TARGETS.map(t => ({ ...t, count: (docs[t.name] || []).length }))
-  const total  = counts.reduce((s, c) => s + c.count, 0)
-  const canDelete = confirmText.trim().toUpperCase() === 'DELETE' && total > 0 && status !== 'clearing'
+  const selectedTargets = TARGETS.filter(t => selected.has(t.name))
+  const total = counts.filter(c => selected.has(c.name)).reduce((s, c) => s + c.count, 0)
+  const allSelectable = counts.filter(c => c.count > 0)
+  const allSelected = allSelectable.length > 0 && allSelectable.every(c => selected.has(c.name))
+
+  function toggleAll() {
+    setSelected(allSelected ? new Set() : new Set(allSelectable.map(c => c.name)))
+  }
+
+  const canDelete = confirmText.trim().toUpperCase() === 'DELETE' && total > 0 && selected.size > 0 && status !== 'clearing'
 
   async function runReset() {
     if (!canDelete) return
@@ -46,7 +64,7 @@ export default function ResetData() {
     setErrorMsg('')
     let removed = 0
     try {
-      for (const t of TARGETS) {
+      for (const t of selectedTargets) {
         const list = [...(docs[t.name] || [])]
         for (const item of list) {
           await removeItem(t.name, item.id)
@@ -86,29 +104,62 @@ export default function ResetData() {
         </div>
       </div>
 
-      {/* What will be deleted */}
+      {/* Select which sections to delete */}
       <div className="card p-5 sm:p-6 mb-5">
-        <p className="section-label mb-3 flex items-center gap-1.5 text-rust-600">
-          <Trash2 size={13} /> Will be permanently deleted
-        </p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="flex items-center justify-between mb-3">
+          <p className="section-label flex items-center gap-1.5 text-rust-600">
+            <Trash2 size={13} /> Choose sections to delete
+          </p>
+          <button
+            onClick={toggleAll}
+            disabled={allSelectable.length === 0}
+            className="text-xs font-semibold text-primary-700 hover:text-primary-800 disabled:opacity-40 disabled:cursor-not-allowed px-2 py-1 rounded-lg hover:bg-primary-50 transition-colors"
+          >
+            {allSelected ? 'Clear all' : 'Select all'}
+          </button>
+        </div>
+        <p className="text-xs text-gray-400 mb-4">Tap a section to select it. Only the selected sections will be deleted.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {counts.map(c => {
             const Icon = c.icon
+            const isOn = selected.has(c.name)
+            const empty = c.count === 0
             return (
-              <div key={c.name} className="rounded-2xl border border-gray-200 p-3 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-rust-50 flex items-center justify-center flex-shrink-0">
-                  <Icon size={18} className="text-rust-500" />
+              <button
+                key={c.name}
+                type="button"
+                onClick={() => !empty && toggle(c.name)}
+                disabled={empty}
+                aria-pressed={isOn}
+                className={`text-left rounded-2xl border p-3 flex items-center gap-3 transition-all ${
+                  empty
+                    ? 'border-gray-100 bg-gray-50/50 opacity-50 cursor-not-allowed'
+                    : isOn
+                    ? 'border-rust-300 bg-rust-50 ring-2 ring-rust-200'
+                    : 'border-gray-200 hover:border-rust-200 hover:bg-rust-50/40'
+                }`}
+              >
+                {/* checkbox */}
+                <span className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 border-2 transition-colors ${
+                  isOn ? 'bg-rust-500 border-rust-500 text-white' : 'border-gray-300 bg-white'
+                }`}>
+                  {isOn && <Check size={15} strokeWidth={3} />}
+                </span>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isOn ? 'bg-rust-100' : 'bg-gray-100'}`}>
+                  <Icon size={18} className={isOn ? 'text-rust-600' : 'text-gray-400'} />
                 </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-500 truncate">{c.label}</p>
-                  <p className="font-display text-xl font-bold text-charcoal-900 tabular leading-tight">{c.count}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-charcoal-900 truncate">{c.label}</p>
+                  <p className="text-xs text-gray-500 tabular">{c.count} record{c.count === 1 ? '' : 's'}</p>
                 </div>
-              </div>
+              </button>
             )
           })}
         </div>
         <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-          <span className="text-sm font-semibold text-gray-600">Total records to delete</span>
+          <span className="text-sm font-semibold text-gray-600">
+            Selected to delete{selected.size > 0 ? ` (${selected.size} section${selected.size === 1 ? '' : 's'})` : ''}
+          </span>
           <span className="font-display text-2xl font-bold text-rust-600 tabular">{total}</span>
         </div>
       </div>
@@ -117,34 +168,43 @@ export default function ResetData() {
       <div className="card p-5 sm:p-6">
         {status === 'idle' && (
           <>
-            <div className="flex items-start gap-3 p-4 rounded-2xl bg-rust-50 border border-rust-200 mb-5">
-              <AlertTriangle size={20} className="text-rust-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-rust-700">
-                This cannot be undone. All {total} records above will be permanently removed from every device.
-                Type <strong>DELETE</strong> below to confirm.
-              </p>
-            </div>
-            <label className="field-label" htmlFor="confirm">Type DELETE to confirm</label>
-            <input
-              id="confirm"
-              type="text"
-              value={confirmText}
-              onChange={e => setConfirmText(e.target.value)}
-              placeholder="DELETE"
-              autoComplete="off"
-              autoCapitalize="characters"
-              className="input-field tracking-widest font-bold uppercase mb-4"
-            />
-            <button
-              onClick={runReset}
-              disabled={!canDelete}
-              className="btn-danger w-full min-h-[48px] disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <Trash2 size={18} />
-              {total > 0 ? `Delete All ${total} Records` : 'Nothing to delete'}
-            </button>
-            {total === 0 && (
-              <p className="text-xs text-gray-400 text-center mt-3">All sections are already empty (deposits excluded).</p>
+            {selected.size === 0 ? (
+              <div className="flex items-start gap-3 p-4 rounded-2xl bg-gray-50 border border-gray-200">
+                <AlertTriangle size={20} className="text-gray-400 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-gray-500">
+                  Select at least one section above to delete.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-start gap-3 p-4 rounded-2xl bg-rust-50 border border-rust-200 mb-5">
+                  <AlertTriangle size={20} className="text-rust-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-rust-700">
+                    This cannot be undone. <strong>{total} records</strong> from{' '}
+                    <strong>{selectedTargets.map(t => t.label).join(', ')}</strong> will be permanently
+                    removed from every device. Type <strong>DELETE</strong> below to confirm.
+                  </p>
+                </div>
+                <label className="field-label" htmlFor="confirm">Type DELETE to confirm</label>
+                <input
+                  id="confirm"
+                  type="text"
+                  value={confirmText}
+                  onChange={e => setConfirmText(e.target.value)}
+                  placeholder="DELETE"
+                  autoComplete="off"
+                  autoCapitalize="characters"
+                  className="input-field tracking-widest font-bold uppercase mb-4"
+                />
+                <button
+                  onClick={runReset}
+                  disabled={!canDelete}
+                  className="btn-danger w-full min-h-[48px] disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <Trash2 size={18} />
+                  {total > 0 ? `Delete ${total} Selected Record${total === 1 ? '' : 's'}` : 'Selected sections are empty'}
+                </button>
+              </>
             )}
           </>
         )}
@@ -166,9 +226,9 @@ export default function ResetData() {
         {status === 'done' && (
           <div className="rounded-card border border-emerald2-100 bg-emerald2-50 px-6 py-10 text-center animate-scale-in">
             <CheckCircle size={48} className="text-emerald2-600 mx-auto mb-4" />
-            <p className="text-charcoal-900 font-bold text-xl font-display">All Clear</p>
+            <p className="text-charcoal-900 font-bold text-xl font-display">Done</p>
             <p className="text-gray-600 text-sm mt-2 mb-6 max-w-md mx-auto">
-              Every section has been wiped (deposits kept safe). You can now re-upload your data.
+              The selected sections have been cleared (deposits kept safe). You can now re-upload your data.
             </p>
             <button onClick={() => navigate('/tenants')} className="btn-primary px-8 py-3 min-h-[44px] mx-auto">
               Go to Tenants <ArrowRight size={18} />
