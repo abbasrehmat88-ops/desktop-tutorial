@@ -664,7 +664,6 @@ function DepositHistory({ deposits }) {
 const TABS = [
   { id: 'monthly', label: 'Monthly Cash Flow', icon: ArrowUpFromLine },
   { id: 'fewa', label: 'FEWA Bills', icon: Zap },
-  { id: 'deposits', label: 'Deposit History', icon: ShieldCheck },
 ];
 
 export default function CashFlow() {
@@ -705,7 +704,6 @@ export default function CashFlow() {
 
       {tab === 'monthly' && <MonthlyCashFlow cashflow={businessData.cashflow || []} />}
       {tab === 'fewa' && <FewaBills villas={businessData.villas || []} />}
-      {tab === 'deposits' && <DepositHistory deposits={businessData.depositHistory || []} />}
     </div>
   );
 }
