@@ -17,6 +17,12 @@ function monthKey(d = new Date()) {
   return format(d, 'yyyy-MM')
 }
 
+// Today's date as YYYY-MM-DD — used to stamp when a payment is collected so the
+// Dashboard can total "today's revenue". Derived state: re-marking is idempotent.
+function todayISO() {
+  return format(new Date(), 'yyyy-MM-dd')
+}
+
 function monthLabel(d = new Date()) {
   return format(d, 'MMMM yyyy')
 }
@@ -278,10 +284,15 @@ export default function Tenants() {
   async function togglePaid(tenant, value) {
     const currentPayments = (tenant.payments && typeof tenant.payments === 'object')
       ? tenant.payments : {}
+    // Stamp/clear the collection date for this month so the Dashboard can tally today's revenue
+    const paidAt = (tenant.paidAt && typeof tenant.paidAt === 'object') ? { ...tenant.paidAt } : {}
+    if (value) paidAt[MONTH] = todayISO()
+    else delete paidAt[MONTH]
     try {
       await updateItem('tenants', tenant.id, {
         payments: { ...currentPayments, [MONTH]: value },
         paid: value, // keep old field in sync for Financial fallback
+        paidAt,
       })
     } catch (err) {
       setError('Could not update payment status: ' + err.message)
@@ -293,9 +304,13 @@ export default function Tenants() {
     if (isNaN(val) || val < 0) return
     const existing = (tenant.partialPayments && typeof tenant.partialPayments === 'object')
       ? tenant.partialPayments : {}
+    const partialAt = (tenant.partialAt && typeof tenant.partialAt === 'object') ? { ...tenant.partialAt } : {}
+    if (val > 0) partialAt[MONTH] = todayISO()
+    else delete partialAt[MONTH]
     try {
       await updateItem('tenants', tenant.id, {
         partialPayments: { ...existing, [MONTH]: val },
+        partialAt,
       })
     } catch (err) {
       setError('Could not save partial payment: ' + err.message)

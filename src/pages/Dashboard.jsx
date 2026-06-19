@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { watchCollection, isDemoMode } from '../data/db'
 import { useAuth } from '../contexts/AuthContext'
-import { Users, DollarSign, AlertCircle, TrendingUp, Bell, Clock, ArrowRight, Trophy } from 'lucide-react'
+import { Users, DollarSign, AlertCircle, TrendingUp, Bell, Clock, ArrowRight, Trophy, CalendarDays } from 'lucide-react'
 import { format, isWithinInterval, addDays, addMonths, subMonths, parseISO } from 'date-fns'
 import {
   ResponsiveContainer, BarChart, Bar, AreaChart, Area,
@@ -170,6 +170,16 @@ export default function Dashboard() {
     return sum + Number(t.partialPayments?.[MONTH] || 0)
   }, 0)
 
+  // Revenue collected TODAY — derived from the date each payment was stamped.
+  // Full payment marked today counts the full rent; otherwise a partial stamped today.
+  const TODAY_ISO = format(new Date(), 'yyyy-MM-dd')
+  const todayRevenue = tenants.reduce((sum, t) => {
+    if (t.paidAt?.[MONTH] === TODAY_ISO) return sum + (Number(t.rentAmount) || 0)
+    if (t.partialAt?.[MONTH] === TODAY_ISO) return sum + Number(t.partialPayments?.[MONTH] || 0)
+    return sum
+  }, 0)
+  const todayCount = tenants.filter(t => t.paidAt?.[MONTH] === TODAY_ISO || t.partialAt?.[MONTH] === TODAY_ISO).length
+
   const today = new Date()
   const sevenDaysLater = addDays(today, 7)
   const upcomingReminders = reminders.filter((r) => {
@@ -233,6 +243,17 @@ export default function Dashboard() {
               {loading ? <span className="text-charcoal-500">—</span> : <CountUp value={totalRevenue} duration={1600} />}
             </p>
             <span className="hidden sm:block gold-rule ml-auto mt-3" />
+            {/* Today's collections — updates automatically each day */}
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/5 ring-1 ring-white/10 px-3.5 py-1.5">
+              <CalendarDays size={14} className="text-primary-400" />
+              <span className="text-charcoal-300 text-[11px] uppercase tracking-[0.15em]">Today</span>
+              <span className="font-display text-base text-white tabular leading-none">
+                AED {loading ? '—' : todayRevenue.toLocaleString()}
+              </span>
+              {todayCount > 0 && (
+                <span className="text-2xs text-primary-300/80 tabular">· {todayCount} paid</span>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -256,8 +277,8 @@ export default function Dashboard() {
 
       {/* Stats */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-          {[...Array(4)].map((_, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-8">
+          {[...Array(5)].map((_, i) => (
             <div key={i} className="stat-card">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 skeleton rounded-2xl" />
@@ -270,7 +291,15 @@ export default function Dashboard() {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8 stagger">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-8 stagger">
+          <StatCard
+            icon={CalendarDays}
+            label="Today's Revenue"
+            value={`AED ${todayRevenue.toLocaleString()}`}
+            color="bg-charcoal-900 text-primary-400"
+            subtext={todayCount > 0 ? `${todayCount} collected today` : 'Updates as you collect'}
+            to="/dues"
+          />
           <StatCard
             icon={Users}
             label="Total Tenants"

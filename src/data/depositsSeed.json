@@ -1,0 +1,532 @@
+[
+  {
+    "seedKey": "dep-001",
+    "room": "R-105",
+    "villa": "v-10",
+    "client": "Imran Afghan v-10",
+    "amount": 500,
+    "date": "2025-07-29",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-002",
+    "room": "R-86",
+    "villa": "flate 06",
+    "client": "Ibrahim Afghan",
+    "amount": 1000,
+    "date": "2025-07-31",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-003",
+    "room": "R-52",
+    "villa": "zam zam",
+    "client": "Said Ali",
+    "amount": 1000,
+    "date": "2025-03-08",
+    "status": "returned",
+    "note": "returned to shawkat 15-06-2026"
+  },
+  {
+    "seedKey": "dep-004",
+    "room": "R-49",
+    "villa": "no entry",
+    "client": "Samiullah",
+    "amount": 300,
+    "date": "2025-07-24",
+    "status": "returned",
+    "note": "Return onlne to his account"
+  },
+  {
+    "seedKey": "dep-005",
+    "room": "R-86",
+    "villa": "flate 06",
+    "client": "Habib Afghan flat-6",
+    "amount": 1000,
+    "date": "2025-08-20",
+    "status": "returned",
+    "note": "cut in rent inlast month"
+  },
+  {
+    "seedKey": "dep-006",
+    "room": "R-88",
+    "villa": "flate 06",
+    "client": "Wasi Eng Flat-6",
+    "amount": 500,
+    "date": "2025-09-18",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-007",
+    "room": "R-35",
+    "villa": "arif villa",
+    "client": "Bilal Shah",
+    "amount": 500,
+    "date": "2025-10-10",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-008",
+    "room": "R-68+R-69",
+    "villa": "park villa",
+    "client": "D.T.C Drivers",
+    "amount": 1500,
+    "date": "2025-11-22",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-009",
+    "room": "R-99",
+    "villa": "tekadar villa",
+    "client": "Sing Paji",
+    "amount": 500,
+    "date": "2026-01-25",
+    "status": "returned",
+    "note": "returned to him"
+  },
+  {
+    "seedKey": "dep-010",
+    "room": "R-47",
+    "villa": "no entry",
+    "client": "Hussain Bangali   500+500",
+    "amount": 1000,
+    "date": "2026-02-02",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-011",
+    "room": "R-112+R-119",
+    "villa": "abu maryam",
+    "client": "Jabar Dewa",
+    "amount": 3500,
+    "date": "2026-02-07",
+    "status": "returned",
+    "note": "renturned to him through online account"
+  },
+  {
+    "seedKey": "dep-012",
+    "room": "R-111",
+    "villa": "abu maryam",
+    "client": "imran panjabi I.T",
+    "amount": 500,
+    "date": "2026-02-07",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-013",
+    "room": "R-114",
+    "villa": "abu maryam",
+    "client": "Rahimullah - hamid afghan",
+    "amount": 1000,
+    "date": "2026-02-21",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-014",
+    "room": "R-101",
+    "villa": "villa 10",
+    "client": "Hamid Recovery",
+    "amount": 300,
+    "date": "2025-02-03",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-015",
+    "room": "R91 to R98",
+    "villa": "tekadar villa",
+    "client": "Ihsan-Zafar(7 Rooms)",
+    "amount": 5000,
+    "date": "2025-04-25",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-016",
+    "room": "R-107",
+    "villa": "villa 10",
+    "client": "Rahimullah Afghan (Cylinder) Rawza",
+    "amount": 1000,
+    "date": "2025-04-20",
+    "status": "returned",
+    "note": "Run away cut in 15 days april 2026"
+  },
+  {
+    "seedKey": "dep-017",
+    "room": "R-77",
+    "villa": "villa 42",
+    "client": "Baitullah Afghan",
+    "amount": 500,
+    "date": "2025-05-26",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-018",
+    "room": "Haji ihsan oil",
+    "villa": "villa 42",
+    "client": "cash from Hikmat  5k(30.5)+2000 + 1500 (5.9",
+    "amount": 8500,
+    "date": "2025-05-30",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-019",
+    "room": "R-36",
+    "villa": "arif villa",
+    "client": "Ali Khan Swati 500-100 cut n rent feb 2026",
+    "amount": 400,
+    "date": "2025-07-01",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-020",
+    "room": "R-40",
+    "villa": "arif v gali room",
+    "client": "sheer Alam",
+    "amount": 500,
+    "date": "2025-08-01",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-021",
+    "room": "R-18",
+    "villa": "dawood villa",
+    "client": "Ibrahim-Farhan Taxi",
+    "amount": 500,
+    "date": "2025-07-27",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-022",
+    "room": "R-87",
+    "villa": "flate 06",
+    "client": "Muhammad akbar",
+    "amount": 1000,
+    "date": "2026-02-21",
+    "status": "held",
+    "note": "w/us  cheque"
+  },
+  {
+    "seedKey": "dep-023",
+    "room": "R-67",
+    "villa": "park villa",
+    "client": "Aiman sodani Brother 1000 aed cheque",
+    "amount": 0,
+    "date": "2025-02-03",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-024",
+    "room": "R-51",
+    "villa": "zam zam",
+    "client": "Imran Typing Wala",
+    "amount": 500,
+    "date": "2025-04-02",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-025",
+    "room": "R113 - R114",
+    "villa": "abu maryam",
+    "client": "Jabar Dewa",
+    "amount": 2900,
+    "date": "2026-02-23",
+    "status": "returned",
+    "note": "returned to him through online account"
+  },
+  {
+    "seedKey": "dep-026",
+    "room": "R121",
+    "villa": "khalid villa",
+    "client": "out side room Noor",
+    "amount": 2500,
+    "date": "2026-02-22",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-027",
+    "room": "R115",
+    "villa": "abu maryam",
+    "client": "khalid pathan",
+    "amount": 1000,
+    "date": "2026-02-23",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-028",
+    "room": "R49",
+    "villa": "no entry",
+    "client": "m naveed riaz",
+    "amount": 1000,
+    "date": "2026-03-01",
+    "status": "returned",
+    "note": "Return rent 500+cash 500"
+  },
+  {
+    "seedKey": "dep-029",
+    "room": "R118",
+    "villa": "abu maryam",
+    "client": "unhappy cha cha",
+    "amount": 500,
+    "date": "2026-03-01",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-030",
+    "room": "R25",
+    "villa": "rauf villa",
+    "client": "abd qadir alam son 500+500",
+    "amount": 1000,
+    "date": "2026-03-07",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-031",
+    "room": "R33",
+    "villa": "Arif villa",
+    "client": "Rahimullah masto   check in october 2025",
+    "amount": 1300,
+    "date": "2025-10-01",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-032",
+    "room": "R06",
+    "villa": "adil villa",
+    "client": "atiq  qari link talabat",
+    "amount": 500,
+    "date": "2025-03-01",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-033",
+    "room": "R84",
+    "villa": "flate 01",
+    "client": "Qari link new talabat",
+    "amount": 500,
+    "date": "2026-02-24",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-034",
+    "room": "R125",
+    "villa": "khalid villa",
+    "client": "Qari link new talabat",
+    "amount": 1000,
+    "date": "2026-03-16",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-035",
+    "room": "R66",
+    "villa": "park villa",
+    "client": "khurram shehzad",
+    "amount": 500,
+    "date": "2026-03-12",
+    "status": "returned",
+    "note": "cut from him in may rent"
+  },
+  {
+    "seedKey": "dep-036",
+    "room": "R122",
+    "villa": "khalid villa",
+    "client": "Akhter taxi noor ghani villeger",
+    "amount": 1000,
+    "date": "2026-03-01",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-037",
+    "room": "R97",
+    "villa": "tekadar villa",
+    "client": "Rasool jaan afgh",
+    "amount": 900,
+    "date": "2026-02-01",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-038",
+    "room": "R126",
+    "villa": "khalid villa",
+    "client": "afzal arbab of labor afgh",
+    "amount": 1500,
+    "date": "2026-03-27",
+    "status": "returned",
+    "note": "returneed through online NBD"
+  },
+  {
+    "seedKey": "dep-039",
+    "room": "R124",
+    "villa": "khalid villa",
+    "client": "suleman malang friend",
+    "amount": 1000,
+    "date": "2026-04-01",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-040",
+    "room": "R116",
+    "villa": "khalid villa",
+    "client": "sheer ali",
+    "amount": 1000,
+    "date": "2026-04-18",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-041",
+    "room": "R123",
+    "villa": "khalid villa",
+    "client": "farid afghan",
+    "amount": 1000,
+    "date": "2026-04-01",
+    "status": "returned",
+    "note": "returned by abbas"
+  },
+  {
+    "seedKey": "dep-042",
+    "room": "R107",
+    "villa": "villa No 10",
+    "client": "sajid Qamber",
+    "amount": 1600,
+    "date": "2026-06-12",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-043",
+    "room": "R-99",
+    "villa": "tekadar villa",
+    "client": "muzammil start 1-5-26",
+    "amount": 500,
+    "date": "2026-04-30",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-044",
+    "room": "R-80",
+    "villa": "villa 42",
+    "client": "mukhtar",
+    "amount": 500,
+    "date": "2026-05-30",
+    "status": "returned",
+    "note": "cut in june rent"
+  },
+  {
+    "seedKey": "dep-045",
+    "room": "R-49",
+    "villa": "no entry",
+    "client": "noor mawasilat",
+    "amount": 1000,
+    "date": "2026-06-16",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-046",
+    "room": "R-43",
+    "villa": "no entry",
+    "client": "Zafar-Nisar",
+    "amount": 200,
+    "date": "2026-06-02",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-047",
+    "room": "R-113",
+    "villa": "abu maryam",
+    "client": "Azmat-ullah",
+    "amount": 1200,
+    "date": "2026-05-03",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-048",
+    "room": "R-112",
+    "villa": "abu maryam",
+    "client": "zakarya",
+    "amount": 1000,
+    "date": "2026-05-07",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-049",
+    "room": "R-102",
+    "villa": "villa 10",
+    "client": "anil malwari",
+    "amount": 600,
+    "date": "2026-05-23",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-050",
+    "room": "R-52",
+    "villa": "zam zam",
+    "client": "WAQAS",
+    "amount": 500,
+    "date": "2026-05-23",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-051",
+    "room": "R-62",
+    "villa": "park villa",
+    "client": "yasir",
+    "amount": 1000,
+    "date": "2026-06-02",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-052",
+    "room": "R-66",
+    "villa": "park villa",
+    "client": "abubakkar",
+    "amount": 1000,
+    "date": "2026-06-05",
+    "status": "held",
+    "note": "w/us"
+  },
+  {
+    "seedKey": "dep-053",
+    "room": "R-119 R-120-A",
+    "villa": "abu maryam",
+    "client": "sharifullah",
+    "amount": 1000,
+    "date": "2026-06-15",
+    "status": "held",
+    "note": "w/us"
+  }
+]
