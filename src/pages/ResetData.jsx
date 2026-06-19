@@ -7,13 +7,20 @@ import {
 } from 'lucide-react'
 
 // Collections that get wiped. Deposits is DELIBERATELY excluded — that data
-// is correct and must be preserved.
+// is correct and must be preserved. Financial / Cash Flow totals and the
+// Dashboard are CALCULATED from Tenants + Owners, so they have no separate
+// records — clearing those two also resets Financial, Dues and the Dashboard.
 const TARGETS = [
-  { name: 'tenants',    label: 'Tenants',     icon: Users },
-  { name: 'owners',     label: 'Owners',      icon: KeyRound },
-  { name: 'reminders',  label: 'Reminders',   icon: Bell },
-  { name: 'fewaBills',  label: 'FEWA Bills',  icon: Zap },
-  { name: 'properties', label: 'Properties',  icon: Building2 },
+  { name: 'tenants',    label: 'Tenants & Rent', icon: Users,
+    desc: 'All tenants, rooms, rent & payment history. Also clears Dues, Dashboard and the tenant side of Financial.' },
+  { name: 'owners',     label: 'Owners',         icon: KeyRound,
+    desc: 'All owner records and their payments. Also clears the owner side of Financial.' },
+  { name: 'reminders',  label: 'Reminders',      icon: Bell,
+    desc: 'All reminders, bills and renewals.' },
+  { name: 'fewaBills',  label: 'Cash Flow — FEWA Bills', icon: Zap,
+    desc: 'FEWA / utility bills you added on the Cash Flow page.' },
+  { name: 'properties', label: 'Properties',     icon: Building2,
+    desc: 'Saved property listings.' },
 ]
 
 export default function ResetData() {
@@ -86,7 +93,7 @@ export default function ResetData() {
         <h1 className="page-title">Reset Data</h1>
         <span className="gold-rule" />
         <p className="text-gray-500 text-sm mt-2">
-          Permanently delete all records so you can re-upload a clean set.
+          Select any sections — or everything — and permanently delete them so you can re-upload a clean set.
           <strong className="text-charcoal-900"> Deposits are never touched.</strong>
         </p>
       </div>
@@ -131,7 +138,7 @@ export default function ResetData() {
                 onClick={() => !empty && toggle(c.name)}
                 disabled={empty}
                 aria-pressed={isOn}
-                className={`text-left rounded-2xl border p-3 flex items-center gap-3 transition-all ${
+                className={`text-left rounded-2xl border p-3 flex items-start gap-3 transition-all ${
                   empty
                     ? 'border-gray-100 bg-gray-50/50 opacity-50 cursor-not-allowed'
                     : isOn
@@ -140,7 +147,7 @@ export default function ResetData() {
                 }`}
               >
                 {/* checkbox */}
-                <span className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 border-2 transition-colors ${
+                <span className={`w-6 h-6 mt-0.5 rounded-lg flex items-center justify-center flex-shrink-0 border-2 transition-colors ${
                   isOn ? 'bg-rust-500 border-rust-500 text-white' : 'border-gray-300 bg-white'
                 }`}>
                   {isOn && <Check size={15} strokeWidth={3} />}
@@ -149,8 +156,11 @@ export default function ResetData() {
                   <Icon size={18} className={isOn ? 'text-rust-600' : 'text-gray-400'} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-charcoal-900 truncate">{c.label}</p>
-                  <p className="text-xs text-gray-500 tabular">{c.count} record{c.count === 1 ? '' : 's'}</p>
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="text-sm font-semibold text-charcoal-900">{c.label}</p>
+                    <span className="text-xs font-bold text-rust-600 tabular flex-shrink-0">{c.count}</span>
+                  </div>
+                  {c.desc && <p className="text-[11px] leading-snug text-gray-500 mt-0.5">{c.desc}</p>}
                 </div>
               </button>
             )
