@@ -26,6 +26,32 @@ const CANONICAL_VILLAS = (() => {
   return [...seen.entries()].sort((a, b) => Number(a[0]) - Number(b[0])).map(e => e[1])
 })()
 
+// Map a tenant's free-text property value to the closest canonical villa name.
+// Tenants added before the dropdown was introduced have names like "Adil Villa"
+// or "Park" that don't exactly match "v1 Adil" / "v7 Park" — this bridges the gap.
+const _VILLA_ENTRIES = CANONICAL_VILLAS
+  .map(v => ({ canonical: v, name: v.toLowerCase().replace(/^v\d+\s+/i, '').replace(/_/g, ' ').trim() }))
+  .filter(x => x.name.length >= 3)
+  .sort((a, b) => b.name.length - a.name.length)  // longest (most specific) first
+
+function normalizeToCanonical(property) {
+  if (!property) return ''
+  const raw = property.trim()
+  if (!raw) return ''
+  if (CANONICAL_VILLAS.includes(raw)) return raw
+  const lower = raw.toLowerCase()
+  const lowerNS = lower.replace(/\s+/g, '')           // no-space version for "abu maryam" ↔ "abumaryam"
+  // Pass 1: full name-part match
+  for (const { canonical, name } of _VILLA_ENTRIES) {
+    if (lower.includes(name) || lowerNS.includes(name.replace(/\s+/g, ''))) return canonical
+  }
+  // Pass 2: individual word match (≥ 4 chars) for partial names like "Adil"
+  for (const { canonical, name } of _VILLA_ENTRIES) {
+    if (name.split(/\s+/).filter(w => w.length >= 4).some(w => lower.includes(w))) return canonical
+  }
+  return raw
+}
+
 // ── Per-month helpers ───────────────────────────────────────────────────────
 // Payments are stored as a map inside each tenant document:
 //   payments: { '2026-06': true, '2026-05': false, ... }
@@ -284,7 +310,7 @@ export default function Tenants() {
   const villaGroups = useMemo(() => {
     const counts = new Map()
     for (const t of tenants) {
-      const key = (t.property || '').trim() || 'Unassigned'
+      const key = normalizeToCanonical(t.property) || 'Unassigned'
       counts.set(key, (counts.get(key) || 0) + 1)
     }
     const list = []
@@ -309,7 +335,7 @@ export default function Tenants() {
     const matchFilter =
       filter === 'paid'   ?  paidNow :
       filter === 'unpaid' ? !paidNow : true
-    const villaKey = (t.property || '').trim() || 'Unassigned'
+    const villaKey = normalizeToCanonical(t.property) || 'Unassigned'
     const matchVilla = villa === 'all' || villaKey === villa
     return matchSearch && matchFilter && matchVilla
   })
