@@ -3,10 +3,28 @@ import { createPortal } from 'react-dom'
 import { useSearchParams } from 'react-router-dom'
 import { watchCollection, addItem, updateItem, removeItem, isDemoMode } from '../data/db'
 import { format, parseISO } from 'date-fns'
+import businessData from '../data/businessData.json'
 import {
   Plus, Search, Edit2, Trash2, MessageCircle, X, Loader2, AlertCircle, Users, Check,
   Building2, LayoutGrid,
 } from 'lucide-react'
+
+// Canonical villa list — mirrors the villa names used on the Cash Flow page
+// (v1 Adil, v2 Rauf, …) so the Tenants villa filter speaks the same language.
+// Derived once from the cash-flow data; non-villa rows (School, Wifi) and
+// duplicate numbers are skipped.
+const CANONICAL_VILLAS = (() => {
+  const seen = new Map() // villaNumber -> label
+  for (const block of businessData.cashflow || []) {
+    for (const e of block.entries || []) {
+      const label = (e.villa || '').trim()
+      const m = label.match(/^v(\d+)/i)
+      if (!m) continue
+      if (!seen.has(m[1])) seen.set(m[1], label)
+    }
+  }
+  return [...seen.entries()].sort((a, b) => Number(a[0]) - Number(b[0])).map(e => e[1])
+})()
 
 // ── Per-month helpers ───────────────────────────────────────────────────────
 // Payments are stored as a map inside each tenant document:
@@ -156,9 +174,16 @@ function TenantModal({ open, onClose, onSave, initial, saving }) {
             </div>
 
             <div>
-              <label className="field-label">Property / Villa</label>
-              <input name="property" value={form.property} onChange={handleChange}
-                className="input-field" placeholder="e.g. Adil Villa 8" />
+              <label className="field-label">Villa</label>
+              <select name="property" value={form.property} onChange={handleChange} className="input-field">
+                <option value="">— Select villa —</option>
+                {CANONICAL_VILLAS.map(v => <option key={v} value={v}>{v}</option>)}
+                {/* preserve any existing custom villa not in the canonical list */}
+                {form.property && !CANONICAL_VILLAS.includes(form.property) && (
+                  <option value={form.property}>{form.property}</option>
+                )}
+              </select>
+              <p className="text-[11px] text-gray-400 mt-1">Used to group tenants by villa</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -253,22 +278,24 @@ export default function Tenants() {
     )
   }, [])
 
-  // Group tenants by villa (the `property` field). Tenants with no villa are
-  // collected under "Unassigned" so they are still reachable.
+  // Group tenants by villa (the `property` field). The canonical villas always
+  // appear (matching the Cash Flow page), followed by any legacy/custom villa
+  // values found on tenants, then "Unassigned" for tenants with no villa.
   const villaGroups = useMemo(() => {
-    const map = new Map()
+    const counts = new Map()
     for (const t of tenants) {
       const key = (t.property || '').trim() || 'Unassigned'
-      if (!map.has(key)) map.set(key, { name: key, count: 0, rent: 0 })
-      const g = map.get(key)
-      g.count++
-      g.rent += Number(t.rentAmount || 0)
+      counts.set(key, (counts.get(key) || 0) + 1)
     }
-    return [...map.values()].sort((a, b) => {
-      if (a.name === 'Unassigned') return 1
-      if (b.name === 'Unassigned') return -1
-      return a.name.localeCompare(b.name)
-    })
+    const list = []
+    for (const v of CANONICAL_VILLAS) {
+      list.push({ name: v, count: counts.get(v) || 0 })
+      counts.delete(v)
+    }
+    const extras = [...counts.keys()].filter(k => k !== 'Unassigned').sort()
+    for (const k of extras) list.push({ name: k, count: counts.get(k) })
+    if (counts.get('Unassigned')) list.push({ name: 'Unassigned', count: counts.get('Unassigned') })
+    return list
   }, [tenants])
 
   const filtered = tenants.filter(t => {
@@ -475,6 +502,8 @@ export default function Tenants() {
                 className={`snap-start flex items-center gap-2 min-h-[44px] px-4 rounded-2xl text-sm font-semibold whitespace-nowrap transition-all flex-shrink-0 border ${
                   villa === g.name
                     ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-charcoal-900 border-primary-500 shadow-glow-sm'
+                    : g.count === 0
+                    ? 'bg-white text-gray-400 border-gray-200/70 hover:border-primary-300 hover:text-primary-700'
                     : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300 hover:text-primary-700'
                 }`}
               >
