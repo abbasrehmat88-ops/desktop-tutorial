@@ -15,7 +15,6 @@ import Owners from './pages/Owners';
 import CashFlow from './pages/CashFlow';
 import FewaBills from './pages/FewaBills';
 import TenantHistory from './pages/TenantHistory';
-import Dues from './pages/Dues';
 import PropertyFinder from './pages/PropertyFinder';
 
 function App() {
@@ -37,7 +36,6 @@ function App() {
               <Route path="/cashflow" element={<CashFlow />} />
               <Route path="/fewa-bills" element={<FewaBills />} />
               <Route path="/tenant-history" element={<TenantHistory />} />
-              <Route path="/dues" element={<Dues />} />
               <Route path="/property-finder" element={<PropertyFinder />} />
               <Route path="/import-data" element={<ImportData />} />
               <Route path="/reset-data" element={<ResetData />} />
