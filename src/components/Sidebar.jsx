@@ -12,7 +12,6 @@ import {
   Landmark,
   KeyRound,
   Wallet,
-  CalendarClock,
   Sparkles,
   Trash2,
   History,
@@ -31,7 +30,6 @@ const navGroups = [
     items: [
       { to: '/tenants',         icon: Users,           label: 'Tenants'    },
       { to: '/tenant-history',  icon: History,         label: 'Tenant History' },
-      { to: '/dues',            icon: CalendarClock,   label: 'Pending Dues' },
       { to: '/deposits',        icon: Landmark,        label: 'Deposits'   },
     ]
   },
