@@ -1,0 +1,2216 @@
+{
+  "meta": {
+    "source": "Book3.xlsx - Out Going Amounts",
+    "years": [
+      "2025",
+      "2026"
+    ],
+    "description": "Monthly per-villa financial data: incoming rent, FEWA, Ejaar, other expenses"
+  },
+  "data": {
+    "2025": {
+      "1": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 12010.0,
+          "fewa": 4612.0,
+          "ejaar": 3200.0,
+          "others": 1600.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 5820.0,
+          "fewa": 2627.0,
+          "ejaar": 0.0,
+          "others": 1100.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12800.0,
+          "fewa": 4455.0,
+          "ejaar": 13500.0,
+          "others": 500.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 6200.0,
+          "fewa": 2000.0,
+          "ejaar": 2700.0,
+          "others": 0.0,
+          "details": "Driver"
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 11210.0,
+          "fewa": 2431.0,
+          "ejaar": 0.0,
+          "others": 2000.0,
+          "details": "V3 Agreement"
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 11600.0,
+          "fewa": 4009.0,
+          "ejaar": 7500.0,
+          "others": 0.0,
+          "details": "city school cheque"
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 9600.0,
+          "fewa": 2185.0,
+          "ejaar": 0.0,
+          "others": 800.0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 7700.0,
+          "fewa": 2000.0,
+          "ejaar": 0.0,
+          "others": 1405.0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat",
+          "incoming": 4500.0,
+          "fewa": 761.0,
+          "ejaar": 4300.0,
+          "others": 1000.0,
+          "details": "Fazal labor"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 7400.0,
+          "fewa": 0.0,
+          "ejaar": 0.0,
+          "others": 5000.0,
+          "details": "visa sajid"
+        },
+        {
+          "villa": "School",
+          "incoming": 8000.0,
+          "fewa": -5027.0,
+          "ejaar": 0.0,
+          "others": 870.0,
+          "details": "wifi 460+410"
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 3160.0,
+          "fewa": 0.0,
+          "ejaar": 0.0,
+          "others": 0.0,
+          "details": ""
+        }
+      ],
+      "2": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 12010.0,
+          "fewa": 2701.0,
+          "ejaar": 3200.0,
+          "others": 1000.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 5820.0,
+          "fewa": 1792.0,
+          "ejaar": 0.0,
+          "others": 500.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12800.0,
+          "fewa": 3379.0,
+          "ejaar": 0.0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 6200.0,
+          "fewa": 1050.0,
+          "ejaar": 2700.0,
+          "others": 4300.0,
+          "details": "khan wahid loan"
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 11210.0,
+          "fewa": 1442.0,
+          "ejaar": 0.0,
+          "others": 3000.0,
+          "details": "maitanance villas"
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 11600.0,
+          "fewa": 1912.0,
+          "ejaar": 0.0,
+          "others": 6543.0,
+          "details": "city school cheque"
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 9600.0,
+          "fewa": 2185.0,
+          "ejaar": 8333.0,
+          "others": 6000.0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 8800.0,
+          "fewa": 1236.0,
+          "ejaar": 10000.0,
+          "others": 3000.0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat",
+          "incoming": 4500.0,
+          "fewa": 804.0,
+          "ejaar": 0.0,
+          "others": 1000.0,
+          "details": "Fazal labor"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 11000.0,
+          "fewa": 1047.0,
+          "ejaar": 2000.0,
+          "others": 3500.0,
+          "details": "visa sajid"
+        },
+        {
+          "villa": "School",
+          "incoming": 12000.0,
+          "fewa": -817.0,
+          "ejaar": 0.0,
+          "others": 870.0,
+          "details": "wifi 460+410"
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 2000.0,
+          "fewa": 0.0,
+          "ejaar": 0.0,
+          "others": 2100.0,
+          "details": "fawad giraj"
+        }
+      ],
+      "3": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 11470.0,
+          "fewa": 2080.0,
+          "ejaar": 3200.0,
+          "others": 900.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 5820.0,
+          "fewa": 1301.0,
+          "ejaar": 7000.0,
+          "others": 500.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12800.0,
+          "fewa": 2681.0,
+          "ejaar": 0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 4300.0,
+          "fewa": 1000.0,
+          "ejaar": 2700.0,
+          "others": 700.0,
+          "details": "Driver"
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 10990.0,
+          "fewa": 2314.0,
+          "ejaar": 12500.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 11250.0,
+          "fewa": 2425.0,
+          "ejaar": 7500.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 9300.0,
+          "fewa": 2092.0,
+          "ejaar": 0,
+          "others": 4000.0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 13300.0,
+          "fewa": 1500.0,
+          "ejaar": 0,
+          "others": 5000.0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat",
+          "incoming": 4500.0,
+          "fewa": 1040.0,
+          "ejaar": 4300.0,
+          "others": 0.0,
+          "details": "Fazal labor"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 9850.0,
+          "fewa": 2105.0,
+          "ejaar": 6500.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "School",
+          "incoming": 9000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 2000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        }
+      ],
+      "4": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 11470.0,
+          "fewa": 21952.0,
+          "ejaar": 3200.0,
+          "others": 1000.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 5820.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 500.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12800.0,
+          "fewa": 0,
+          "ejaar": 13500.0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 3000.0,
+          "fewa": 0,
+          "ejaar": 2700.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 10970.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 11250.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 9300.0,
+          "fewa": 0,
+          "ejaar": 8333.0,
+          "others": 0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 13300.0,
+          "fewa": 0,
+          "ejaar": 10000.0,
+          "others": 0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat",
+          "incoming": 4500.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": "Fazal labor"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 9850.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "School",
+          "incoming": 7000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 2000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        }
+      ],
+      "5": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 11470.0,
+          "fewa": 28281.0,
+          "ejaar": 3200.0,
+          "others": 1000.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 5820.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 500.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12800.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 5400.0,
+          "fewa": 0,
+          "ejaar": 2700.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 10970.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 11250.0,
+          "fewa": 0,
+          "ejaar": 7500.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 9300.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 13300.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat",
+          "incoming": 4500.0,
+          "fewa": 0,
+          "ejaar": 4300.0,
+          "others": 1000.0,
+          "details": "labor charges"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 9850.0,
+          "fewa": 0,
+          "ejaar": 6500.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v11 munir 2",
+          "incoming": 0.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "School",
+          "incoming": 7000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 3000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 900.0,
+          "details": "2025-05-15"
+        }
+      ],
+      "6": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 11470.0,
+          "fewa": 32382.0,
+          "ejaar": 3200.0,
+          "others": 1000.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 5820.0,
+          "fewa": 0,
+          "ejaar": 7000.0,
+          "others": 500.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12800.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 5400.0,
+          "fewa": 0,
+          "ejaar": 2700.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 10970.0,
+          "fewa": 0,
+          "ejaar": 19000.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 11250.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 9300.0,
+          "fewa": 0,
+          "ejaar": 8333.0,
+          "others": 0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 13300.0,
+          "fewa": 0,
+          "ejaar": 10000.0,
+          "others": 0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat",
+          "incoming": 4500.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 1000.0,
+          "details": "labor charges"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 9850.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v11 munir 2",
+          "incoming": 4600.0,
+          "fewa": 0,
+          "ejaar": 12000.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "School",
+          "incoming": 7000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 3000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 900.0,
+          "details": "2025-06-15"
+        }
+      ],
+      "7": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 11470.0,
+          "fewa": 40198.0,
+          "ejaar": 3200.0,
+          "others": 1000.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 5820.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 500.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12800.0,
+          "fewa": 0,
+          "ejaar": 13500.0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 5400.0,
+          "fewa": 0,
+          "ejaar": 2700.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 10970.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 11250.0,
+          "fewa": 0,
+          "ejaar": 7500.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 9300.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 13300.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat",
+          "incoming": 4500.0,
+          "fewa": 0,
+          "ejaar": 4300.0,
+          "others": 1000.0,
+          "details": "labor charges"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 9850.0,
+          "fewa": 0,
+          "ejaar": 6500.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v11 munir 2",
+          "incoming": 4600.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "School",
+          "incoming": 0.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 3000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 900.0,
+          "details": "2025-07-15"
+        }
+      ],
+      "8": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 11470.0,
+          "fewa": 51507.0,
+          "ejaar": 3200.0,
+          "others": 1000.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 5820.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 500.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12800.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 5400.0,
+          "fewa": 0,
+          "ejaar": 2700.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 10970.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 11250.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 9300.0,
+          "fewa": 0,
+          "ejaar": 8333.0,
+          "others": 0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 13300.0,
+          "fewa": 0,
+          "ejaar": 10000.0,
+          "others": 0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat",
+          "incoming": 4500.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 1000.0,
+          "details": "labor charges"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 9850.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v11 munir 2",
+          "incoming": 20350.0,
+          "fewa": 0,
+          "ejaar": 12000.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "School",
+          "incoming": 0.0,
+          "fewa": 0,
+          "ejaar": 1442.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 3000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 900.0,
+          "details": "2025-08-15"
+        }
+      ],
+      "9": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 11470.0,
+          "fewa": 50681.0,
+          "ejaar": 4000.0,
+          "others": 1000.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 5820.0,
+          "fewa": 0,
+          "ejaar": 7000.0,
+          "others": 500.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12800.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 5400.0,
+          "fewa": 0,
+          "ejaar": 2700.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 10970.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 11250.0,
+          "fewa": 0,
+          "ejaar": 7500.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 9300.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 13300.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat",
+          "incoming": 4500.0,
+          "fewa": 0,
+          "ejaar": 4300.0,
+          "others": 1000.0,
+          "details": "labor charges"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 9850.0,
+          "fewa": 0,
+          "ejaar": 6500.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v11 munir 2",
+          "incoming": 4600.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "School",
+          "incoming": 7000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 3000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 900.0,
+          "details": "2025-07-15"
+        }
+      ],
+      "10": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 12670.0,
+          "fewa": 48582.0,
+          "ejaar": 4000.0,
+          "others": 1000.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 5820.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 500.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12800.0,
+          "fewa": 0,
+          "ejaar": 13500.0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 7000.0,
+          "fewa": 0,
+          "ejaar": 2700.0,
+          "others": 5000.0,
+          "details": "B.C  cometi"
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 11670.0,
+          "fewa": 0,
+          "ejaar": 18000.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 11570.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 9300.0,
+          "fewa": 0,
+          "ejaar": 8333.0,
+          "others": 800.0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 13400.0,
+          "fewa": 0,
+          "ejaar": 10000.0,
+          "others": 500.0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat 01",
+          "incoming": 5650.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 500.0,
+          "details": "Zeshan"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 10600.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": "labor charges"
+        },
+        {
+          "villa": "v11 munir 2",
+          "incoming": 1400.0,
+          "fewa": 0,
+          "ejaar": 12000.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v12 flat 06",
+          "incoming": 5900.0,
+          "fewa": 0,
+          "ejaar": 5000.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "School",
+          "incoming": 7000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 3000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 900.0,
+          "details": "2025-08-15"
+        }
+      ],
+      "11": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 12670.0,
+          "fewa": 41900.0,
+          "ejaar": 4000.0,
+          "others": 1000.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 5820.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 500.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12800.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 7000.0,
+          "fewa": 0,
+          "ejaar": 2700.0,
+          "others": 5000.0,
+          "details": "B.C  cometi"
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 11670.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 11570.0,
+          "fewa": 0,
+          "ejaar": 7500.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 9300.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 800.0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 13400.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 500.0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat 01",
+          "incoming": 5650.0,
+          "fewa": 0,
+          "ejaar": 4500.0,
+          "others": 500.0,
+          "details": "Zeshan"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 10600.0,
+          "fewa": 0,
+          "ejaar": 6500.0,
+          "others": 0,
+          "details": "labor charges"
+        },
+        {
+          "villa": "v11 munir 2",
+          "incoming": 17000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v12 flat 06",
+          "incoming": 5900.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 3000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 900.0,
+          "details": "2025-08-15"
+        }
+      ],
+      "12": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 12670.0,
+          "fewa": 35822.0,
+          "ejaar": 4000.0,
+          "others": 1000.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 5470.0,
+          "fewa": 0,
+          "ejaar": 7000.0,
+          "others": 500.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12700.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 5550.0,
+          "fewa": 0,
+          "ejaar": 2700.0,
+          "others": 5000.0,
+          "details": "B.C  cometi"
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 11550.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 11600.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 11400.0,
+          "fewa": 0,
+          "ejaar": 8333.0,
+          "others": 1000.0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 15200.0,
+          "fewa": 0,
+          "ejaar": 10000.0,
+          "others": 500.0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat 01",
+          "incoming": 5750.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 500.0,
+          "details": "Zeshan"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 10600.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": "labor charges"
+        },
+        {
+          "villa": "v11 munir 2",
+          "incoming": 2600.0,
+          "fewa": 0,
+          "ejaar": 12000.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v12 flat 06",
+          "incoming": 5700.0,
+          "fewa": 0,
+          "ejaar": 5000.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 3000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 900.0,
+          "details": "2025-08-15"
+        }
+      ]
+    },
+    "2026": {
+      "1": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 12750.0,
+          "fewa": 24000.0,
+          "ejaar": 4000.0,
+          "others": 1000.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 5370.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 500.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12700.0,
+          "fewa": 0,
+          "ejaar": 14250.0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 5900.0,
+          "fewa": 0,
+          "ejaar": 2700.0,
+          "others": 5000.0,
+          "details": "B.C  cometi"
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 11690.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 11600.0,
+          "fewa": 0,
+          "ejaar": 7500.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 11300.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0.0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 15200.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0.0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat 01",
+          "incoming": 5550.0,
+          "fewa": 0,
+          "ejaar": 4300.0,
+          "others": 0.0,
+          "details": "Zeshan"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 10550.0,
+          "fewa": 0,
+          "ejaar": 10000.0,
+          "others": 0,
+          "details": "labor charges"
+        },
+        {
+          "villa": "v11 munir 2",
+          "incoming": 12000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v12 flat 06",
+          "incoming": 5650.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 3000.0,
+          "fewa": 0,
+          "ejaar": 5200.0,
+          "others": 5200.0,
+          "details": "abbas school"
+        }
+      ],
+      "2": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 12750.0,
+          "fewa": 28000.0,
+          "ejaar": 5000.0,
+          "others": 1000.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 5370.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 500.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12700.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 5900.0,
+          "fewa": 0,
+          "ejaar": 2700.0,
+          "others": 5000.0,
+          "details": "B.C  cometi"
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 11690.0,
+          "fewa": 0,
+          "ejaar": 18000.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 11600.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 11300.0,
+          "fewa": 0,
+          "ejaar": 8333.0,
+          "others": 0.0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 15200.0,
+          "fewa": 0,
+          "ejaar": 10000.0,
+          "others": 0.0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat 01",
+          "incoming": 5550.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0.0,
+          "details": "Zeshan"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 10550.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0.0,
+          "details": "labor charges"
+        },
+        {
+          "villa": "v11 munir 2",
+          "incoming": 24920.0,
+          "fewa": 0,
+          "ejaar": 12000.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v12 flat 06",
+          "incoming": 5650.0,
+          "fewa": 0,
+          "ejaar": 5000.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v13 abumaryam",
+          "incoming": 0.0,
+          "fewa": 0,
+          "ejaar": 27500.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 3000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        }
+      ],
+      "4": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 14600.0,
+          "fewa": 29000.0,
+          "ejaar": 8333.0,
+          "others": 1300.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 6270.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12700.0,
+          "fewa": 0,
+          "ejaar": 14250.0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 5900.0,
+          "fewa": 0,
+          "ejaar": 2700.0,
+          "others": 5000.0,
+          "details": "B.C  cometi"
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 11690.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 12050.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 11500.0,
+          "fewa": 0,
+          "ejaar": 8333.0,
+          "others": 1500.0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 15100.0,
+          "fewa": 0,
+          "ejaar": 10000.0,
+          "others": 0.0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat 01",
+          "incoming": 5750.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0.0,
+          "details": "Zeshan"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 10550.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": "labor charges"
+        },
+        {
+          "villa": "v11 munir 2",
+          "incoming": 4900.0,
+          "fewa": 0,
+          "ejaar": 10000.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v12 flat 06",
+          "incoming": 5800.0,
+          "fewa": 0,
+          "ejaar": 5000.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v13 abumaryam",
+          "incoming": 15300.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v14 khlid mus",
+          "incoming": 12800.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 3000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0.0,
+          "details": "abbas school"
+        }
+      ],
+      "5": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 14600.0,
+          "fewa": 31000.0,
+          "ejaar": 8333.0,
+          "others": 1000.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 6270.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 500.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12700.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 5900.0,
+          "fewa": 0,
+          "ejaar": 2700.0,
+          "others": 5000.0,
+          "details": "B.C  cometi"
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 11690.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 12050.0,
+          "fewa": 0,
+          "ejaar": 7500.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 11500.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0.0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 15100.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0.0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat 01",
+          "incoming": 5750.0,
+          "fewa": 0,
+          "ejaar": 4300.0,
+          "others": 0.0,
+          "details": "Zeshan"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 10550.0,
+          "fewa": 0,
+          "ejaar": 7000.0,
+          "others": 0.0,
+          "details": "labor charges"
+        },
+        {
+          "villa": "v11 munir 2",
+          "incoming": 26650.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v12 flat 06",
+          "incoming": 5800.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v13 abumaryam",
+          "incoming": 15000.0,
+          "fewa": 0,
+          "ejaar": 16500.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v14 khlid mus",
+          "incoming": 12800.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 3000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        }
+      ],
+      "7": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 14600.0,
+          "fewa": 36000.0,
+          "ejaar": 8333.0,
+          "others": 1000.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 6270.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 500.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12700.0,
+          "fewa": 0,
+          "ejaar": 14250.0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 5900.0,
+          "fewa": 0,
+          "ejaar": 2700.0,
+          "others": 5000.0,
+          "details": "B.C  cometi"
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 11690.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 12050.0,
+          "fewa": 0,
+          "ejaar": 7500.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 11500.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0.0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 15100.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0.0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat 01",
+          "incoming": 5750.0,
+          "fewa": 0,
+          "ejaar": 4300.0,
+          "others": 0.0,
+          "details": "Zeshan"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 10550.0,
+          "fewa": 0,
+          "ejaar": 7000.0,
+          "others": 0,
+          "details": "labor charges"
+        },
+        {
+          "villa": "v11 munir 2",
+          "incoming": 4900.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v12 flat 06",
+          "incoming": 5800.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v13 abumaryam",
+          "incoming": 15000.0,
+          "fewa": 0,
+          "ejaar": 16500.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v14 khlid mus",
+          "incoming": 12800.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 3000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0.0,
+          "details": "abbas school"
+        }
+      ],
+      "8": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 14600.0,
+          "fewa": 36000.0,
+          "ejaar": 8333.0,
+          "others": 1000.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 6270.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 500.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12700.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 5900.0,
+          "fewa": 0,
+          "ejaar": 2700.0,
+          "others": 5000.0,
+          "details": "B.C  cometi"
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 11690.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 12050.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 11500.0,
+          "fewa": 0,
+          "ejaar": 8333.0,
+          "others": 0.0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 15100.0,
+          "fewa": 0,
+          "ejaar": 10000.0,
+          "others": 0.0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat 01",
+          "incoming": 5750.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0.0,
+          "details": "Zeshan"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 10550.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0.0,
+          "details": "labor charges"
+        },
+        {
+          "villa": "v11 munir 2",
+          "incoming": 26650.0,
+          "fewa": 0,
+          "ejaar": 13000.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v12 flat 06",
+          "incoming": 5800.0,
+          "fewa": 0,
+          "ejaar": 5000.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v13 abumaryam",
+          "incoming": 15000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v14 khlid mus",
+          "incoming": 12800.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 3000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        }
+      ],
+      "10": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 12750.0,
+          "fewa": 36000.0,
+          "ejaar": 8333.0,
+          "others": 1000.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 5370.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 500.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12700.0,
+          "fewa": 0,
+          "ejaar": 14250.0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 5900.0,
+          "fewa": 0,
+          "ejaar": 2700.0,
+          "others": 5000.0,
+          "details": "B.C  cometi"
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 11690.0,
+          "fewa": 0,
+          "ejaar": 18000.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 11600.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 11300.0,
+          "fewa": 0,
+          "ejaar": 8333.0,
+          "others": 0.0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 15200.0,
+          "fewa": 0,
+          "ejaar": 10000.0,
+          "others": 0.0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat 01",
+          "incoming": 5550.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0.0,
+          "details": "Zeshan"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 10550.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": "labor charges"
+        },
+        {
+          "villa": "v11 munir 2",
+          "incoming": 3600.0,
+          "fewa": 0,
+          "ejaar": 13000.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v12 flat 06",
+          "incoming": 5650.0,
+          "fewa": 0,
+          "ejaar": 5000.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v13 abumaryam",
+          "incoming": 15000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v14 khlid mus",
+          "incoming": 12800.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 3000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0.0,
+          "details": "abbas school"
+        }
+      ],
+      "11": [
+        {
+          "villa": "v1 Adil",
+          "incoming": 12750.0,
+          "fewa": 36000.0,
+          "ejaar": 8333.0,
+          "others": 1000.0,
+          "details": "Baqala"
+        },
+        {
+          "villa": "v2 Rauf",
+          "incoming": 5370.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 500.0,
+          "details": "Meat shop"
+        },
+        {
+          "villa": "v3 Dawood",
+          "incoming": 12700.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 250.0,
+          "details": "Rooti"
+        },
+        {
+          "villa": "v4 Zam Zam",
+          "incoming": 5900.0,
+          "fewa": 0,
+          "ejaar": 2700.0,
+          "others": 5000.0,
+          "details": "B.C  cometi"
+        },
+        {
+          "villa": "v5 Arif",
+          "incoming": 11690.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v6 Al_sarooj",
+          "incoming": 11600.0,
+          "fewa": 0,
+          "ejaar": 7500.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v7 Park",
+          "incoming": 11300.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0.0,
+          "details": "Karim hamdard"
+        },
+        {
+          "villa": "v8 AbraR",
+          "incoming": 15200.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0.0,
+          "details": "masto labor"
+        },
+        {
+          "villa": "v9 Flat 01",
+          "incoming": 5550.0,
+          "fewa": 0,
+          "ejaar": 4500.0,
+          "others": 0.0,
+          "details": "Zeshan"
+        },
+        {
+          "villa": "v10 munir",
+          "incoming": 10550.0,
+          "fewa": 0,
+          "ejaar": 7000.0,
+          "others": 0.0,
+          "details": "labor charges"
+        },
+        {
+          "villa": "v11 munir 2",
+          "incoming": 19350.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v12 flat 06",
+          "incoming": 5650.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v13 abumaryam",
+          "incoming": 15000.0,
+          "fewa": 0,
+          "ejaar": 16500.0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "v14 khlid mus",
+          "incoming": 12800.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        },
+        {
+          "villa": "Wifi",
+          "incoming": 3000.0,
+          "fewa": 0,
+          "ejaar": 0,
+          "others": 0,
+          "details": ""
+        }
+      ]
+    }
+  }
+}
