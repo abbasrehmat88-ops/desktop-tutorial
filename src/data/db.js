@@ -11,6 +11,7 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  setDoc,
   doc,
   serverTimestamp,
   query,
@@ -114,6 +115,21 @@ export async function removeItem(name, id) {
     return deleteDoc(doc(db, name, id))
   }
   writeLocal(name, readLocal(name).filter((it) => it.id !== id))
+}
+
+// Upsert a document with a known ID (create or fully replace).
+// Used for manual override records (villaRecords, fewaRecords, cashflowManual).
+export async function setDocItem(name, id, data) {
+  if (!isDemoMode) {
+    return setDoc(doc(db, name, id), { ...data, updatedAt: serverTimestamp() })
+  }
+  const items = readLocal(name)
+  const exists = items.some((it) => it.id === id)
+  if (exists) {
+    writeLocal(name, items.map((it) => it.id === id ? { ...it, ...data, updatedAt: Date.now() } : it))
+  } else {
+    writeLocal(name, [...items, { id, ...data, createdAt: Date.now(), updatedAt: Date.now() }])
+  }
 }
 
 // ---- demo seed data ------------------------------------------------------
