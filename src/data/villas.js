@@ -36,7 +36,7 @@ export const VILLA_ALIASES = {
   'v6 Al_sarooj':  ['al sarooj real estate', 'al sarooj', 'al_sarooj', 'sarooj', 'tekadar'],
   'v7 Park':       ['park'],
   'v8 AbraR':      ['abrar', 'abra'],
-  'v9 Flat':       ['flate 01', 'flat 01', 'flat1'],
+  'v9 Flat':       ['flat building 24', 'flate 01', 'flat 01', 'flat1'],
   'v10 munir':     ['muneer', 'munir', 'villa no 10', 'villa 10', 'villa10', 'v-10', 'v10'],
   'v11 munir 2':   ['muneer 2', 'munir 2', 'muneer2', 'munir2'],
   'v12 flat 06':   ['building flat 06', 'flate 06', 'flat 06', 'flat6', 'flat 6'],
