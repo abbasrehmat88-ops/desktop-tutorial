@@ -1,563 +1,532 @@
-import React, { useState, useEffect } from 'react'
-import { watchCollection, isDemoMode } from '../data/db'
-import { format, subMonths, parseISO } from 'date-fns'
+import React, { useState, useMemo } from 'react'
 import {
-  DollarSign, TrendingUp, TrendingDown, Users, AlertCircle, CheckCircle,
-  ChevronLeft, ChevronRight,
+  DollarSign, Zap, Building2, MoreHorizontal, TrendingUp, TrendingDown,
+  ChevronLeft, ChevronRight, BarChart3, TableProperties,
 } from 'lucide-react'
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-  PieChart, Pie, Cell, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
+import rawData from '../data/financialData.json'
 
-const PIE_COLORS = ['#c9a154', '#b3573f']
+const financialData = rawData.data
 
-// ── Per-month helpers ─────────────────────────────────────────────────────────
-function monthKey(d = new Date()) { return format(d, 'yyyy-MM') }
-function monthLabel(d = new Date()) { return format(d, 'MMMM yyyy') }
-
-function isPaid(tenant, key = monthKey()) {
-  const p = tenant?.payments
-  if (p && typeof p === 'object' && key in p) return !!p[key]
-  return key === monthKey() ? !!tenant?.paid : false
+const MONTH_LABELS = {
+  1:'January',2:'February',3:'March',4:'April',5:'May',6:'June',
+  7:'July',8:'August',9:'September',10:'October',11:'November',12:'December',
+}
+const MONTH_SHORT = {
+  1:'Jan',2:'Feb',3:'Mar',4:'Apr',5:'May',6:'Jun',
+  7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec',
 }
 
-function isOwnerPaid(owner, key) {
-  const p = owner?.payments
-  if (p && typeof p === 'object' && key in p) return !!p[key]
-  return false
+function fmt(n) {
+  if (!n) return 'AED 0'
+  return `AED ${Number(n).toLocaleString('en-AE', { maximumFractionDigits: 0 })}`
+}
+function fmtShort(n) {
+  if (!n) return '0'
+  return Number(n).toLocaleString('en-AE', { maximumFractionDigits: 0 })
 }
 
-function StatCard({ icon: Icon, label, value, subtext, color }) {
+// ── Summary Card ─────────────────────────────────────────────────────────────
+function SummaryCard({ icon: Icon, label, value, iconClass, glowColor }) {
   return (
-    <div className="stat-card">
-      <div className="flex items-start gap-4">
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${color}`}>
-          <Icon size={22} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">{label}</p>
-          <p className="text-2xl font-bold text-charcoal-900 mt-1 tabular">{value}</p>
-          {subtext && <p className="text-xs text-gray-400 mt-0.5">{subtext}</p>}
-        </div>
+    <div
+      className="rounded-2xl p-5 flex items-start gap-4"
+      style={{ background: 'rgba(255,255,255,0.035)', border: '1px solid rgba(255,255,255,0.07)' }}
+    >
+      <div
+        className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${iconClass}`}
+        style={{ boxShadow: glowColor }}
+      >
+        <Icon size={18} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[10px] uppercase tracking-[0.18em] text-charcoal-500 font-bold mb-1">{label}</p>
+        <p className="text-xl font-bold text-white tabular-nums leading-tight">{value}</p>
       </div>
     </div>
   )
 }
 
-function buildMonthlyData(tenants) {
-  const now = new Date()
-  return Array.from({ length: 6 }, (_, i) => {
-    const d   = subMonths(now, 5 - i)
-    const key = monthKey(d)
-    const label = format(d, 'MMM yy')
-    const collected = tenants.filter(t =>  isPaid(t, key)).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
-    const pending   = tenants.filter(t => !isPaid(t, key)).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
-    return { month: label, Collected: collected, Pending: pending }
-  })
+// ── Custom Tooltip ────────────────────────────────────────────────────────────
+function CustomTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null
+  return (
+    <div className="rounded-xl px-4 py-3 text-sm"
+      style={{ background: '#1a1d27', border: '1px solid rgba(201,161,84,0.25)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
+      <p className="text-white font-semibold mb-2">{label}</p>
+      {payload.map(p => (
+        <div key={p.dataKey} className="flex items-center gap-2 mb-1">
+          <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: p.fill }} />
+          <span className="text-charcoal-400 capitalize">{p.name}:</span>
+          <span className="text-white font-medium tabular-nums ml-1">AED {Number(p.value).toLocaleString()}</span>
+        </div>
+      ))}
+    </div>
+  )
 }
 
-const MONTH_NAMES = [
-  'January','February','March','April','May','June',
-  'July','August','September','October','November','December',
-]
-
+// ── Main Component ────────────────────────────────────────────────────────────
 export default function Financial() {
-  const [tenants, setTenants] = useState([])
-  const [owners,  setOwners]  = useState([])
-  const [loading, setLoading] = useState(true)
-  const [ownersLoading, setOwnersLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [tab, setTab] = useState('monthly')
+  const availableYears = useMemo(() => Object.keys(financialData).sort().reverse(), [])
+  const [year, setYear] = useState(availableYears[0] || '2026')
+  const [viewMode, setViewMode] = useState('monthly') // 'monthly' | 'yearly'
 
-  // Revenue tab state
-  const [revenueYear, setRevenueYear] = useState(new Date().getFullYear())
+  const yearData = financialData[year] || {}
+  const availableMonths = useMemo(
+    () => Object.keys(yearData).map(Number).sort((a, b) => a - b),
+    [yearData]
+  )
 
-  useEffect(() => {
-    const unsub = watchCollection(
-      'tenants',
-      'createdAt',
-      'desc',
-      (data) => {
-        setTenants(data)
-        setLoading(false)
-      },
-      (err) => {
-        console.error(err)
-        setError('Failed to load financial data.')
-        setLoading(false)
-      }
+  const latestMonth = availableMonths[availableMonths.length - 1]
+  const [month, setMonth] = useState(latestMonth)
+
+  // When year changes, reset to latest month in that year
+  React.useEffect(() => {
+    const months = Object.keys(financialData[year] || {}).map(Number).sort((a, b) => a - b)
+    setMonth(months[months.length - 1])
+  }, [year])
+
+  const entries = useMemo(() => yearData[String(month)] || [], [yearData, month])
+
+  const totals = useMemo(() => {
+    return entries.reduce(
+      (acc, e) => ({
+        incoming: acc.incoming + e.incoming,
+        fewa: acc.fewa + e.fewa,
+        ejaar: acc.ejaar + e.ejaar,
+        others: acc.others + e.others,
+      }),
+      { incoming: 0, fewa: 0, ejaar: 0, others: 0 }
     )
-    return unsub
-  }, [])
+  }, [entries])
 
-  useEffect(() => {
-    const unsub = watchCollection(
-      'owners',
-      'createdAt',
-      'desc',
-      (data) => {
-        setOwners(data)
-        setOwnersLoading(false)
-      },
-      (err) => {
-        console.error(err)
-        setOwnersLoading(false)
+  // Year overview: monthly totals for chart
+  const yearChart = useMemo(() => {
+    return availableMonths.map(m => {
+      const monthEntries = yearData[String(m)] || []
+      return {
+        name: MONTH_SHORT[m],
+        incoming: monthEntries.reduce((s, e) => s + e.incoming, 0),
+        fewa: monthEntries.reduce((s, e) => s + e.fewa, 0),
+        ejaar: monthEntries.reduce((s, e) => s + e.ejaar, 0),
+        others: monthEntries.reduce((s, e) => s + e.others, 0),
       }
+    })
+  }, [yearData, availableMonths])
+
+  const yearTotals = useMemo(() => {
+    return yearChart.reduce(
+      (acc, m) => ({
+        incoming: acc.incoming + m.incoming,
+        fewa: acc.fewa + m.fewa,
+        ejaar: acc.ejaar + m.ejaar,
+        others: acc.others + m.others,
+      }),
+      { incoming: 0, fewa: 0, ejaar: 0, others: 0 }
     )
-    return unsub
-  }, [])
+  }, [yearChart])
 
-  const MONTH       = monthKey()
-  const MONTH_LABEL = monthLabel()
+  const monthIdx = availableMonths.indexOf(month)
+  const prevMonth = monthIdx > 0 ? availableMonths[monthIdx - 1] : null
+  const nextMonth = monthIdx < availableMonths.length - 1 ? availableMonths[monthIdx + 1] : null
 
-  const totalCollected = tenants.filter(t =>  isPaid(t, MONTH)).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
-  const totalPending   = tenants.filter(t => !isPaid(t, MONTH)).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
-  const totalDeposits  = tenants.reduce((s, t) => s + Number(t.deposit || 0), 0)
-  const paidCount   = tenants.filter(t =>  isPaid(t, MONTH)).length
-  const unpaidCount = tenants.filter(t => !isPaid(t, MONTH)).length
-
-  const pieData = [
-    { name: 'Paid', value: totalCollected },
-    { name: 'Pending', value: totalPending },
-  ]
-
-  const monthlyData = buildMonthlyData(tenants)
-
-  // Yearly: sum up payments across all 12 months of this year
-  const now = new Date()
-  let yearlyCollected = 0, yearlyPending = 0
-  for (let m = 0; m < 12; m++) {
-    const d   = new Date(now.getFullYear(), m, 1)
-    const key = monthKey(d)
-    yearlyCollected += tenants.filter(t =>  isPaid(t, key)).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
-    yearlyPending   += tenants.filter(t => !isPaid(t, key)).reduce((s, t) => s + Number(t.rentAmount || 0), 0)
-  }
-
-  const formatAED = (v) => `AED ${Number(v).toLocaleString()}`
-
-  // ── Revenue tab data ─────────────────────────────────────────────────────────
-  const currentMonthKey = monthKey()
-  const revenueRows = MONTH_NAMES.map((name, idx) => {
-    const d = new Date(revenueYear, idx, 1)
-    const key = format(d, 'yyyy-MM')
-    const tenantIncome = tenants
-      .filter(t => isPaid(t, key))
-      .reduce((s, t) => s + Number(t.rentAmount || 0), 0)
-    const ownerCost = owners
-      .filter(o => isOwnerPaid(o, key))
-      .reduce((s, o) => s + Number(o.rentAmount || 0), 0)
-    const netProfit = tenantIncome - ownerCost
-    return { name, key, tenantIncome, ownerCost, netProfit }
-  })
-
-  const totalTenantIncome = revenueRows.reduce((s, r) => s + r.tenantIncome, 0)
-  const totalOwnerCost    = revenueRows.reduce((s, r) => s + r.ownerCost, 0)
-  const totalNetProfit    = totalTenantIncome - totalOwnerCost
-
-  const revenueLoading = loading || ownersLoading
+  // MoM change
+  const prevEntries = prevMonth ? (yearData[String(prevMonth)] || []) : []
+  const prevTotal = prevEntries.reduce((s, e) => s + e.incoming, 0)
+  const momChange = prevTotal ? ((totals.incoming - prevTotal) / prevTotal * 100) : null
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
-      <div className="mb-6">
-        <h1 className="page-title">Financial Overview</h1>
-        <span className="gold-rule" />
-        <p className="text-gray-500 text-sm mt-3">
-          {MONTH_LABEL} — payment status resets automatically each new month
-        </p>
-      </div>
+    <div className="p-4 sm:p-6 lg:p-8 min-h-screen max-w-7xl mx-auto">
 
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-2 items-center text-red-700 text-sm">
-          <AlertCircle size={16} />
-          {error}
-        </div>
-      )}
-
-      {isDemoMode && (
-        <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg flex gap-3">
-          <AlertCircle size={18} className="text-primary-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-gray-700">Demo Mode — figures are based on sample data on this device.</p>
-        </div>
-      )}
-
-      {/* Tabs — segmented control */}
-      <div
-        role="tablist"
-        aria-label="Financial view"
-        className="inline-flex items-center gap-1 mb-6 p-1 bg-white border border-gray-200/80 rounded-2xl shadow-card max-w-full overflow-x-auto"
-      >
-        {['monthly', 'yearly', 'revenue'].map((t) => (
-          <button
-            key={t}
-            role="tab"
-            aria-selected={tab === t}
-            onClick={() => setTab(t)}
-            className={`min-h-[44px] px-5 sm:px-6 py-2 rounded-xl text-sm font-semibold capitalize whitespace-nowrap transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
-              tab === t
-                ? 'bg-charcoal-900 text-primary-400 shadow-card'
-                : 'text-gray-600 hover:text-primary-700 hover:bg-primary-50/60'
-            }`}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-
-      {/* ── Revenue Tab ───────────────────────────────────────────────────────── */}
-      {tab === 'revenue' && (
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
+          <h1 className="font-display text-2xl sm:text-3xl text-white leading-tight">Financial Overview</h1>
+          <p className="text-charcoal-400 text-sm mt-1">Monthly income & expense data · All Villas</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {/* View mode toggle */}
+          <div className="flex rounded-xl overflow-hidden border border-white/[0.08] p-0.5" style={{ background: 'rgba(255,255,255,0.03)' }}>
+            {[
+              { id: 'monthly', icon: TableProperties, label: 'Monthly' },
+              { id: 'yearly', icon: BarChart3, label: 'Yearly' },
+            ].map(({ id, icon: Icon, label }) => (
+              <button
+                key={id}
+                onClick={() => setViewMode(id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
+                  viewMode === id
+                    ? 'bg-primary-400/20 text-primary-300'
+                    : 'text-charcoal-400 hover:text-white'
+                }`}
+              >
+                <Icon size={13} />
+                {label}
+              </button>
+            ))}
+          </div>
           {/* Year selector */}
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex rounded-xl overflow-hidden border border-white/[0.08] p-0.5" style={{ background: 'rgba(255,255,255,0.03)' }}>
+            {availableYears.map(y => (
+              <button
+                key={y}
+                onClick={() => setYear(y)}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
+                  year === y
+                    ? 'bg-primary-400/20 text-primary-300 ring-1 ring-primary-400/30'
+                    : 'text-charcoal-400 hover:text-white'
+                }`}
+              >
+                {y}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── MONTHLY VIEW ── */}
+      {viewMode === 'monthly' && (
+        <>
+          {/* Month navigation */}
+          <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1">
             <button
-              onClick={() => setRevenueYear(y => y - 1)}
-              aria-label="Previous year"
-              className="w-11 h-11 flex items-center justify-center rounded-full bg-white border border-gray-300 text-gray-600 hover:border-primary-500 hover:text-primary-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+              onClick={() => prevMonth && setMonth(prevMonth)}
+              disabled={!prevMonth}
+              className="w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center text-charcoal-400 hover:text-white hover:bg-white/[0.07] disabled:opacity-30 transition-all"
             >
-              <ChevronLeft size={18} />
+              <ChevronLeft size={16} />
             </button>
-            <span className="font-display text-2xl font-bold text-charcoal-900 min-w-[4.5rem] text-center tabular">{revenueYear}</span>
+            <div className="flex gap-1.5 flex-1">
+              {availableMonths.map(m => (
+                <button
+                  key={m}
+                  onClick={() => setMonth(m)}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
+                    m === month
+                      ? 'bg-primary-400/20 text-primary-300 ring-1 ring-primary-400/30'
+                      : 'text-charcoal-400 hover:bg-white/[0.06] hover:text-white border border-white/[0.06]'
+                  }`}
+                  style={{ minWidth: 44 }}
+                >
+                  {MONTH_SHORT[m]}
+                </button>
+              ))}
+            </div>
             <button
-              onClick={() => setRevenueYear(y => y + 1)}
-              aria-label="Next year"
-              className="w-11 h-11 flex items-center justify-center rounded-full bg-white border border-gray-300 text-gray-600 hover:border-primary-500 hover:text-primary-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+              onClick={() => nextMonth && setMonth(nextMonth)}
+              disabled={!nextMonth}
+              className="w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center text-charcoal-400 hover:text-white hover:bg-white/[0.07] disabled:opacity-30 transition-all"
             >
-              <ChevronRight size={18} />
+              <ChevronRight size={16} />
             </button>
+          </div>
+
+          {/* Month title + MoM */}
+          <div className="flex items-center gap-3 mb-5">
+            <h2 className="text-lg font-bold text-white">{MONTH_LABELS[month]} {year}</h2>
+            {momChange !== null && (
+              <span className={`flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${
+                momChange >= 0
+                  ? 'bg-emerald-500/15 text-emerald-400'
+                  : 'bg-rust-500/15 text-rust-400'
+              }`}>
+                {momChange >= 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+                {momChange >= 0 ? '+' : ''}{momChange.toFixed(1)}% vs {MONTH_SHORT[prevMonth]}
+              </span>
+            )}
           </div>
 
           {/* Summary cards */}
-          {revenueLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="stat-card animate-pulse">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-gray-200 rounded-xl" />
-                    <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-24 mb-2" />
-                      <div className="h-7 bg-gray-200 rounded w-20" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              <StatCard
-                icon={TrendingUp}
-                label="Annual Income"
-                value={formatAED(totalTenantIncome)}
-                color="bg-emerald2-50 text-emerald2-600"
-                subtext={`Tenant rents collected in ${revenueYear}`}
-              />
-              <StatCard
-                icon={TrendingDown}
-                label="Annual Outgoing"
-                value={formatAED(totalOwnerCost)}
-                color="bg-rust-50 text-rust-600"
-                subtext={`Owner rents paid in ${revenueYear}`}
-              />
-              <StatCard
-                icon={DollarSign}
-                label="Annual Profit"
-                value={formatAED(totalNetProfit)}
-                color={totalNetProfit >= 0 ? 'bg-charcoal-900 text-primary-400' : 'bg-rust-50 text-rust-600'}
-                subtext="Income minus outgoing"
-              />
-            </div>
-          )}
-
-          {/* 12-month table */}
-          <div className="card overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
-              <h2 className="font-display text-xl text-charcoal-900">Monthly Revenue Breakdown — {revenueYear}</h2>
-              <span className="hidden sm:inline-flex items-center gap-1.5 text-2xs uppercase tracking-[0.18em] text-gray-400 font-bold whitespace-nowrap">
-                <TrendingUp size={13} className="text-emerald2-500" /> Income
-                <TrendingDown size={13} className="text-rust-500 ml-2" /> Cost
-              </span>
-            </div>
-            {revenueLoading ? (
-              <div className="p-6 space-y-3">
-                {[...Array(12)].map((_, i) => (
-                  <div key={i} className="h-10 bg-gray-100 rounded-lg animate-pulse" />
-                ))}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 border-b border-gray-200">
-                      <th className="px-6 py-3 text-left text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Month</th>
-                      <th className="px-6 py-3 text-right text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Tenant Income</th>
-                      <th className="px-6 py-3 text-right text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Owner Cost</th>
-                      <th className="px-6 py-3 text-right text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Net Profit</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {revenueRows.map((row) => {
-                      const isCurrentMonth = row.key === currentMonthKey
-                      return (
-                        <tr
-                          key={row.key}
-                          className={`transition-colors ${
-                            isCurrentMonth
-                              ? 'bg-primary-50/70 shadow-[inset_3px_0_0_0_theme(colors.primary.400)]'
-                              : 'odd:bg-white even:bg-gray-50/40 hover:bg-primary-50/40'
-                          }`}
-                        >
-                          <td className="px-6 py-3.5 font-medium text-gray-900 whitespace-nowrap">
-                            {row.name}
-                            {isCurrentMonth && (
-                              <span className="ml-2 text-[10px] font-bold uppercase bg-primary-400 text-charcoal-900 px-1.5 py-0.5 rounded-full align-middle">
-                                Current
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-6 py-3.5 text-right font-medium text-emerald2-700 tabular whitespace-nowrap">
-                            {row.tenantIncome > 0 ? formatAED(row.tenantIncome) : <span className="text-gray-300">—</span>}
-                          </td>
-                          <td className="px-6 py-3.5 text-right font-medium text-rust-600 tabular whitespace-nowrap">
-                            {row.ownerCost > 0 ? formatAED(row.ownerCost) : <span className="text-gray-300">—</span>}
-                          </td>
-                          <td className="px-6 py-3.5 text-right font-bold tabular whitespace-nowrap">
-                            {row.tenantIncome === 0 && row.ownerCost === 0 ? (
-                              <span className="text-gray-300">—</span>
-                            ) : (
-                              <span className={row.netProfit >= 0 ? 'text-emerald2-600' : 'text-rust-600'}>
-                                {row.netProfit >= 0 ? '+' : ''}{formatAED(row.netProfit)}
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                  <tfoot>
-                    <tr className="bg-charcoal-900 text-white">
-                      <td className="px-6 py-3.5 text-sm font-bold text-primary-400 whitespace-nowrap">Yearly Total</td>
-                      <td className="px-6 py-3.5 text-right text-sm font-bold text-white tabular whitespace-nowrap">{formatAED(totalTenantIncome)}</td>
-                      <td className="px-6 py-3.5 text-right text-sm font-bold text-white tabular whitespace-nowrap">{formatAED(totalOwnerCost)}</td>
-                      <td className={`px-6 py-3.5 text-right text-sm font-bold tabular whitespace-nowrap ${totalNetProfit >= 0 ? 'text-emerald2-400' : 'text-rust-400'}`}>
-                        {totalNetProfit >= 0 ? '+' : ''}{formatAED(totalNetProfit)}
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            )}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-7">
+            <SummaryCard
+              icon={DollarSign}
+              label="Total Incoming"
+              value={fmt(totals.incoming)}
+              iconClass="bg-primary-400/15 text-primary-400"
+              glowColor="0 0 16px rgba(201,161,84,0.2)"
+            />
+            <SummaryCard
+              icon={Zap}
+              label="FEWA Bills"
+              value={fmt(totals.fewa)}
+              iconClass="bg-amber-500/15 text-amber-400"
+              glowColor="0 0 16px rgba(251,191,36,0.15)"
+            />
+            <SummaryCard
+              icon={Building2}
+              label="Ejaar"
+              value={fmt(totals.ejaar)}
+              iconClass="bg-blue-500/15 text-blue-400"
+              glowColor="0 0 16px rgba(59,130,246,0.15)"
+            />
+            <SummaryCard
+              icon={MoreHorizontal}
+              label="Other Expenses"
+              value={fmt(totals.others)}
+              iconClass="bg-charcoal-500/30 text-charcoal-300"
+              glowColor="none"
+            />
           </div>
-        </div>
+
+          {/* Villa table */}
+          <div
+            className="rounded-2xl overflow-hidden"
+            style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}
+          >
+            <div className="px-5 py-4 border-b border-white/[0.06]">
+              <h3 className="text-sm font-semibold text-white">Villa Breakdown · {MONTH_LABELS[month]} {year}</h3>
+              <p className="text-[11px] text-charcoal-500 mt-0.5">{entries.length} properties</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
+                    <th className="px-5 py-3 text-left text-[10px] uppercase tracking-[0.15em] text-charcoal-500 font-bold">Villa</th>
+                    <th className="px-4 py-3 text-right text-[10px] uppercase tracking-[0.15em] text-charcoal-500 font-bold">Incoming</th>
+                    <th className="px-4 py-3 text-right text-[10px] uppercase tracking-[0.15em] text-charcoal-500 font-bold">FEWA</th>
+                    <th className="px-4 py-3 text-right text-[10px] uppercase tracking-[0.15em] text-charcoal-500 font-bold">Ejaar</th>
+                    <th className="px-4 py-3 text-right text-[10px] uppercase tracking-[0.15em] text-charcoal-500 font-bold">Others</th>
+                    <th className="px-5 py-3 text-left text-[10px] uppercase tracking-[0.15em] text-charcoal-500 font-bold hidden sm:table-cell">Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {entries.map((e, idx) => {
+                    const outgoing = e.fewa + e.ejaar + e.others
+                    const net = e.incoming - outgoing
+                    return (
+                      <tr
+                        key={idx}
+                        className="border-t border-white/[0.04] hover:bg-white/[0.03] transition-colors group"
+                      >
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-primary-400"
+                              style={{ background: 'rgba(201,161,84,0.12)' }}>
+                              {e.villa.replace(/^v\d+\s*/i,'').charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="font-semibold text-white text-sm leading-tight">{e.villa}</p>
+                              <p className={`text-[10px] font-medium mt-0.5 tabular-nums ${
+                                net >= 0 ? 'text-emerald-400/80' : 'text-rust-400/80'
+                              }`}>
+                                Net: AED {net >= 0 ? '+' : ''}{Number(net).toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3.5 text-right">
+                          <span className="text-primary-300 font-semibold tabular-nums">{fmtShort(e.incoming)}</span>
+                        </td>
+                        <td className="px-4 py-3.5 text-right">
+                          {e.fewa > 0
+                            ? <span className="text-amber-400 font-medium tabular-nums">{fmtShort(e.fewa)}</span>
+                            : <span className="text-charcoal-600">—</span>
+                          }
+                        </td>
+                        <td className="px-4 py-3.5 text-right">
+                          {e.ejaar > 0
+                            ? <span className="text-blue-400 font-medium tabular-nums">{fmtShort(e.ejaar)}</span>
+                            : <span className="text-charcoal-600">—</span>
+                          }
+                        </td>
+                        <td className="px-4 py-3.5 text-right">
+                          {e.others > 0
+                            ? <span className="text-charcoal-300 font-medium tabular-nums">{fmtShort(e.others)}</span>
+                            : <span className="text-charcoal-600">—</span>
+                          }
+                        </td>
+                        <td className="px-5 py-3.5 hidden sm:table-cell">
+                          {e.details
+                            ? <span className="text-charcoal-400 text-xs">{e.details}</span>
+                            : <span className="text-charcoal-600">—</span>
+                          }
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr style={{ background: 'rgba(201,161,84,0.06)', borderTop: '1px solid rgba(201,161,84,0.15)' }}>
+                    <td className="px-5 py-3.5">
+                      <span className="text-[10px] uppercase tracking-wider font-bold text-primary-400">Total</span>
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <span className="text-primary-300 font-bold tabular-nums">{fmtShort(totals.incoming)}</span>
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <span className="text-amber-400 font-bold tabular-nums">{fmtShort(totals.fewa)}</span>
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <span className="text-blue-400 font-bold tabular-nums">{fmtShort(totals.ejaar)}</span>
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <span className="text-charcoal-300 font-bold tabular-nums">{fmtShort(totals.others)}</span>
+                    </td>
+                    <td className="px-5 py-3.5 hidden sm:table-cell" />
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </>
       )}
 
-      {/* ── Monthly / Yearly Tabs ─────────────────────────────────────────────── */}
-      {tab !== 'revenue' && (
+      {/* ── YEARLY VIEW ── */}
+      {viewMode === 'yearly' && (
         <>
-          {/* Stat Cards */}
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="stat-card animate-pulse">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-gray-200 rounded-xl" />
-                    <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-24 mb-2" />
-                      <div className="h-7 bg-gray-200 rounded w-20" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-              <StatCard
-                icon={DollarSign}
-                label="Total Collected"
-                value={formatAED(tab === 'monthly' ? totalCollected : yearlyCollected)}
-                color="bg-charcoal-900 text-primary-400"
-                subtext={tab === 'monthly' ? 'All time' : `Year ${now.getFullYear()}`}
-              />
-              <StatCard
-                icon={TrendingDown}
-                label="Total Pending"
-                value={formatAED(tab === 'monthly' ? totalPending : yearlyPending)}
-                color="bg-rust-50 text-rust-600"
-                subtext="Outstanding balance"
-              />
-              <StatCard
-                icon={CheckCircle}
-                label="Number Paid"
-                value={paidCount}
-                color="bg-emerald2-50 text-emerald2-600"
-                subtext="Tenants with paid status"
-              />
-              <StatCard
-                icon={Users}
-                label="Number Unpaid"
-                value={unpaidCount}
-                color="bg-primary-100 text-primary-700"
-                subtext="Tenants with pending status"
-              />
-              <StatCard
-                icon={TrendingUp}
-                label="Total Deposits"
-                value={formatAED(totalDeposits)}
-                color="bg-charcoal-900 text-primary-400"
-                subtext="Security deposits held"
-              />
-            </div>
-          )}
-
-          {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            {/* Bar Chart */}
-            <div className="card p-6 lg:col-span-2">
-              <h2 className="font-display text-xl text-charcoal-900 mb-1">Monthly Rent Overview</h2>
-              <p className="text-sm text-gray-500 mb-4">Last 6 months — collected vs pending (AED)</p>
-              {loading ? (
-                <div className="h-64 bg-gray-100 rounded-lg animate-pulse" />
-              ) : (
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={monthlyData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e7e5dd" />
-                    <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#8d8a7f' }} axisLine={{ stroke: '#d8d5ca' }} tickLine={false} />
-                    <YAxis tick={{ fontSize: 12, fill: '#8d8a7f' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                    <Tooltip formatter={(v) => [`AED ${Number(v).toLocaleString()}`, undefined]} contentStyle={{ borderRadius: 14, border: '1px solid #e7e5dd', boxShadow: 'rgba(19,21,28,0.12) 0 8px 20px 0', fontSize: 13 }} />
-                    <Legend wrapperStyle={{ fontSize: '12px' }} />
-                    <Bar dataKey="Collected" fill="#c9a154" radius={[6, 6, 0, 0]} />
-                    <Bar dataKey="Pending" fill="#b3573f" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-
-            {/* Pie Chart */}
-            <div className="card p-6">
-              <h2 className="font-display text-xl text-charcoal-900 mb-1">Payment Breakdown</h2>
-              <p className="text-sm text-gray-500 mb-4">Paid vs pending by amount</p>
-              {loading ? (
-                <div className="h-64 bg-gray-100 rounded-lg animate-pulse" />
-              ) : totalCollected === 0 && totalPending === 0 ? (
-                <div className="h-64 flex items-center justify-center text-gray-400 text-sm text-center">
-                  No payment data yet.<br />Add tenants to see breakdown.
-                </div>
-              ) : (
-                <>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={55}
-                        outerRadius={85}
-                        paddingAngle={3}
-                        dataKey="value"
-                      >
-                        {pieData.map((_, i) => (
-                          <Cell key={i} fill={PIE_COLORS[i]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(v) => [`AED ${Number(v).toLocaleString()}`, undefined]} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="flex justify-center gap-6 mt-2">
-                    {pieData.map((entry, i) => (
-                      <div key={i} className="flex items-center gap-1.5">
-                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: PIE_COLORS[i] }} />
-                        <span className="text-xs text-gray-600">{entry.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
+          {/* Year summary cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-7">
+            <SummaryCard
+              icon={DollarSign}
+              label={`${year} Total Incoming`}
+              value={fmt(yearTotals.incoming)}
+              iconClass="bg-primary-400/15 text-primary-400"
+              glowColor="0 0 16px rgba(201,161,84,0.2)"
+            />
+            <SummaryCard
+              icon={Zap}
+              label="Total FEWA"
+              value={fmt(yearTotals.fewa)}
+              iconClass="bg-amber-500/15 text-amber-400"
+              glowColor="0 0 16px rgba(251,191,36,0.15)"
+            />
+            <SummaryCard
+              icon={Building2}
+              label="Total Ejaar"
+              value={fmt(yearTotals.ejaar)}
+              iconClass="bg-blue-500/15 text-blue-400"
+              glowColor="0 0 16px rgba(59,130,246,0.15)"
+            />
+            <SummaryCard
+              icon={MoreHorizontal}
+              label="Total Others"
+              value={fmt(yearTotals.others)}
+              iconClass="bg-charcoal-500/30 text-charcoal-300"
+              glowColor="none"
+            />
           </div>
 
-          {/* Transaction Table */}
-          <div className="card">
-            <div className="px-6 py-4 border-b border-gray-100">
-              <h2 className="font-display text-xl text-charcoal-900">All Tenants — Payment Status</h2>
+          {/* Monthly bar chart */}
+          <div
+            className="rounded-2xl p-5 mb-6"
+            style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}
+          >
+            <h3 className="text-sm font-semibold text-white mb-1">Monthly Incoming · {year}</h3>
+            <p className="text-[11px] text-charcoal-500 mb-5">{availableMonths.length} months with data</p>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={yearChart} barSize={20} barGap={4}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                <XAxis dataKey="name" tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#6b7280', fontSize: 10 }} axisLine={false} tickLine={false}
+                  tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar dataKey="incoming" name="Incoming" fill="#c9a154" radius={[4,4,0,0]}>
+                  {yearChart.map((_, i) => (
+                    <Cell key={i} fill={i === yearChart.length - 1 ? '#e8c07a' : '#c9a154'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Monthly summary table */}
+          <div
+            className="rounded-2xl overflow-hidden"
+            style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}
+          >
+            <div className="px-5 py-4 border-b border-white/[0.06]">
+              <h3 className="text-sm font-semibold text-white">Monthly Breakdown · {year}</h3>
             </div>
-            {loading ? (
-              <div className="p-6 space-y-3">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
-                ))}
-              </div>
-            ) : tenants.length === 0 ? (
-              <div className="p-12 text-center">
-                <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-gray-100 flex items-center justify-center">
-                  <Users size={22} className="text-gray-400" />
-                </div>
-                <p className="text-sm font-medium text-gray-500">No tenant data yet</p>
-                <p className="text-xs text-gray-400 mt-1">Add tenants to see the financial summary.</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 border-b border-gray-200">
-                      <th className="px-6 py-3 text-left text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Tenant</th>
-                      <th className="px-6 py-3 text-left text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Unit</th>
-                      <th className="px-6 py-3 text-right text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Rent (AED)</th>
-                      <th className="px-6 py-3 text-right text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Deposit (AED)</th>
-                      <th className="px-6 py-3 text-left text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Rent Date</th>
-                      <th className="px-6 py-3 text-left text-2xs font-bold text-gray-500 uppercase tracking-[0.14em]">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {tenants.map((t) => {
-                      let dueDateDisplay = '—'
-                      try {
-                        if (t.dueDate) dueDateDisplay = format(parseISO(t.dueDate), 'MMM d, yyyy')
-                      } catch {}
-                      return (
-                        <tr key={t.id} className="odd:bg-white even:bg-gray-50/40 hover:bg-primary-50/40 transition-colors">
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 font-semibold text-xs flex-shrink-0">
-                                {t.name?.charAt(0).toUpperCase() || '?'}
-                              </div>
-                              <span className="font-medium text-gray-900">{t.name}</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-gray-600">{t.unit || '—'}</td>
-                          <td className="px-6 py-4 text-right font-semibold text-gray-900 tabular whitespace-nowrap">
-                            {Number(t.rentAmount || 0).toLocaleString()}
-                          </td>
-                          <td className="px-6 py-4 text-right text-gray-600 tabular whitespace-nowrap">
-                            {t.deposit ? Number(t.deposit).toLocaleString() : '—'}
-                          </td>
-                          <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{t.rentSchedule || dueDateDisplay}</td>
-                          <td className="px-6 py-4">
-                            <span className={isPaid(t, MONTH) ? 'badge-paid' : 'badge-unpaid'}>
-                              {isPaid(t, MONTH) ? 'Paid' : 'Unpaid'}
-                            </span>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                  <tfoot>
-                    <tr className="bg-gray-50 border-t-2 border-gray-200">
-                      <td colSpan={2} className="px-6 py-3 text-sm font-bold text-gray-700">Total</td>
-                      <td className="px-6 py-3 text-right text-sm font-bold text-gray-900 tabular whitespace-nowrap">
-                        {(totalCollected + totalPending).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-3 text-right text-sm font-bold text-gray-900 tabular whitespace-nowrap">
-                        {totalDeposits.toLocaleString()}
-                      </td>
-                      <td />
-                      <td className="px-6 py-3">
-                        <span className="text-xs text-gray-500">
-                          {paidCount} paid · {unpaidCount} pending
-                        </span>
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            )}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
+                    <th className="px-5 py-3 text-left text-[10px] uppercase tracking-[0.15em] text-charcoal-500 font-bold">Month</th>
+                    <th className="px-4 py-3 text-right text-[10px] uppercase tracking-[0.15em] text-charcoal-500 font-bold">Villas</th>
+                    <th className="px-4 py-3 text-right text-[10px] uppercase tracking-[0.15em] text-charcoal-500 font-bold">Incoming</th>
+                    <th className="px-4 py-3 text-right text-[10px] uppercase tracking-[0.15em] text-charcoal-500 font-bold">FEWA</th>
+                    <th className="px-4 py-3 text-right text-[10px] uppercase tracking-[0.15em] text-charcoal-500 font-bold">Ejaar</th>
+                    <th className="px-4 py-3 text-right text-[10px] uppercase tracking-[0.15em] text-charcoal-500 font-bold">Others</th>
+                    <th className="px-5 py-3 text-right text-[10px] uppercase tracking-[0.15em] text-charcoal-500 font-bold">Net</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {availableMonths.map(m => {
+                    const mEntries = yearData[String(m)] || []
+                    const mIn = mEntries.reduce((s, e) => s + e.incoming, 0)
+                    const mFewa = mEntries.reduce((s, e) => s + e.fewa, 0)
+                    const mEjaar = mEntries.reduce((s, e) => s + e.ejaar, 0)
+                    const mOthers = mEntries.reduce((s, e) => s + e.others, 0)
+                    const mNet = mIn - mFewa - mEjaar - mOthers
+                    return (
+                      <tr
+                        key={m}
+                        className="border-t border-white/[0.04] hover:bg-white/[0.03] transition-colors cursor-pointer"
+                        onClick={() => { setMonth(m); setViewMode('monthly') }}
+                      >
+                        <td className="px-5 py-3.5">
+                          <span className="text-white font-semibold">{MONTH_LABELS[m]}</span>
+                        </td>
+                        <td className="px-4 py-3.5 text-right">
+                          <span className="text-charcoal-400 tabular-nums">{mEntries.length}</span>
+                        </td>
+                        <td className="px-4 py-3.5 text-right">
+                          <span className="text-primary-300 font-semibold tabular-nums">{fmtShort(mIn)}</span>
+                        </td>
+                        <td className="px-4 py-3.5 text-right">
+                          <span className="text-amber-400 tabular-nums">{mFewa > 0 ? fmtShort(mFewa) : '—'}</span>
+                        </td>
+                        <td className="px-4 py-3.5 text-right">
+                          <span className="text-blue-400 tabular-nums">{mEjaar > 0 ? fmtShort(mEjaar) : '—'}</span>
+                        </td>
+                        <td className="px-4 py-3.5 text-right">
+                          <span className="text-charcoal-300 tabular-nums">{mOthers > 0 ? fmtShort(mOthers) : '—'}</span>
+                        </td>
+                        <td className="px-5 py-3.5 text-right">
+                          <span className={`font-semibold tabular-nums text-sm ${mNet >= 0 ? 'text-emerald-400' : 'text-rust-400'}`}>
+                            {mNet >= 0 ? '+' : ''}{fmtShort(mNet)}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr style={{ background: 'rgba(201,161,84,0.06)', borderTop: '1px solid rgba(201,161,84,0.15)' }}>
+                    <td className="px-5 py-3.5">
+                      <span className="text-[10px] uppercase tracking-wider font-bold text-primary-400">Total {year}</span>
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <span className="text-charcoal-400 font-bold tabular-nums">{availableMonths.length}</span>
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <span className="text-primary-300 font-bold tabular-nums">{fmtShort(yearTotals.incoming)}</span>
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <span className="text-amber-400 font-bold tabular-nums">{fmtShort(yearTotals.fewa)}</span>
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <span className="text-blue-400 font-bold tabular-nums">{fmtShort(yearTotals.ejaar)}</span>
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <span className="text-charcoal-300 font-bold tabular-nums">{fmtShort(yearTotals.others)}</span>
+                    </td>
+                    <td className="px-5 py-3.5 text-right">
+                      {(() => {
+                        const tn = yearTotals.incoming - yearTotals.fewa - yearTotals.ejaar - yearTotals.others
+                        return (
+                          <span className={`font-bold tabular-nums ${tn >= 0 ? 'text-emerald-400' : 'text-rust-400'}`}>
+                            {tn >= 0 ? '+' : ''}{fmtShort(tn)}
+                          </span>
+                        )
+                      })()}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
           </div>
         </>
       )}
