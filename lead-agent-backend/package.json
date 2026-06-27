@@ -1,0 +1,7 @@
+{
+  "name": "ajman-lead-agent-backend",
+  "version": "1.0.0",
+  "description": "Backend kit for the Ajman building-owner lead agent: scraping orchestration, deterministic lead scoring, phone normalization. Not part of the website build.",
+  "type": "commonjs",
+  "private": true
+}

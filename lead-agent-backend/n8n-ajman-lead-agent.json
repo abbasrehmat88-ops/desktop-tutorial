@@ -1,0 +1,73 @@
+{
+  "name": "Ajman Building-Owner Lead Agent (Week 1)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [ { "field": "hours", "hoursInterval": 6 } ] }
+      },
+      "id": "trigger-schedule",
+      "name": "Every 6 hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [ 240, 400 ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/APIFY_ACTOR_ID/run-sync-get-dataset-items",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [ { "name": "token", "value": "={{ $env.APIFY_TOKEN }}" } ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"startUrls\": [\n    { \"url\": \"https://ajman.dubizzle.com/property-for-rent/residential/building/\" },\n    { \"url\": \"https://ajman.dubizzle.com/property-for-rent/residential/villa/\" }\n  ],\n  \"maxItems\": 60,\n  \"includeContactInfo\": true\n}",
+        "options": {}
+      },
+      "id": "http-apify",
+      "name": "Apify: scrape Dubizzle Ajman",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [ 480, 400 ],
+      "notes": "Replace APIFY_ACTOR_ID with the Dubizzle scraper actor you rent on Apify. Set APIFY_TOKEN as an n8n environment variable. See apify-setup.md."
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Clean, normalize, score every scraped listing ──────────────────\n// Paste of scoring/phoneNormalize.js + scoring/leadScoring.js (trimmed).\n\nfunction normalizeUaePhone(raw){ if(!raw) return ''; let d=String(raw).replace(/[^\\d]/g,''); if(d.startsWith('00971'))d=d.slice(5); else if(d.startsWith('971'))d=d.slice(3); else if(d.startsWith('0'))d=d.slice(1); if(d.length===9&&d.startsWith('5'))return '+971'+d; const l=d.slice(-9); if(l.length===9&&l.startsWith('5'))return '+971'+l; return ''; }\nfunction looksLikeAgency(name){ if(!name) return false; return /(real\\s?estate|properties|property|broker|realty|consultanc|llc|homes|estate agent)/i.test(String(name)); }\nconst TARGET=['nuaimiya','rashidiya','rumailah','rawda','jurf','mowaihat','hamidiya'];\nfunction tier(s){ return s>=8?'HOT':s>=5?'WARM':'COLD'; }\nfunction clamp(n,a,b){ return Math.max(a,Math.min(b,n)); }\nfunction score(l){ const r=[]; let s=4; const area=String(l.area||'').toLowerCase(); const inTarget=TARGET.some(a=>area.includes(a));\n  if(l.listingAgeDays>=60){s+=2;r.push('Sitting 60+ days');} else if(l.listingAgeDays>=30){s+=1.5;r.push('Listed 30+ days');} else if(l.listingAgeDays<3){s-=1.5;r.push('Brand-new (<3d)');}\n  if(l.listingsCount>=4){s+=2;r.push(l.listingsCount+' listings (portfolio)');} else if(l.listingsCount>=2){s+=1.5;r.push(l.listingsCount+' listings (multi)');}\n  if(l.isWholeProperty&&l.propertyType==='building'){s+=2;r.push('Whole building');} else if(l.isWholeProperty&&l.propertyType==='villa'){s+=1.5;r.push('Whole villa');} else if(l.propertyType==='unit'){s-=1;r.push('Single unit');}\n  if(l.isDirectOwner===true){s+=1.5;r.push('Direct owner');} else if(l.isDirectOwner===false){s-=2;r.push('Agency');}\n  if(inTarget){s+=1.5;r.push('Target area: '+l.area);} else if(area){s-=1;r.push('Outside target');}\n  s=clamp(Math.round(s),1,10); return {score:s,tier:tier(s),reason:r.join('; ')}; }\n\nconst out=[];\nfor (const item of $input.all()) {\n  const d = item.json;\n  const phone = normalizeUaePhone(d.phone || d.contactPhone || d.phoneNumber || (d.contactInfo&&d.contactInfo.phone));\n  if (!phone) continue;                       // phone is mandatory\n  const title = (d.title||'') + ' ' + (d.description||'');\n  const isWhole = /whole|full building|entire|كامل|بناية كاملة|whole villa/i.test(title) || /building|villa/i.test(d.propertyType||'');\n  const ptype = /building/i.test(d.propertyType||title)?'building': /villa/i.test(d.propertyType||title)?'villa': /land/i.test(d.propertyType||title)?'land':'unit';\n  const agentName = d.agentName || d.contactName || (d.agency&&d.agency.name) || '';\n  const ageDays = d.listingAgeDays != null ? d.listingAgeDays : (d.createdAt ? Math.floor((Date.now()-new Date(d.createdAt))/86400000) : 0);\n  const lead = {\n    phone,\n    ownerName: looksLikeAgency(agentName)? '' : agentName,\n    area: d.location || d.area || d.neighbourhood || '',\n    propertyType: ptype,\n    isWholeProperty: !!isWhole,\n    isDirectOwner: !looksLikeAgency(agentName),\n    listingAgeDays: ageDays,\n    listingsCount: 1,\n    source: 'dubizzle',\n    listingUrl: d.url || d.listingUrl || '',\n    price: d.price || '',\n    seenDate: new Date().toISOString().slice(0,10),\n  };\n  const sc = score(lead);\n  out.push({ json: { ...lead, leadScore: sc.score, tier: sc.tier, aiNotes: sc.reason } });\n}\nreturn out;"
+      },
+      "id": "code-score",
+      "name": "Clean + Score leads",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [ 720, 400 ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": { "__rl": true, "value": "YOUR_GOOGLE_SHEET_ID", "mode": "id" },
+        "sheetName": { "__rl": true, "value": "Master Leads", "mode": "name" },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "matchingColumns": [ "phone" ],
+          "value": {}
+        },
+        "options": {}
+      },
+      "id": "gsheet-upsert",
+      "name": "Upsert to Master Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [ 960, 400 ],
+      "notes": "Dedupe by phone: matchingColumns=phone means a returning owner updates their row instead of duplicating. Create the sheet using google-sheet-schema.md first."
+    }
+  ],
+  "connections": {
+    "Every 6 hours": { "main": [ [ { "node": "Apify: scrape Dubizzle Ajman", "type": "main", "index": 0 } ] ] },
+    "Apify: scrape Dubizzle Ajman": { "main": [ [ { "node": "Clean + Score leads", "type": "main", "index": 0 } ] ] },
+    "Clean + Score leads": { "main": [ [ { "node": "Upsert to Master Sheet", "type": "main", "index": 0 } ] ] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false,
+  "pinData": {},
+  "meta": { "templatecredsSetupCompleted": false }
+}
