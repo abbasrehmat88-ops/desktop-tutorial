@@ -345,6 +345,35 @@ function VillaDetail({ villa, onBack }) {
       return { ...d, fewa };
     });
 
+  // Compact Edit / Save·Cancel control placed on every section header so it's
+  // reachable no matter how far the user has scrolled.
+  const EditToggle = () =>
+    !editing ? (
+      <button
+        onClick={startEdit}
+        className="ml-auto inline-flex items-center gap-1.5 text-xs font-bold text-primary-700 bg-primary-50 hover:bg-primary-100 border border-primary-200 px-3 py-1.5 rounded-full transition-colors"
+      >
+        <Pencil size={13} /> Edit
+      </button>
+    ) : (
+      <span className="ml-auto flex items-center gap-1.5">
+        <button
+          onClick={cancelEdit}
+          disabled={saving}
+          className="inline-flex items-center gap-1 text-xs font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full transition-colors"
+        >
+          <X size={13} /> Cancel
+        </button>
+        <button
+          onClick={saveEdit}
+          disabled={saving}
+          className="inline-flex items-center gap-1 text-xs font-bold text-charcoal-900 bg-primary-400 hover:bg-primary-500 px-3 py-1.5 rounded-full transition-colors shadow-card"
+        >
+          <Check size={13} /> {saving ? 'Saving…' : 'Save'}
+        </button>
+      </span>
+    );
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
       <button
@@ -445,6 +474,7 @@ function VillaDetail({ villa, onBack }) {
             <DoorOpen size={16} className="text-primary-600" />
           </span>
           <h2 className="font-display text-base text-charcoal-900">Room Income <span className="text-gray-400 font-sans text-sm tabular-nums">· {safeYear}</span></h2>
+          <EditToggle />
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-xs">
@@ -530,6 +560,7 @@ function VillaDetail({ villa, onBack }) {
             <TrendingDown size={16} className="text-rust-600" />
           </span>
           <h2 className="font-display text-base text-charcoal-900">Expenses <span className="text-gray-400 font-sans text-sm tabular-nums">· {safeYear}</span></h2>
+          <EditToggle />
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-xs">
@@ -624,6 +655,7 @@ function VillaDetail({ villa, onBack }) {
             <h2 className="font-display text-base text-charcoal-900">
               FEWA Consumption <span className="text-gray-400 font-sans text-sm tabular-nums">· {safeYear} · AED</span>
             </h2>
+            <EditToggle />
           </div>
           <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-12 gap-2">
             {(fewaStrip || Array(12).fill(null)).map((v, i) => (
