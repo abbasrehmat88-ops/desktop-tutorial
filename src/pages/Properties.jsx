@@ -10,8 +10,15 @@ import {
   DoorOpen,
   Wallet,
   ChevronRight,
+  Pencil,
+  Check,
+  X,
+  Plus,
+  Trash2,
+  RotateCcw,
 } from 'lucide-react';
 import businessData from '../data/businessData.json';
+import { watchCollection, setDocItem, isDemoMode } from '../data/db';
 
 // The app shell (<main>) is the scroll container, not the window —
 // must scroll it explicitly when switching views.
@@ -63,6 +70,100 @@ function effProfit(yd) {
   const inc = effIncome(yd), exp = effExpense(yd);
   if (inc !== null && exp !== null) return inc - exp;
   return null;
+}
+
+// ---------- editing helpers ----------
+
+const FEWA_KEY = 'Electricity (FEWA)';
+
+// Coerce an input value (string | number | null) to a number or null.
+const toNum = (v) => {
+  if (v === null || v === undefined || v === '') return null;
+  const n = Number(String(v).replace(/,/g, ''));
+  return Number.isNaN(n) ? null : n;
+};
+
+// Build an editable draft (arrays of raw values) from a year's data object.
+function makeDraft(yd, fewaArr) {
+  return {
+    rooms: (yd.rooms || []).map((r) => ({
+      room: r.room ?? '',
+      tenant: r.tenant ?? '',
+      monthly: (r.monthly || Array(12).fill(null)).slice(0, 12),
+    })),
+    expenseRows: Object.entries(yd.expenses || {}).map(([name, e]) => ({
+      name,
+      monthly: (e.monthly || Array(12).fill(null)).slice(0, 12),
+    })),
+    fewa: (fewaArr || Array(12).fill(null)).slice(0, 12),
+  };
+}
+
+// Recompute a full year-data object (with all derived totals) from a draft.
+// This keeps Income / Expenses / Net Profit / FEWA cards always consistent.
+function computeFromDraft(draft) {
+  const rooms = draft.rooms.map((r) => {
+    const monthly = r.monthly.map(toNum);
+    return {
+      room: r.room,
+      tenant: r.tenant,
+      monthly,
+      total: monthly.some(hasVal) ? sumNonNull(monthly) : null,
+    };
+  });
+
+  const colSum = (rowsMonthly, j) => {
+    const vals = rowsMonthly.map((m) => m[j]).filter(hasVal);
+    return vals.length ? vals.reduce((s, v) => s + v, 0) : null;
+  };
+
+  const roomMonthlies = rooms.map((r) => r.monthly);
+  const incomeMonthly = Array.from({ length: 12 }, (_, j) => colSum(roomMonthlies, j));
+  const incomeTotal = incomeMonthly.some(hasVal) ? sumNonNull(incomeMonthly) : null;
+
+  const expenses = {};
+  draft.expenseRows.forEach((er) => {
+    const name = (er.name || '').trim() || 'Expense';
+    const monthly = er.monthly.map(toNum);
+    expenses[name] = { monthly, total: monthly.some(hasVal) ? sumNonNull(monthly) : null };
+  });
+  const expMonthlies = Object.values(expenses).map((e) => e.monthly);
+  const expenseMonthly = Array.from({ length: 12 }, (_, j) => colSum(expMonthlies, j));
+  const expenseTotal = expenseMonthly.some(hasVal) ? sumNonNull(expenseMonthly) : null;
+
+  const profitMonthly = Array.from({ length: 12 }, (_, j) => {
+    const inc = incomeMonthly[j];
+    const ex = expenseMonthly[j];
+    if (inc === null && ex === null) return null;
+    return (inc || 0) - (ex || 0);
+  });
+  const profitTotal =
+    incomeTotal !== null || expenseTotal !== null ? (incomeTotal || 0) - (expenseTotal || 0) : null;
+
+  return {
+    rooms,
+    incomeMonthly,
+    incomeTotal,
+    expenses,
+    expenseMonthly,
+    expenseTotal,
+    profitMonthly,
+    profitTotal,
+  };
+}
+
+// Small inline number input used across the editable tables.
+function NumCell({ value, onChange, className = '' }) {
+  return (
+    <input
+      type="number"
+      inputMode="numeric"
+      value={value ?? ''}
+      onChange={(e) => onChange(e.target.value)}
+      className={`w-16 px-1.5 py-1 text-right rounded-md border border-gray-200 bg-white tabular-nums text-xs focus:border-primary-400 focus:ring-1 focus:ring-primary-200 outline-none ${className}`}
+      placeholder="–"
+    />
+  );
 }
 
 // ---------- small pieces ----------
@@ -127,17 +228,122 @@ function MonthlyHeader({ first, second }) {
 // ---------- detail view ----------
 
 function VillaDetail({ villa, onBack }) {
-  const years = sortedYears(villa.years);
-  const [year, setYear] = useState(years[years.length - 1]);
-  const yd = villa.years[year] || {};
+  // Load any saved overrides for this villa (Firestore or localStorage).
+  const [override, setOverride] = useState(null);
+  useEffect(() => {
+    const unsub = watchCollection('villaOverrides', 'id', 'asc', (items) => {
+      setOverride(items.find((i) => i.id === villa.id) || null);
+    });
+    return unsub;
+  }, [villa.id]);
 
-  const fewaMonthly =
-    yd.expenses?.['Electricity (FEWA)']?.monthly || villa.fewaConsumption?.[year] || null;
+  // Effective data = override if it exists, else the bundled business data.
+  const effYears = override?.years || villa.years;
+  const effFewaConsumption = override?.fewaConsumption || villa.fewaConsumption || {};
+
+  const years = sortedYears(effYears);
+  const [year, setYear] = useState(years[years.length - 1]);
+  // If the selected year disappears (shouldn't happen), fall back to latest.
+  const safeYear = effYears[year] ? year : years[years.length - 1];
+  const baseYd = effYears[safeYear] || {};
+
+  // ----- edit state -----
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [savedMsg, setSavedMsg] = useState('');
+
+  // The data object actually shown: live-computed draft while editing, else stored.
+  const computed = useMemo(() => (draft ? computeFromDraft(draft) : null), [draft]);
+  const yd = editing && computed ? { ...baseYd, ...computed } : baseYd;
+
+  const fewaMonthly = yd.expenses?.[FEWA_KEY]?.monthly || effFewaConsumption[safeYear] || null;
   const fewaTotal = fewaMonthly ? sumNonNull(fewaMonthly) : null;
-  const fewaStrip = villa.fewaConsumption?.[year];
+  const fewaStrip = editing && draft ? draft.fewa.map(toNum) : effFewaConsumption[safeYear];
   const fewaStripMax = fewaStrip ? Math.max(1, ...fewaStrip.map((v) => v || 0)) : 1;
 
   const expenseTypes = Object.keys(yd.expenses || {});
+
+  function startEdit() {
+    setDraft(makeDraft(baseYd, effFewaConsumption[safeYear]));
+    setEditing(true);
+    setSavedMsg('');
+  }
+  function cancelEdit() {
+    setDraft(null);
+    setEditing(false);
+  }
+  async function saveEdit() {
+    setSaving(true);
+    const newYd = { ...baseYd, ...computeFromDraft(draft) };
+    const newYears = { ...effYears, [safeYear]: newYd };
+    const newFewa = { ...effFewaConsumption, [safeYear]: draft.fewa.map(toNum) };
+    try {
+      await setDocItem('villaOverrides', villa.id, {
+        id: villa.id,
+        name: villa.name,
+        num: villa.num,
+        years: newYears,
+        fewaConsumption: newFewa,
+      });
+      setEditing(false);
+      setDraft(null);
+      setSavedMsg(`Saved ${safeYear}${isDemoMode ? ' (this device)' : ''}`);
+      setTimeout(() => setSavedMsg(''), 3500);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // ----- draft mutators -----
+  const updateRoom = (ri, key, value) =>
+    setDraft((d) => ({
+      ...d,
+      rooms: d.rooms.map((r, i) => (i === ri ? { ...r, [key]: value } : r)),
+    }));
+  const updateRoomMonth = (ri, mj, value) =>
+    setDraft((d) => ({
+      ...d,
+      rooms: d.rooms.map((r, i) => {
+        if (i !== ri) return r;
+        const monthly = r.monthly.slice();
+        monthly[mj] = value;
+        return { ...r, monthly };
+      }),
+    }));
+  const addRoom = () =>
+    setDraft((d) => ({
+      ...d,
+      rooms: [...d.rooms, { room: `Room ${d.rooms.length + 1}`, tenant: '', monthly: Array(12).fill(null) }],
+    }));
+  const removeRoom = (ri) => setDraft((d) => ({ ...d, rooms: d.rooms.filter((_, i) => i !== ri) }));
+
+  const updateExpName = (ei, value) =>
+    setDraft((d) => ({
+      ...d,
+      expenseRows: d.expenseRows.map((e, i) => (i === ei ? { ...e, name: value } : e)),
+    }));
+  const updateExpMonth = (ei, mj, value) =>
+    setDraft((d) => ({
+      ...d,
+      expenseRows: d.expenseRows.map((e, i) => {
+        if (i !== ei) return e;
+        const monthly = e.monthly.slice();
+        monthly[mj] = value;
+        return { ...e, monthly };
+      }),
+    }));
+  const addExpense = () =>
+    setDraft((d) => ({ ...d, expenseRows: [...d.expenseRows, { name: '', monthly: Array(12).fill(null) }] }));
+  const removeExpense = (ei) =>
+    setDraft((d) => ({ ...d, expenseRows: d.expenseRows.filter((_, i) => i !== ei) }));
+
+  const updateFewa = (mj, value) =>
+    setDraft((d) => {
+      const fewa = d.fewa.slice();
+      fewa[mj] = value;
+      return { ...d, fewa };
+    });
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-up">
@@ -149,16 +355,47 @@ function VillaDetail({ villa, onBack }) {
         All Properties
       </button>
 
-      <div className="flex items-center gap-4">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-600 text-charcoal-900 flex items-center justify-center font-display font-bold text-xl shadow-glow-sm shrink-0">
-          {villa.num}
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-600 text-charcoal-900 flex items-center justify-center font-display font-bold text-xl shadow-glow-sm shrink-0">
+            {villa.num}
+          </div>
+          <div>
+            <p className="section-label mb-0.5">Villa Portfolio</p>
+            <h1 className="page-title">{villa.name}</h1>
+            <span className="gold-rule" />
+          </div>
         </div>
-        <div>
-          <p className="section-label mb-0.5">Villa Portfolio</p>
-          <h1 className="page-title">{villa.name}</h1>
-          <span className="gold-rule" />
+
+        {/* Edit / Save controls */}
+        <div className="flex items-center gap-2">
+          {savedMsg && (
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald2-700 bg-emerald2-50 ring-1 ring-emerald2-100 px-3 py-1.5 rounded-full animate-pop">
+              <Check size={13} /> {savedMsg}
+            </span>
+          )}
+          {!editing ? (
+            <button onClick={startEdit} className="btn-primary inline-flex items-center gap-2 text-sm">
+              <Pencil size={15} /> Edit {safeYear}
+            </button>
+          ) : (
+            <>
+              <button onClick={cancelEdit} className="btn-secondary inline-flex items-center gap-2 text-sm" disabled={saving}>
+                <X size={15} /> Cancel
+              </button>
+              <button onClick={saveEdit} className="btn-primary inline-flex items-center gap-2 text-sm" disabled={saving}>
+                <Check size={15} /> {saving ? 'Saving…' : 'Save'}
+              </button>
+            </>
+          )}
         </div>
       </div>
+
+      {editing && (
+        <p className="mt-4 text-xs text-primary-800 bg-primary-50 border border-primary-100 rounded-xl px-3 py-2 inline-flex items-center gap-2">
+          <Pencil size={12} /> Editing <b>{safeYear}</b> — change any room, tenant, amount, expense or FEWA value. Totals update automatically. Switch years after saving.
+        </p>
+      )}
 
       {/* year pills */}
       <div className="flex items-center gap-2 mt-6">
@@ -168,13 +405,14 @@ function VillaDetail({ villa, onBack }) {
             <button
               key={y}
               role="tab"
-              aria-selected={y === year}
+              aria-selected={y === safeYear}
+              disabled={editing}
               onClick={() => setYear(y)}
               className={`px-4 py-2 rounded-full text-xs font-bold tabular-nums transition-all duration-300 ${
-                y === year
+                y === safeYear
                   ? 'bg-charcoal-900 text-primary-400 shadow-card'
                   : 'bg-white border border-gray-200 text-charcoal-700 hover:border-primary-400 hover:text-primary-700'
-              }`}
+              } ${editing ? 'opacity-40 cursor-not-allowed' : ''}`}
             >
               {y}
             </button>
@@ -183,7 +421,7 @@ function VillaDetail({ villa, onBack }) {
       </div>
 
       {/* stat mini-cards — keyed by year so switching years re-animates */}
-      <div key={year} className="animate-fade-up">
+      <div key={safeYear + String(editing)} className="animate-fade-up">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-5">
         <MiniStat icon={TrendingUp} label="Income" value={`AED ${fmt(effIncome(yd))}`} />
         <MiniStat icon={TrendingDown} label="Expenses" value={`AED ${fmt(effExpense(yd))}`} />
@@ -206,26 +444,69 @@ function VillaDetail({ villa, onBack }) {
           <span className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center flex-shrink-0">
             <DoorOpen size={16} className="text-primary-600" />
           </span>
-          <h2 className="font-display text-base text-charcoal-900">Room Income <span className="text-gray-400 font-sans text-sm tabular-nums">· {year}</span></h2>
+          <h2 className="font-display text-base text-charcoal-900">Room Income <span className="text-gray-400 font-sans text-sm tabular-nums">· {safeYear}</span></h2>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-xs">
             <MonthlyHeader first="Room" second="Tenant" />
             <tbody className="divide-y divide-gray-100">
-              {(yd.rooms || []).map((r, i) => (
+              {(editing && draft ? draft.rooms : yd.rooms || []).map((r, i) => (
                 <tr key={i} className="hover:bg-gray-50">
-                  <td className={`${tdBase} font-medium text-charcoal-900`}>{r.room}</td>
-                  <td className={`${tdBase} text-gray-600 max-w-[140px] truncate`}>{r.tenant}</td>
+                  <td className={`${tdBase} font-medium text-charcoal-900`}>
+                    {editing ? (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => removeRoom(i)}
+                          title="Delete room"
+                          className="text-rust-400 hover:text-rust-600 p-0.5 shrink-0"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                        <input
+                          value={r.room ?? ''}
+                          onChange={(e) => updateRoom(i, 'room', e.target.value)}
+                          className="w-20 px-1.5 py-1 rounded-md border border-gray-200 bg-white text-xs focus:border-primary-400 focus:ring-1 focus:ring-primary-200 outline-none"
+                        />
+                      </div>
+                    ) : (
+                      r.room
+                    )}
+                  </td>
+                  <td className={`${tdBase} text-gray-600 max-w-[140px] truncate`}>
+                    {editing ? (
+                      <input
+                        value={r.tenant ?? ''}
+                        onChange={(e) => updateRoom(i, 'tenant', e.target.value)}
+                        placeholder="Tenant name"
+                        className="w-28 px-1.5 py-1 rounded-md border border-gray-200 bg-white text-xs focus:border-primary-400 focus:ring-1 focus:ring-primary-200 outline-none"
+                      />
+                    ) : (
+                      r.tenant
+                    )}
+                  </td>
                   {(r.monthly || Array(12).fill(null)).map((v, j) => (
                     <td key={j} className={`${tdBase} text-right text-gray-700`}>
-                      {fmt(v)}
+                      {editing ? (
+                        <NumCell value={v} onChange={(val) => updateRoomMonth(i, j, val)} />
+                      ) : (
+                        fmt(v)
+                      )}
                     </td>
                   ))}
                   <td className={`${tdBase} text-right font-semibold text-charcoal-900`}>
-                    {fmt(r.total)}
+                    {fmt(editing ? sumNonNull((r.monthly || []).map(toNum)) : r.total)}
                   </td>
                 </tr>
               ))}
+              {editing && (
+                <tr>
+                  <td colSpan={15} className="px-2 py-2">
+                    <button onClick={addRoom} className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-700 hover:text-primary-900">
+                      <Plus size={13} /> Add room / tenant
+                    </button>
+                  </td>
+                </tr>
+              )}
               <tr className="bg-primary-50 font-bold text-charcoal-900">
                 <td className={tdBase} colSpan={2}>
                   Total Income
@@ -248,28 +529,61 @@ function VillaDetail({ villa, onBack }) {
           <span className="w-8 h-8 rounded-lg bg-rust-50 flex items-center justify-center flex-shrink-0">
             <TrendingDown size={16} className="text-rust-600" />
           </span>
-          <h2 className="font-display text-base text-charcoal-900">Expenses <span className="text-gray-400 font-sans text-sm tabular-nums">· {year}</span></h2>
+          <h2 className="font-display text-base text-charcoal-900">Expenses <span className="text-gray-400 font-sans text-sm tabular-nums">· {safeYear}</span></h2>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-xs">
             <MonthlyHeader first="Expense" />
             <tbody className="divide-y divide-gray-100">
-              {expenseTypes.map((name) => {
-                const e = yd.expenses[name];
-                return (
-                  <tr key={name} className="hover:bg-gray-50">
-                    <td className={`${tdBase} font-medium text-charcoal-900`}>{name}</td>
-                    {(e.monthly || Array(12).fill(null)).map((v, j) => (
-                      <td key={j} className={`${tdBase} text-right text-gray-700`}>
-                        {fmt(v)}
-                      </td>
-                    ))}
-                    <td className={`${tdBase} text-right font-semibold text-charcoal-900`}>
-                      {fmt(e.total)}
+              {(editing && draft
+                ? draft.expenseRows.map((er, i) => ({ key: i, name: er.name, monthly: er.monthly, idx: i }))
+                : expenseTypes.map((name) => ({ key: name, name, monthly: yd.expenses[name].monthly, total: yd.expenses[name].total }))
+              ).map((row) => (
+                <tr key={row.key} className="hover:bg-gray-50">
+                  <td className={`${tdBase} font-medium text-charcoal-900`}>
+                    {editing ? (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => removeExpense(row.idx)}
+                          title="Delete expense"
+                          className="text-rust-400 hover:text-rust-600 p-0.5 shrink-0"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                        <input
+                          value={row.name ?? ''}
+                          onChange={(e) => updateExpName(row.idx, e.target.value)}
+                          placeholder="Expense name"
+                          className="w-32 px-1.5 py-1 rounded-md border border-gray-200 bg-white text-xs focus:border-primary-400 focus:ring-1 focus:ring-primary-200 outline-none"
+                        />
+                      </div>
+                    ) : (
+                      row.name
+                    )}
+                  </td>
+                  {(row.monthly || Array(12).fill(null)).map((v, j) => (
+                    <td key={j} className={`${tdBase} text-right text-gray-700`}>
+                      {editing ? (
+                        <NumCell value={v} onChange={(val) => updateExpMonth(row.idx, j, val)} />
+                      ) : (
+                        fmt(v)
+                      )}
                     </td>
-                  </tr>
-                );
-              })}
+                  ))}
+                  <td className={`${tdBase} text-right font-semibold text-charcoal-900`}>
+                    {fmt(editing ? sumNonNull((row.monthly || []).map(toNum)) : row.total)}
+                  </td>
+                </tr>
+              ))}
+              {editing && (
+                <tr>
+                  <td colSpan={14} className="px-2 py-2">
+                    <button onClick={addExpense} className="inline-flex items-center gap-1.5 text-xs font-semibold text-rust-600 hover:text-rust-700">
+                      <Plus size={13} /> Add expense type
+                    </button>
+                  </td>
+                </tr>
+              )}
               <tr className="bg-rust-50 font-bold text-charcoal-900">
                 <td className={tdBase}>Total Expenses</td>
                 {(yd.expenseMonthly || Array(12).fill(null)).map((v, j) => (
@@ -301,18 +615,18 @@ function VillaDetail({ villa, onBack }) {
       </div>
 
       {/* FEWA consumption strip */}
-      {fewaStrip && (
+      {(fewaStrip || editing) && (
         <div className="card mt-6">
           <div className="flex items-center gap-2.5 mb-4">
             <span className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center flex-shrink-0">
               <Zap size={16} className="text-primary-600" />
             </span>
             <h2 className="font-display text-base text-charcoal-900">
-              FEWA Consumption <span className="text-gray-400 font-sans text-sm tabular-nums">· {year} · AED</span>
+              FEWA Consumption <span className="text-gray-400 font-sans text-sm tabular-nums">· {safeYear} · AED</span>
             </h2>
           </div>
           <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-12 gap-2">
-            {fewaStrip.map((v, i) => (
+            {(fewaStrip || Array(12).fill(null)).map((v, i) => (
               <div
                 key={i}
                 className="rounded-xl border border-gray-100 bg-gray-50 p-2 flex flex-col items-center transition-colors hover:border-primary-200"
@@ -320,15 +634,28 @@ function VillaDetail({ villa, onBack }) {
                 <span className="text-[10px] uppercase font-semibold text-gray-400">
                   {MONTHS[i]}
                 </span>
-                <span className="text-xs font-semibold text-charcoal-900 mt-0.5 tabular-nums">{fmt(v)}</span>
-                <div className="w-full h-8 flex items-end mt-1">
-                  <div
-                    className="w-full rounded-sm bg-gradient-to-t from-amber-500 to-primary-400"
-                    style={{
-                      height: `${Math.max(2, Math.round(((v || 0) / fewaStripMax) * 32))}px`,
-                    }}
+                {editing ? (
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    value={draft.fewa[i] ?? ''}
+                    onChange={(e) => updateFewa(i, e.target.value)}
+                    className="w-full mt-1 px-1 py-1 text-center rounded-md border border-gray-200 bg-white tabular-nums text-xs focus:border-primary-400 focus:ring-1 focus:ring-primary-200 outline-none"
+                    placeholder="–"
                   />
-                </div>
+                ) : (
+                  <>
+                    <span className="text-xs font-semibold text-charcoal-900 mt-0.5 tabular-nums">{fmt(v)}</span>
+                    <div className="w-full h-8 flex items-end mt-1">
+                      <div
+                        className="w-full rounded-sm bg-gradient-to-t from-amber-500 to-primary-400"
+                        style={{
+                          height: `${Math.max(2, Math.round(((v || 0) / fewaStripMax) * 32))}px`,
+                        }}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>
@@ -355,12 +682,12 @@ function VillaDetail({ villa, onBack }) {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {years.map((y) => {
-                const d = villa.years[y];
+                const d = effYears[y];
                 return (
                   <tr
                     key={y}
-                    className={`hover:bg-gray-50 cursor-pointer ${y === year ? 'bg-primary-50' : ''}`}
-                    onClick={() => setYear(y)}
+                    className={`hover:bg-gray-50 cursor-pointer ${y === safeYear ? 'bg-primary-50' : ''} ${editing ? 'pointer-events-none opacity-60' : ''}`}
+                    onClick={() => !editing && setYear(y)}
                   >
                     <td className={`${tdBase} font-semibold text-charcoal-900`}>{y}</td>
                     <td className={`${tdBase} text-right text-gray-700`}>{fmt(effIncome(d))}</td>
